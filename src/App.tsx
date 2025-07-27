@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth, ProtectedRoute } from './hooks/useAuth';
@@ -29,6 +29,7 @@ const queryClient = new QueryClient({
 // Auth wrapper component
 const AuthWrapper: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
+const navigate = useNavigate();
 
   if (isLoading) {
     return (
@@ -39,7 +40,7 @@ const AuthWrapper: React.FC = () => {
   }
 
   if (!isAuthenticated) {
-    return <LoginForm onSuccess={() => window.location.reload()} />;
+    return <LoginForm onSuccess={() => navigate('/dashboard')} />;
   }
 
   return (
@@ -138,7 +139,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
+        <Router basename={import.meta.env.VITE_BASE_PATH || '/'}>
           <div className="App">
             <AuthWrapper />
             <Toaster
