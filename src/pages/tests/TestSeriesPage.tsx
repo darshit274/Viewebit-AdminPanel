@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { Search, Plus, Edit, Trash2, Eye, ToggleLeft, ToggleRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Edit, Trash2, Eye, ToggleLeft, ToggleRight, Play } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner, CardSkeleton } from '../../components/common/LoadingSpinner';
 import { ApiError, ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { TestSeriesModal } from '../../components/modals/TestSeriesModal';
 import { ConfirmModal } from '../../components/modals/ConfirmModal';
+import { TestPreviewModal } from '../../components/modals/TestPreviewModal';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -22,13 +24,25 @@ const testSeriesService = {
 };
 
 export const TestSeriesPage: React.FC = () => {
+  const location = useLocation();
+  const examTypeFilter = location.state as { examTypeId?: string; examTypeName?: string } | null;
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [examTypeId, setExamTypeId] = useState(examTypeFilter?.examTypeId || '');
   
   // Modal states
   const [testSeriesModal, setTestSeriesModal] = useState({ isOpen: false, mode: 'create' as 'create' | 'edit', testSeries: null as any });
+  const [previewModal, setPreviewModal] = useState({ isOpen: false, testSeries: null as any });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, testSeries: null as any, loading: false });
+
+  // Clear location state after reading it
+  useEffect(() => {
+    if (examTypeFilter) {
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
 
   const { 
     data: testSeriesResponse, 
@@ -38,7 +52,8 @@ export const TestSeriesPage: React.FC = () => {
   } = useApi(() => testSeriesService.getTestSeries({
     page: currentPage,
     limit: pageSize,
-    search: searchTerm
+    search: searchTerm,
+    exam_type_id: examTypeId
   }));
 
   const { 
@@ -96,6 +111,10 @@ export const TestSeriesPage: React.FC = () => {
     refresh();
   };
 
+  const handlePreviewTestSeries = (testSeries: any) => {
+    setPreviewModal({ isOpen: true, testSeries });
+  };
+
   if (error) {
     return <ApiError error={error} onRetry={refresh} />;
   }
@@ -107,7 +126,11 @@ export const TestSeriesPage: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Test Series Management</h1>
-            <p className="text-gray-600">Create and manage test series for students</p>
+            <p className="text-gray-600">
+              {examTypeFilter?.examTypeName 
+                ? `Showing test series for ${examTypeFilter.examTypeName}`
+                : 'Create and manage test series for students'}
+            </p>
           </div>
           <button 
             onClick={handleAddTestSeries}
@@ -192,6 +215,19 @@ export const TestSeriesPage: React.FC = () => {
               <Search className="h-4 w-4 mr-2" />
               Search
             </button>
+            
+            {examTypeId && (
+              <button 
+                type="button" 
+                onClick={() => {
+                  setExamTypeId('');
+                  refresh();
+                }}
+                className="btn-secondary"
+              >
+                Clear Filter
+              </button>
+            )}
           </form>
         </div>
 
@@ -288,6 +324,13 @@ export const TestSeriesPage: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
                           <button 
+                            onClick={() => handlePreviewTestSeries(series)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                            title="Preview Test Series"
+                          >
+                            <Play className="h-4 w-4" />
+                          </button>
+                          <button 
                             onClick={() => handleEditTestSeries(series)}
                             className="text-blue-600 hover:text-blue-900"
                             title="View Details"
@@ -370,6 +413,12 @@ export const TestSeriesPage: React.FC = () => {
           confirmText="Delete"
           type="danger"
           loading={confirmModal.loading}
+        />
+
+        <TestPreviewModal
+          isOpen={previewModal.isOpen}
+          onClose={() => setPreviewModal({ isOpen: false, testSeries: null })}
+          test={previewModal.testSeries}
         />
       </div>
     </ErrorBoundary>

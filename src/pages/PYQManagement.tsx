@@ -17,6 +17,7 @@ import {
   ChevronDown,
   X
 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { PYQCard } from '../components/pyqs/PYQCard';
 import { PYQModal } from '../components/modals/PYQModal';
 import pyqService, { PYQ, PYQFilters, PYQStats } from '../services/pyqService';
@@ -24,6 +25,9 @@ import examService, { ExamType } from '../services/examService';
 import toast from 'react-hot-toast';
 
 const PYQManagement: React.FC = () => {
+  const location = useLocation();
+  const examTypeFilter = location.state as { examTypeId?: string; examTypeName?: string } | null;
+  
   const [pyqs, setPyqs] = useState<PYQ[]>([]);
   const [stats, setStats] = useState<PYQStats | null>(null);
   const [examTypes, setExamTypes] = useState<ExamType[]>([]);
@@ -44,12 +48,20 @@ const PYQManagement: React.FC = () => {
     page: 1,
     limit: pageSize,
     sortBy: 'created_at',
-    sortOrder: 'DESC'
+    sortOrder: 'DESC',
+    exam_type_id: examTypeFilter?.examTypeId
   });
 
   // UI State
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedPyqs, setSelectedPyqs] = useState<number[]>([]);
+
+  // Clear location state after reading it
+  useEffect(() => {
+    if (examTypeFilter) {
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
 
   // Load initial data
   useEffect(() => {
@@ -247,7 +259,11 @@ const PYQManagement: React.FC = () => {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">PYQ Management</h1>
-            <p className="text-gray-600 mt-1">Manage Previous Year Questions and exam papers</p>
+            <p className="text-gray-600 mt-1">
+              {examTypeFilter?.examTypeName 
+                ? `Showing PYQs for ${examTypeFilter.examTypeName}`
+                : 'Manage Previous Year Questions and exam papers'}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <button

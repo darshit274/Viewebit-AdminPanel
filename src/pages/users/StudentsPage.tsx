@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Eye, Edit, Trash2, UserPlus } from 'lucide-react';
-import { useApi } from '../../hooks/useApi';
+import { Search, Filter, Download, Eye, Edit, Trash2, UserPlus, X } from 'lucide-react';
 import { LoadingSpinner, CardSkeleton } from '../../components/common/LoadingSpinner';
 import { ApiError, ErrorBoundary } from '../../components/common/ErrorBoundary';
-import { Student, PaginationParams } from '../../types';
 import { studentsService } from '../../services/students';
+import { StudentModal } from '../../components/modals/StudentModal';
+import { ConfirmModal } from '../../components/modals/ConfirmModal';
+import toast from 'react-hot-toast';
 
 export const StudentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,31 +13,59 @@ export const StudentsPage: React.FC = () => {
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-  const { 
-    data: studentsResponse, 
-    loading, 
-    error, 
-    refresh 
-  } = useApi(() => studentsService.getStudents({
-    page: currentPage,
-    limit: pageSize,
-    search: searchTerm,
-    sortBy,
-    sortOrder
-  }));
-
-  // Debug logs
-  console.log('StudentsPage Debug:', {
-    loading,
-    error,
-    studentsResponse,
-    studentsData: studentsResponse?.data?.data,
-    studentsCount: studentsResponse?.data?.data?.length
+  
+  // Advanced filter states
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [verificationFilter, setVerificationFilter] = useState<'all' | 'verified' | 'unverified'>('all');
+  const [premiumFilter, setPremiumFilter] = useState<'all' | 'premium' | 'free'>('all');
+  const [dateFilter, setDateFilter] = useState({
+    from: '',
+    to: ''
   });
+  
+  // Simple state management instead of useApi hook
+  const [students, setStudents] = useState<any[]>([]);
+  const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 10, totalPages: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
+  
+  // Modal states
+  const [studentModal, setStudentModal] = useState({ isOpen: false, mode: 'create' as 'create' | 'edit', student: null as any });
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, student: null as any, loading: false });
 
-  const students = studentsResponse?.data?.data || [];
-  const pagination = studentsResponse?.data?.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 };
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await studentsService.getStudents({
+        page: currentPage,
+        limit: pageSize,
+        search: searchTerm,
+        sortBy,
+        sortOrder
+      });
+      
+      const backendData = response.data;
+      
+      if (backendData && backendData.success) {
+        setStudents(backendData.data || []);
+        setPagination(backendData.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 });
+      } else {
+        setError('Invalid response format');
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message || 'Failed to fetch students');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, [currentPage, pageSize, searchTerm, sortBy, sortOrder]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +81,63 @@ export const StudentsPage: React.FC = () => {
     }
   };
 
+  const clearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setVerificationFilter('all');
+    setPremiumFilter('all');
+    setDateFilter({ from: '', to: '' });
+    setCurrentPage(1);
+    setShowAdvancedFilters(false);
+  };
+
+  const applyAdvancedFilters = () => {
+    setCurrentPage(1);
+    // The loadStudents function will automatically use the current filter states
+    loadStudents();
+  };
+
+  const hasActiveFilters = statusFilter !== 'all' || 
+                          verificationFilter !== 'all' || 
+                          premiumFilter !== 'all' || 
+                          dateFilter.from || 
+                          dateFilter.to ||
+                          searchTerm;
+
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      // Prepare filters for export
+      const exportFilters = {
+        search: searchTerm,
+        is_active: statusFilter === 'all' ? undefined : statusFilter === 'active',
+        is_verified: verificationFilter === 'all' ? undefined : verificationFilter === 'verified',
+        is_premium: premiumFilter === 'all' ? undefined : premiumFilter === 'premium',
+        date_from: dateFilter.from,
+        date_to: dateFilter.to
+      };
+
+      const blob = await studentsService.exportStudents(exportFilters);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `students_export_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Students data exported successfully');
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast.error(error.response?.data?.message || 'Failed to export students data');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const getStatusBadge = (isActive: boolean, isEmailVerified: boolean) => {
     if (!isEmailVerified) {
       return <span className="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">Unverified</span>;
@@ -62,33 +148,54 @@ export const StudentsPage: React.FC = () => {
     return <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">Inactive</span>;
   };
 
-  // Debug render
-  console.log('StudentsPage rendering with:', { students, loading, error });
+  // CRUD handlers
+  const handleAddStudent = () => {
+    setStudentModal({ isOpen: true, mode: 'create', student: null });
+  };
+
+  const handleEditStudent = (student: any) => {
+    setStudentModal({ isOpen: true, mode: 'edit', student });
+  };
+
+  const handleDeleteStudent = (student: any) => {
+    setConfirmModal({ isOpen: true, student, loading: false });
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setConfirmModal(prev => ({ ...prev, loading: true }));
+      await studentsService.deleteStudent(confirmModal.student.uuid);
+      toast.success('Student deleted successfully');
+      fetchStudents();
+      setConfirmModal({ isOpen: false, student: null, loading: false });
+    } catch (error: any) {
+      console.error('Delete student error:', error);
+      toast.error(error.response?.data?.message || 'Failed to delete student');
+      setConfirmModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleModalSuccess = () => {
+    fetchStudents();
+  };
 
   if (error) {
-    console.log('Showing error:', error);
-    return <ApiError error={error} onRetry={refresh} />;
+    return <ApiError error={error} onRetry={fetchStudents} />;
   }
 
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        {/* Debug Info */}
-        <div className="bg-yellow-100 p-4 rounded-lg">
-          <h3 className="font-bold">Debug Info:</h3>
-          <p>Loading: {loading ? 'Yes' : 'No'}</p>
-          <p>Error: {error || 'None'}</p>
-          <p>Students Count: {students.length}</p>
-          <p>Raw Response: {JSON.stringify(studentsResponse)}</p>
-        </div>
-
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Student Management</h1>
             <p className="text-gray-600">Manage and monitor student accounts</p>
           </div>
-          <button className="btn-primary inline-flex items-center">
+          <button 
+            onClick={handleAddStudent}
+            className="btn-primary inline-flex items-center"
+          >
             <UserPlus className="h-4 w-4 mr-2" />
             Add Student
           </button>
@@ -134,17 +241,135 @@ export const StudentsPage: React.FC = () => {
               Search
             </button>
 
-            <button type="button" className="btn-secondary">
+            <button 
+              type="button" 
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className={`btn-secondary ${hasActiveFilters ? 'border-blue-500 bg-blue-50 text-blue-700' : ''}`}
+            >
               <Filter className="h-4 w-4 mr-2" />
               Filters
+              {hasActiveFilters && (
+                <span className="ml-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {[statusFilter !== 'all', verificationFilter !== 'all', premiumFilter !== 'all', dateFilter.from, dateFilter.to, searchTerm].filter(Boolean).length}
+                </span>
+              )}
             </button>
 
-            <button type="button" className="btn-secondary">
+            <button 
+              type="button" 
+              onClick={handleExport}
+              disabled={exportLoading}
+              className="btn-secondary"
+            >
               <Download className="h-4 w-4 mr-2" />
-              Export
+              {exportLoading ? 'Exporting...' : 'Export'}
             </button>
           </form>
         </div>
+
+        {/* Advanced Filters Panel */}
+        {showAdvancedFilters && (
+          <div className="card p-6 border-t-2 border-blue-500">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Advanced Filters</h3>
+              <button
+                onClick={clearFilters}
+                className="text-sm text-gray-500 hover:text-gray-700 flex items-center"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Clear All
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              {/* Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Account Status
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="input-field"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+
+              {/* Verification Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Verification Status
+                </label>
+                <select
+                  value={verificationFilter}
+                  onChange={(e) => setVerificationFilter(e.target.value as any)}
+                  className="input-field"
+                >
+                  <option value="all">All Verification</option>
+                  <option value="verified">Verified</option>
+                  <option value="unverified">Unverified</option>
+                </select>
+              </div>
+
+              {/* Premium Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subscription Type
+                </label>
+                <select
+                  value={premiumFilter}
+                  onChange={(e) => setPremiumFilter(e.target.value as any)}
+                  className="input-field"
+                >
+                  <option value="all">All Types</option>
+                  <option value="premium">Premium</option>
+                  <option value="free">Free</option>
+                </select>
+              </div>
+
+              {/* Date Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Registration Date
+                </label>
+                <div className="flex space-x-2">
+                  <input
+                    type="date"
+                    value={dateFilter.from}
+                    onChange={(e) => setDateFilter(prev => ({ ...prev, from: e.target.value }))}
+                    className="input-field text-sm"
+                    placeholder="From"
+                  />
+                  <input
+                    type="date"
+                    value={dateFilter.to}
+                    onChange={(e) => setDateFilter(prev => ({ ...prev, to: e.target.value }))}
+                    className="input-field text-sm"
+                    placeholder="To"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={clearFilters}
+                className="btn-secondary"
+              >
+                Reset
+              </button>
+              <button
+                onClick={applyAdvancedFilters}
+                className="btn-primary"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -166,8 +391,10 @@ export const StudentsPage: React.FC = () => {
                 <Eye className="h-6 w-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Today</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-sm font-medium text-gray-600">Verified</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {students.filter(s => s.isEmailVerified).length}
+                </p>
               </div>
             </div>
           </div>
@@ -178,20 +405,28 @@ export const StudentsPage: React.FC = () => {
                 <Edit className="h-6 w-6 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">New This Week</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-sm font-medium text-gray-600">Unverified</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {students.filter(s => !s.isEmailVerified).length}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="card p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-red-100">
-                <Trash2 className="h-6 w-6 text-red-600" />
+              <div className="p-3 rounded-full bg-purple-100">
+                <Trash2 className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Unverified</p>
-                <p className="text-2xl font-bold text-gray-900">0</p>
+                <p className="text-sm font-medium text-gray-600">This Week</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {students.filter(s => {
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    return new Date(s.created_at) > weekAgo;
+                  }).length}
+                </p>
               </div>
             </div>
           </div>
@@ -210,6 +445,20 @@ export const StudentsPage: React.FC = () => {
                   <CardSkeleton key={index} />
                 ))}
               </div>
+            </div>
+          ) : students.length === 0 ? (
+            <div className="p-12 text-center">
+              <UserPlus className="mx-auto h-24 w-24 text-gray-300 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No students found</h3>
+              <p className="text-gray-600 mb-6">
+                {searchTerm ? 'Try adjusting your search criteria.' : 'No students have registered yet.'}
+              </p>
+              {!searchTerm && (
+                <button onClick={handleAddStudent} className="btn-primary">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add First Student
+                </button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -293,13 +542,25 @@ export const StudentsPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <button className="text-blue-600 hover:text-blue-900">
+                          <button 
+                            onClick={() => handleEditStudent(student)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="View Details"
+                          >
                             <Eye className="h-4 w-4" />
                           </button>
-                          <button className="text-green-600 hover:text-green-900">
+                          <button 
+                            onClick={() => handleEditStudent(student)}
+                            className="text-green-600 hover:text-green-900"
+                            title="Edit Student"
+                          >
                             <Edit className="h-4 w-4" />
                           </button>
-                          <button className="text-red-600 hover:text-red-900">
+                          <button 
+                            onClick={() => handleDeleteStudent(student)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Delete Student"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
@@ -354,6 +615,26 @@ export const StudentsPage: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Modals */}
+        <StudentModal
+          isOpen={studentModal.isOpen}
+          onClose={() => setStudentModal({ isOpen: false, mode: 'create', student: null })}
+          onSuccess={handleModalSuccess}
+          student={studentModal.student}
+          mode={studentModal.mode}
+        />
+
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={() => setConfirmModal({ isOpen: false, student: null, loading: false })}
+          onConfirm={handleConfirmDelete}
+          title="Delete Student"
+          message={`Are you sure you want to delete "${confirmModal.student?.username}"? This action cannot be undone.`}
+          confirmText="Delete"
+          type="danger"
+          loading={confirmModal.loading}
+        />
       </div>
     </ErrorBoundary>
   );

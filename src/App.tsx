@@ -6,7 +6,7 @@ import { AuthProvider, useAuth, ProtectedRoute } from './hooks/useAuth';
 import { LoginForm } from './components/auth/LoginForm';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './pages/dashboard/Dashboard';
-import { StudentsPageFixed as StudentsPage } from './pages/users/StudentsPageFixed';
+import { StudentsPage } from './pages/users/StudentsPage';
 import { TestSeriesPage } from './pages/tests/TestSeriesPage';
 import { QuestionsPage } from './pages/questions/QuestionsPage';
 import { PDFManagement } from './pages/PDFManagement';
@@ -15,6 +15,10 @@ import { TopicTestSeriesManagement } from './pages/TopicTestSeriesManagement';
 import { FreeTestsManagement } from './pages/FreeTestsManagement';
 import PYQManagement from './pages/PYQManagement';
 import SubscriptionsPage from './pages/subscriptions/SubscriptionsPage';
+import { CategoriesPage } from './pages/categories/CategoriesPage';
+import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
+import { PerformanceReportsPage } from './pages/performance/PerformanceReportsPage';
+import { SettingsPage } from './pages/settings/SettingsPage';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -98,34 +102,22 @@ const AuthWrapper: React.FC = () => {
         } />
         <Route path="categories" element={
           <ProtectedRoute>
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Category Management</h2>
-              <p className="text-gray-600">Category management functionality coming soon...</p>
-            </div>
+            <CategoriesPage />
           </ProtectedRoute>
         } />
         <Route path="analytics" element={
           <ProtectedRoute>
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Analytics</h2>
-              <p className="text-gray-600">Analytics functionality coming soon...</p>
-            </div>
+            <AnalyticsPage />
           </ProtectedRoute>
         } />
         <Route path="performance" element={
           <ProtectedRoute>
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Performance Reports</h2>
-              <p className="text-gray-600">Performance reports functionality coming soon...</p>
-            </div>
+            <PerformanceReportsPage />
           </ProtectedRoute>
         } />
         <Route path="settings" element={
           <ProtectedRoute>
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Settings</h2>
-              <p className="text-gray-600">Settings functionality coming soon...</p>
-            </div>
+            <SettingsPage />
           </ProtectedRoute>
         } />
       </Route>

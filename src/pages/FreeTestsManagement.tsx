@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, RefreshCw, Play, FileText, BarChart3, Filter, Grid, List, Star, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { FreeTestCard } from '../components/freetests/FreeTestCard';
 import { FreeTestModal } from '../components/modals/FreeTestModal';
 import { ConfirmModal } from '../components/modals/ConfirmModal';
+import { TestPreviewModal } from '../components/modals/TestPreviewModal';
 import { PDFListSkeleton } from '../components/common/PDFSkeletonLoader';
 import freeTestService, { FreeTest, FreeTestFilters, FreeTestStats } from '../services/freeTestService';
 import subjectService, { Subject } from '../services/subjectService';
 import toast from 'react-hot-toast';
 
 export const FreeTestsManagement: React.FC = () => {
+  const navigate = useNavigate();
+  
   // State management
   const [tests, setTests] = useState<FreeTest[]>([]);
   const [stats, setStats] = useState<FreeTestStats | null>(null);
@@ -43,6 +47,7 @@ export const FreeTestsManagement: React.FC = () => {
 
   // Modal states
   const [testModal, setTestModal] = useState({ isOpen: false, test: null as FreeTest | null });
+  const [previewModal, setPreviewModal] = useState({ isOpen: false, test: null as FreeTest | null });
   const [confirmModal, setConfirmModal] = useState({ 
     isOpen: false, 
     test: null as FreeTest | null, 
@@ -154,8 +159,8 @@ export const FreeTestsManagement: React.FC = () => {
   };
 
   const handleViewQuestions = (test: FreeTest) => {
-    toast.info(`Managing questions for ${test.title}`);
-    // TODO: Navigate to questions management
+    // Navigate to questions management with test filter
+    navigate('/questions', { state: { testId: test.id, testTitle: test.title, testType: 'free' } });
   };
 
   const handleViewAnalytics = (test: FreeTest) => {
@@ -164,8 +169,7 @@ export const FreeTestsManagement: React.FC = () => {
   };
 
   const handlePreview = (test: FreeTest) => {
-    toast.info(`Previewing ${test.title}`);
-    // TODO: Open test preview
+    setPreviewModal({ isOpen: true, test });
   };
 
   const handleConfirmAction = async () => {
@@ -546,6 +550,12 @@ export const FreeTestsManagement: React.FC = () => {
           confirmText={confirmModal.action === 'delete' ? 'Delete' : 'Duplicate'}
           type={confirmModal.action === 'delete' ? 'danger' : 'primary'}
           loading={confirmModal.loading}
+        />
+
+        <TestPreviewModal
+          isOpen={previewModal.isOpen}
+          onClose={() => setPreviewModal({ isOpen: false, test: null })}
+          test={previewModal.test}
         />
       </div>
     </div>
