@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { FreeTestCard } from '../components/freetests/FreeTestCard';
 import { FreeTestModal } from '../components/modals/FreeTestModal';
 import { ConfirmModal } from '../components/modals/ConfirmModal';
-import { TestPreviewModal } from '../components/modals/TestPreviewModal';
 import { PDFListSkeleton } from '../components/common/PDFSkeletonLoader';
 import freeTestService, { FreeTest, FreeTestFilters, FreeTestStats } from '../services/freeTestService';
 import subjectService, { Subject } from '../services/subjectService';
@@ -552,11 +551,7 @@ export const FreeTestsManagement: React.FC = () => {
           loading={confirmModal.loading}
         />
 
-        <TestPreviewModal
-          isOpen={previewModal.isOpen}
-          onClose={() => setPreviewModal({ isOpen: false, test: null })}
-          test={previewModal.test}
-        />
+        {/* TestPreviewModal temporarily removed - will be replaced with new test management system */}
       </div>
     </div>
   );

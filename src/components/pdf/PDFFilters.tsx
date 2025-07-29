@@ -129,11 +129,13 @@ export const PDFFilters: React.FC<PDFFiltersProps> = ({
                 disabled={loading}
               >
                 <option value="">All Categories</option>
-                {categories.map((category) => (
+                {Array.isArray(categories) && categories.length > 0 ? categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name} {category.pdf_count !== undefined && `(${category.pdf_count})`}
                   </option>
-                ))}
+                )) : (
+                  <option value="" disabled>Loading categories...</option>
+                )}
               </select>
             </div>
 
@@ -167,11 +169,13 @@ export const PDFFilters: React.FC<PDFFiltersProps> = ({
                 disabled={loading}
               >
                 <option value="">All Exam Types</option>
-                {examTypes.map((examType) => (
+                {Array.isArray(examTypes) && examTypes.length > 0 ? examTypes.map((examType) => (
                   <option key={examType.id} value={examType.id}>
                     {examType.name}
                   </option>
-                ))}
+                )) : (
+                  <option value="" disabled>Loading exam types...</option>
+                )}
               </select>
             </div>
 
@@ -187,11 +191,13 @@ export const PDFFilters: React.FC<PDFFiltersProps> = ({
                 disabled={loading}
               >
                 <option value="">All Test Series</option>
-                {testSeries.map((series) => (
+                {Array.isArray(testSeries) && testSeries.length > 0 ? testSeries.map((series) => (
                   <option key={series.id} value={series.id}>
                     {series.title}
                   </option>
-                ))}
+                )) : (
+                  <option value="" disabled>Loading test series...</option>
+                )}
               </select>
             </div>
           </div>

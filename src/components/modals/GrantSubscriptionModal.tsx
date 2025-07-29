@@ -10,9 +10,9 @@ interface User {
 }
 
 interface TestSeries {
-  id: string;
+  id: number;
   title: string;
-  price: number;
+  price: string;
 }
 
 interface GrantSubscriptionModalProps {
@@ -63,10 +63,21 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
       const response = await api.get('/admin/test-series', {
         params: { limit: 100 }
       });
-      setTestSeries(response.data.data);
+      
+      // Safely extract the testSeries array with fallback
+      const testSeriesData = response.data?.data?.testSeries || [];
+      
+      // Ensure it's an array before setting state
+      if (Array.isArray(testSeriesData)) {
+        setTestSeries(testSeriesData);
+      } else {
+        console.warn('Expected testSeries to be an array, got:', typeof testSeriesData);
+        setTestSeries([]);
+      }
     } catch (error) {
       console.error('Error fetching test series:', error);
       toast.error('Failed to fetch test series');
+      setTestSeries([]); // Ensure state remains as empty array on error
     }
   };
 
@@ -192,7 +203,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                 required
               >
                 <option value="">Select test series</option>
-                {testSeries.map(ts => (
+                {Array.isArray(testSeries) && testSeries.map(ts => (
                   <option key={ts.id} value={ts.id}>
                     {ts.title} (₹{ts.price})
                   </option>

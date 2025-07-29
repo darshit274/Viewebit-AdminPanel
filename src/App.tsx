@@ -7,7 +7,7 @@ import { LoginForm } from './components/auth/LoginForm';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { StudentsPage } from './pages/users/StudentsPage';
-import { TestSeriesPage } from './pages/tests/TestSeriesPage';
+import { TestManagementPage } from './pages/test-management/TestManagementPage';
 import { QuestionsPage } from './pages/questions/QuestionsPage';
 import { PDFManagement } from './pages/PDFManagement';
 import { ExamManagement } from './pages/ExamManagement';
@@ -60,9 +60,9 @@ const AuthWrapper: React.FC = () => {
             <StudentsPage />
           </ProtectedRoute>
         } />
-        <Route path="test-series" element={
+        <Route path="test-management" element={
           <ProtectedRoute>
-            <TestSeriesPage />
+            <TestManagementPage />
           </ProtectedRoute>
         } />
         <Route path="questions" element={

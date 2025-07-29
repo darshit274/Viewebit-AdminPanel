@@ -21,7 +21,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Students', href: '/students', icon: Users },
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
-  { name: 'Test Series', href: '/test-series', icon: BookOpen },
+  { name: 'Test Management', href: '/test-management', icon: BookOpen },
   { name: 'Questions', href: '/questions', icon: GraduationCap },
   { name: 'PDFs', href: '/pdfs', icon: FileText },
   { name: 'Categories', href: '/categories', icon: FolderOpen },

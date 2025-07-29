@@ -74,6 +74,22 @@ interface AnalyticsData {
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
+// Safe number formatting helper
+const formatNumber = (value: number | undefined | null): string => {
+  if (value === undefined || value === null || isNaN(value)) {
+    return '0';
+  }
+  return value.toLocaleString();
+};
+
+// Safe percentage formatting helper
+const formatPercentage = (value: number | undefined | null): string => {
+  if (value === undefined || value === null || isNaN(value)) {
+    return '0.0';
+  }
+  return value.toFixed(1);
+};
+
 export const AnalyticsPage: React.FC = () => {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,7 +105,23 @@ export const AnalyticsPage: React.FC = () => {
     try {
       const response = await analyticsService.getAnalytics({ range: dateRange });
       if (response.success && response.data) {
-        setData(response.data);
+        // Validate and merge with defaults to ensure all properties exist
+        const validatedData: AnalyticsData = {
+          overview: {
+            total_users: response.data.overview?.total_users ?? 0,
+            active_users: response.data.overview?.active_users ?? 0,
+            total_tests: response.data.overview?.total_tests ?? 0,
+            total_attempts: response.data.overview?.total_attempts ?? 0,
+            average_score: response.data.overview?.average_score ?? 0,
+            completion_rate: response.data.overview?.completion_rate ?? 0
+          },
+          user_growth: response.data.user_growth || [],
+          test_performance: response.data.test_performance || [],
+          score_distribution: response.data.score_distribution || [],
+          daily_activity: response.data.daily_activity || [],
+          popular_categories: response.data.popular_categories || []
+        };
+        setData(validatedData);
       } else {
         // Fallback to mock data if API response is incomplete
         console.warn('Analytics API returned no data, using mock data');
@@ -185,7 +217,8 @@ export const AnalyticsPage: React.FC = () => {
     ]
   };
 
-  const analytics = data || mockData;
+  // Ensure analytics always has valid data with all required properties
+  const analytics: AnalyticsData = data || mockData;
 
   if (loading) {
     return (
@@ -242,7 +275,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Users</p>
               <p className="text-2xl font-bold text-gray-900">
-                {analytics.overview.total_users.toLocaleString()}
+                {formatNumber(analytics.overview.total_users)}
               </p>
             </div>
           </div>
@@ -256,7 +289,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Active Users</p>
               <p className="text-2xl font-bold text-gray-900">
-                {analytics.overview.active_users.toLocaleString()}
+                {formatNumber(analytics.overview.active_users)}
               </p>
             </div>
           </div>
@@ -270,7 +303,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Total Tests</p>
               <p className="text-2xl font-bold text-gray-900">
-                {analytics.overview.total_tests}
+                {formatNumber(analytics.overview.total_tests)}
               </p>
             </div>
           </div>
@@ -284,7 +317,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Test Attempts</p>
               <p className="text-2xl font-bold text-gray-900">
-                {analytics.overview.total_attempts.toLocaleString()}
+                {formatNumber(analytics.overview.total_attempts)}
               </p>
             </div>
           </div>
@@ -298,7 +331,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Avg Score</p>
               <p className="text-2xl font-bold text-gray-900">
-                {analytics.overview.average_score.toFixed(1)}%
+                {analytics.overview.average_score?.toFixed(1) ?? '0.0'}%
               </p>
             </div>
           </div>
@@ -312,7 +345,7 @@ export const AnalyticsPage: React.FC = () => {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Completion Rate</p>
               <p className="text-2xl font-bold text-gray-900">
-                {analytics.overview.completion_rate.toFixed(1)}%
+                {analytics.overview.completion_rate?.toFixed(1) ?? '0.0'}%
               </p>
             </div>
           </div>
@@ -423,9 +456,9 @@ export const AnalyticsPage: React.FC = () => {
                 nameKey="range"
                 label={({ range, count }) => `${range}: ${count}`}
               >
-                {analytics.score_distribution.map((_, index) => (
+                {Array.isArray(analytics.score_distribution) ? analytics.score_distribution.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
+                )) : null}
               </Pie>
               <Tooltip />
             </RechartsPieChart>
@@ -476,22 +509,28 @@ export const AnalyticsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {analytics.test_performance.map((test, index) => (
+              {Array.isArray(analytics.test_performance) && analytics.test_performance.length > 0 ? analytics.test_performance.map((test, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{test.test_name}</div>
+                    <div className="text-sm font-medium text-gray-900">{test.test_name || 'N/A'}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{test.attempts.toLocaleString()}</div>
+                    <div className="text-sm text-gray-900">{formatNumber(test.attempts)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{test.average_score.toFixed(1)}%</div>
+                    <div className="text-sm text-gray-900">{formatPercentage(test.average_score)}%</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{test.completion_rate.toFixed(1)}%</div>
+                    <div className="text-sm text-gray-900">{formatPercentage(test.completion_rate)}%</div>
                   </td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                    No test performance data available
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

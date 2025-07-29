@@ -61,7 +61,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : null
       };
 
-      await api.put(`/admin/pdf/${pdf.id}`, updateData);
+      await api.put(`/admin/pdfs/${pdf.id}`, updateData);
       toast.success('PDF updated successfully');
       onUpdate();
       onClose();
@@ -78,7 +78,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !pdf) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -105,7 +105,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
               value={formData.title}
               onChange={handleChange}
               required
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter PDF title"
             />
           </div>
@@ -119,7 +119,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
               value={formData.description}
               onChange={handleChange}
               rows={4}
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter PDF description"
             />
           </div>
@@ -133,14 +133,16 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
                 name="category_id"
                 value={formData.category_id}
                 onChange={handleChange}
-                className="input-field"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select category</option>
-                {categories.map((category) => (
+                {Array.isArray(categories) && categories.length > 0 ? categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
-                ))}
+                )) : (
+                  <option value="" disabled>Loading categories...</option>
+                )}
               </select>
             </div>
 
@@ -152,7 +154,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
                 name="access_level"
                 value={formData.access_level}
                 onChange={handleChange}
-                className="input-field"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="free">Free</option>
                 <option value="premium">Premium</option>
@@ -170,14 +172,16 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
                 name="test_series_id"
                 value={formData.test_series_id}
                 onChange={handleChange}
-                className="input-field"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select test series</option>
-                {testSeries.map((series) => (
+                {Array.isArray(testSeries) && testSeries.length > 0 ? testSeries.map((series) => (
                   <option key={series.id} value={series.id}>
                     {series.title}
                   </option>
-                ))}
+                )) : (
+                  <option value="" disabled>Loading test series...</option>
+                )}
               </select>
             </div>
 
@@ -189,14 +193,16 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
                 name="exam_type_id"
                 value={formData.exam_type_id}
                 onChange={handleChange}
-                className="input-field"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select exam type</option>
-                {examTypes.map((examType) => (
+                {Array.isArray(examTypes) && examTypes.length > 0 ? examTypes.map((examType) => (
                   <option key={examType.id} value={examType.id}>
                     {examType.name}
                   </option>
-                ))}
+                )) : (
+                  <option value="" disabled>Loading exam types...</option>
+                )}
               </select>
             </div>
           </div>
@@ -210,7 +216,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
               name="tags"
               value={formData.tags}
               onChange={handleChange}
-              className="input-field"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter tags separated by commas"
             />
             <p className="text-sm text-gray-500 mt-1">
@@ -223,14 +229,14 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="btn-secondary"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary inline-flex items-center"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
             >
               {loading ? (
                 <>
