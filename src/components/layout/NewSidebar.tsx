@@ -54,30 +54,16 @@ export const NewSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       description: 'Manage subjects with hierarchy'
     },
     
-    // Test Series Management
+    // Test Management
     {
-      title: 'Exam-wise Test Series',
+      title: 'Test Management',
       icon: GraduationCap,
-      path: '/exam-test-series',
+      path: '/test-management',
       category: 'tests',
-      description: 'Mock tests for specific exams'
-    },
-    {
-      title: 'Topic-wise Test Series',
-      icon: Library,
-      path: '/topic-test-series',
-      category: 'tests',
-      description: 'Subject/topic based test series'
+      description: 'Manage test series → categories → sub-categories → tests → questions'
     },
     
     // Free Content Management
-    {
-      title: 'Free Tests',
-      icon: HelpCircle,
-      path: '/free-tests',
-      category: 'free',
-      description: 'Free practice tests and quizzes'
-    },
     {
       title: 'PYQs',
       icon: FileText,

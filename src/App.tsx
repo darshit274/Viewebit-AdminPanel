@@ -7,18 +7,20 @@ import { LoginForm } from './components/auth/LoginForm';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { StudentsPage } from './pages/users/StudentsPage';
-import { TestManagementPage } from './pages/test-management/TestManagementPage';
 import { QuestionsPage } from './pages/questions/QuestionsPage';
 import { PDFManagement } from './pages/PDFManagement';
 import { ExamManagement } from './pages/ExamManagement';
-import { TopicTestSeriesManagement } from './pages/TopicTestSeriesManagement';
-import { FreeTestsManagement } from './pages/FreeTestsManagement';
 import PYQManagement from './pages/PYQManagement';
 import SubscriptionsPage from './pages/subscriptions/SubscriptionsPage';
 import { CategoriesPage } from './pages/categories/CategoriesPage';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
 import { PerformanceReportsPage } from './pages/performance/PerformanceReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
+import TestManagementPage from './pages/TestManagementPage';
+import TestSeriesDetailPage from './pages/TestSeriesDetailPage';
+import CategoryDetailPage from './pages/CategoryDetailPage';
+import SubCategoryDetailPage from './pages/SubCategoryDetailPage';
+import TestDetailPage from './pages/TestDetailPage';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -65,6 +67,26 @@ const AuthWrapper: React.FC = () => {
             <TestManagementPage />
           </ProtectedRoute>
         } />
+        <Route path="test-series/:testSeriesUuid" element={
+          <ProtectedRoute>
+            <TestSeriesDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="categories/:categoryUuid" element={
+          <ProtectedRoute>
+            <CategoryDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="sub-categories/:subCategoryUuid" element={
+          <ProtectedRoute>
+            <SubCategoryDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="tests/:testUuid" element={
+          <ProtectedRoute>
+            <TestDetailPage />
+          </ProtectedRoute>
+        } />
         <Route path="questions" element={
           <ProtectedRoute>
             <QuestionsPage />
@@ -83,16 +105,6 @@ const AuthWrapper: React.FC = () => {
         <Route path="exams" element={
           <ProtectedRoute>
             <ExamManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="subjects" element={
-          <ProtectedRoute>
-            <TopicTestSeriesManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="free-tests" element={
-          <ProtectedRoute>
-            <FreeTestsManagement />
           </ProtectedRoute>
         } />
         <Route path="pyqs" element={
