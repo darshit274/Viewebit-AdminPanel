@@ -5,6 +5,8 @@ export interface ExamType {
   name: string;
   code: string;
   description?: string;
+  name_gujarati?: string;
+  description_gujarati?: string;
   is_active: boolean;
   testSeriesCount?: number;
   pyqCount?: number;

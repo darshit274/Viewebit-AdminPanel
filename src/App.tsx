@@ -16,11 +16,11 @@ import { CategoriesPage } from './pages/categories/CategoriesPage';
 import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
 import { PerformanceReportsPage } from './pages/performance/PerformanceReportsPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
-import TestManagementPage from './pages/TestManagementPage';
-import TestSeriesDetailPage from './pages/TestSeriesDetailPage';
-import CategoryDetailPage from './pages/CategoryDetailPage';
-import SubCategoryDetailPage from './pages/SubCategoryDetailPage';
-import TestDetailPage from './pages/TestDetailPage';
+import TestManagementPageNew from './pages/TestManagementPageNew';
+import TestSeriesDetailPageNew from './pages/TestSeriesDetailPageNew';
+import CategoryDetailPageNew from './pages/CategoryDetailPageNew';
+import SubCategoryDetailPageNew from './pages/SubCategoryDetailPageNew';
+import TestDetailPageNew from './pages/TestDetailPageNew';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -64,27 +64,27 @@ const AuthWrapper: React.FC = () => {
         } />
         <Route path="test-management" element={
           <ProtectedRoute>
-            <TestManagementPage />
+            <TestManagementPageNew />
           </ProtectedRoute>
         } />
         <Route path="test-series/:testSeriesUuid" element={
           <ProtectedRoute>
-            <TestSeriesDetailPage />
+            <TestSeriesDetailPageNew />
           </ProtectedRoute>
         } />
         <Route path="categories/:categoryUuid" element={
           <ProtectedRoute>
-            <CategoryDetailPage />
+            <CategoryDetailPageNew />
           </ProtectedRoute>
         } />
         <Route path="sub-categories/:subCategoryUuid" element={
           <ProtectedRoute>
-            <SubCategoryDetailPage />
+            <SubCategoryDetailPageNew />
           </ProtectedRoute>
         } />
         <Route path="tests/:testUuid" element={
           <ProtectedRoute>
-            <TestDetailPage />
+            <TestDetailPageNew />
           </ProtectedRoute>
         } />
         <Route path="questions" element={

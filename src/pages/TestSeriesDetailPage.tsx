@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { PlusIcon, EyeIcon, PencilIcon, TrashIcon, ArrowLeftIcon, MagnifyingGlassIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, EyeIcon, PencilIcon, TrashIcon, ArrowLeftIcon, MagnifyingGlassIcon, ChartBarIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import { ConfirmModal } from '../components/modals/ConfirmModal';
 
 interface TestSeries {
   id: number;
@@ -19,6 +20,8 @@ interface Category {
   uuid: string;
   name: string;
   description: string;
+  name_gujarati?: string;
+  description_gujarati?: string;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -111,6 +114,28 @@ const categoriesApi = {
     });
     const data = await response.json();
     if (!data.success) throw new Error(data.message);
+  },
+
+  bulkOperations: async (data: { action: string; uuids: string[] }) => {
+    const token = localStorage.getItem('admin_token');
+    
+    // Convert uuids to the correct field name expected by backend
+    const payload = {
+      action: data.action,
+      categoryIds: data.uuids  // Backend expects categoryIds, not uuids
+    };
+    
+    const response = await fetch(`${apiBaseUrl}/test-management/categories/bulk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
+    return result;
   }
 };
 
@@ -122,7 +147,24 @@ const TestSeriesDetailPage: React.FC = () => {
   // State management
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    description: '', 
+    name_gujarati: '', 
+    description_gujarati: '',
+    is_active: true
+  });
+  
+  // Selection state for bulk operations
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  
+  // Confirm modal state
+  const [confirmModal, setConfirmModal] = useState({ 
+    isOpen: false, 
+    category: null as Category | null,
+    action: 'delete' as 'delete' | 'bulk_activate' | 'bulk_deactivate' | 'bulk_delete',
+    loading: false 
+  });
 
   // Filter and pagination state
   const [filters, setFilters] = useState({
@@ -143,13 +185,13 @@ const TestSeriesDetailPage: React.FC = () => {
 
   // Mutations
   const createMutation = useMutation({
-    mutationFn: (category: { name: string; description: string }) =>
+    mutationFn: (category: { name: string; description: string; name_gujarati?: string; description_gujarati?: string; is_active?: boolean }) =>
       categoriesApi.createCategory(testSeriesUuid!, category),
     onSuccess: () => {
       toast.success('Category created successfully');
       queryClient.invalidateQueries({ queryKey: ['testSeriesCategories', testSeriesUuid] });
       setShowModal(false);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: '', description: '', name_gujarati: '', description_gujarati: '', is_active: true });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to create category');
@@ -157,14 +199,14 @@ const TestSeriesDetailPage: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ uuid, data }: { uuid: string; data: { name: string; description: string } }) =>
+    mutationFn: ({ uuid, data }: { uuid: string; data: { name: string; description: string; name_gujarati?: string; description_gujarati?: string; is_active?: boolean } }) =>
       categoriesApi.updateCategory(uuid, data),
     onSuccess: () => {
       toast.success('Category updated successfully');
       queryClient.invalidateQueries({ queryKey: ['testSeriesCategories', testSeriesUuid] });
       setShowModal(false);
       setEditingCategory(null);
-      setFormData({ name: '', description: '' });
+      setFormData({ name: '', description: '', name_gujarati: '', description_gujarati: '', is_active: true });
     },
     onError: (error: any) => {
       toast.error(error.message || 'Failed to update category');
@@ -182,6 +224,32 @@ const TestSeriesDetailPage: React.FC = () => {
     }
   });
 
+  const bulkMutation = useMutation({
+    mutationFn: categoriesApi.bulkOperations,
+    onSuccess: (data) => {
+      const action = data.action;
+      const count = data.processedCount || selectedCategories.length;
+      
+      switch (action) {
+        case 'activate':
+          toast.success(`${count} categories activated successfully`);
+          break;
+        case 'deactivate':
+          toast.success(`${count} categories deactivated successfully`);
+          break;
+        case 'delete':
+          toast.success(`${count} categories deleted successfully`);
+          break;
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['testSeriesCategories', testSeriesUuid] });
+      setSelectedCategories([]);
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Bulk operation failed');
+    }
+  });
+
   // Event handlers
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -194,14 +262,109 @@ const TestSeriesDetailPage: React.FC = () => {
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
-    setFormData({ name: category.name, description: category.description });
+    setFormData({ 
+      name: category.name, 
+      description: category.description,
+      name_gujarati: category.name_gujarati || '',
+      description_gujarati: category.description_gujarati || '',
+      is_active: category.is_active
+    });
     setShowModal(true);
   };
 
-  const handleDelete = (uuid: string) => {
-    if (window.confirm('Are you sure you want to delete this category?')) {
-      deleteMutation.mutate(uuid);
+  const handleDelete = (category: Category) => {
+    setConfirmModal({ isOpen: true, category, action: 'delete', loading: false });
+  };
+
+  const handleConfirmDelete = async () => {
+    setConfirmModal(prev => ({ ...prev, loading: true }));
+    
+    if (confirmModal.action === 'delete' && confirmModal.category) {
+      // Individual delete
+      deleteMutation.mutate(confirmModal.category.uuid, {
+        onSuccess: () => {
+          setConfirmModal({ isOpen: false, category: null, action: 'delete', loading: false });
+        },
+        onError: () => {
+          setConfirmModal(prev => ({ ...prev, loading: false }));
+        }
+      });
+    } else if (confirmModal.action.startsWith('bulk_')) {
+      // Bulk operations
+      const action = confirmModal.action.replace('bulk_', '');
+      bulkMutation.mutate(
+        { action, uuids: selectedCategories },
+        {
+          onSuccess: () => {
+            setConfirmModal({ isOpen: false, category: null, action: 'delete', loading: false });
+          },
+          onError: () => {
+            setConfirmModal(prev => ({ ...prev, loading: false }));
+          }
+        }
+      );
     }
+  };
+
+  // Bulk operation handlers
+  const handleSelectAll = () => {
+    if (selectedCategories.length === categories.length) {
+      setSelectedCategories([]);
+    } else {
+      setSelectedCategories(categories.map(cat => cat.uuid));
+    }
+  };
+
+  const handleSelectCategory = (uuid: string) => {
+    setSelectedCategories(prev => {
+      if (prev.includes(uuid)) {
+        return prev.filter(id => id !== uuid);
+      } else {
+        return [...prev, uuid];
+      }
+    });
+  };
+
+  const handleBulkAction = (action: 'activate' | 'deactivate' | 'delete') => {
+    if (selectedCategories.length === 0) {
+      toast.error('Please select at least one category');
+      return;
+    }
+    
+    const modalAction = action === 'activate' ? 'bulk_activate' : 
+                      action === 'deactivate' ? 'bulk_deactivate' : 'bulk_delete';
+    
+    setConfirmModal({ 
+      isOpen: true, 
+      category: null, 
+      action: modalAction,
+      loading: false 
+    });
+  };
+
+  const getConfirmModalContent = () => {
+    if (confirmModal.action === 'delete' && confirmModal.category) {
+      return {
+        title: 'Delete Category',
+        message: `Are you sure you want to delete "${confirmModal.category.name}"? This will also delete all associated sub-categories, tests, and questions. This action cannot be undone.`
+      };
+    } else if (confirmModal.action === 'bulk_delete') {
+      return {
+        title: 'Delete Categories',
+        message: `Are you sure you want to delete ${selectedCategories.length} categories? This will also delete all associated sub-categories, tests, and questions. This action cannot be undone.`
+      };
+    } else if (confirmModal.action === 'bulk_activate') {
+      return {
+        title: 'Activate Categories',
+        message: `Are you sure you want to activate ${selectedCategories.length} categories?`
+      };
+    } else if (confirmModal.action === 'bulk_deactivate') {
+      return {
+        title: 'Deactivate Categories',
+        message: `Are you sure you want to deactivate ${selectedCategories.length} categories?`
+      };
+    }
+    return { title: '', message: '' };
   };
 
   const handleViewSubCategories = (categoryUuid: string) => {
@@ -276,7 +439,7 @@ const TestSeriesDetailPage: React.FC = () => {
         <button
           onClick={() => {
             setEditingCategory(null);
-            setFormData({ name: '', description: '' });
+            setFormData({ name: '', description: '', name_gujarati: '', description_gujarati: '', is_active: true });
             setShowModal(true);
           }}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
@@ -398,6 +561,48 @@ const TestSeriesDetailPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Bulk Actions Bar */}
+        {selectedCategories.length > 0 && (
+          <div className="px-6 py-4 bg-blue-50 border-b border-blue-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-medium text-blue-700">
+                  {selectedCategories.length} categories selected
+                </span>
+                <button
+                  onClick={() => setSelectedCategories([])}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Clear selection
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleBulkAction('activate')}
+                  className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 flex items-center gap-1"
+                >
+                  <CheckIcon className="h-4 w-4" />
+                  Activate
+                </button>
+                <button
+                  onClick={() => handleBulkAction('deactivate')}
+                  className="px-3 py-1.5 bg-yellow-500 text-white text-sm rounded-md hover:bg-yellow-600 flex items-center gap-1"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                  Deactivate
+                </button>
+                <button
+                  onClick={() => handleBulkAction('delete')}
+                  className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 flex items-center gap-1"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Categories List */}
         <div className="p-6">
           {categories.length === 0 ? (
@@ -412,10 +617,32 @@ const TestSeriesDetailPage: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
+              {/* Select All Header */}
+              {categories.length > 0 && (
+                <div className="flex items-center gap-3 pb-2 border-b border-gray-200">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.length === categories.length && categories.length > 0}
+                    onChange={handleSelectAll}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Select all ({categories.length})
+                  </span>
+                </div>
+              )}
+              
               {categories.map((category) => (
                 <div key={category.uuid} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start">
-                    <div className="flex-1">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(category.uuid)}
+                        onChange={() => handleSelectCategory(category.uuid)}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      />
+                      <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -431,6 +658,7 @@ const TestSeriesDetailPage: React.FC = () => {
                         <span>Sub-categories: {category.subCategories_count}</span>
                         <span>Created: {formatDate(category.created_at)}</span>
                         <span>Updated: {formatDate(category.updated_at)}</span>
+                      </div>
                       </div>
                     </div>
                     <div className="flex gap-2 ml-4">
@@ -449,7 +677,7 @@ const TestSeriesDetailPage: React.FC = () => {
                         <PencilIcon className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(category.uuid)}
+                        onClick={() => handleDelete(category)}
                         className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg"
                         title="Delete"
                       >
@@ -538,13 +766,60 @@ const TestSeriesDetailPage: React.FC = () => {
                 />
               </div>
 
+              {/* Gujarati Fields */}
+              <div className="border-t pt-4">
+                <h3 className="text-md font-medium text-gray-800 mb-3">Gujarati Translation</h3>
+                
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name (Gujarati)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name_gujarati}
+                    onChange={(e) => setFormData({ ...formData, name_gujarati: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="ગુજરાતીમાં નામ"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description (Gujarati)
+                  </label>
+                  <textarea
+                    value={formData.description_gujarati}
+                    onChange={(e) => setFormData({ ...formData, description_gujarati: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="ગુજરાતીમાં વર્ણન"
+                  />
+                </div>
+              </div>
+
+              {/* Status Toggle */}
+              <div className="border-t pt-4">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
+                    Active (category is available for use)
+                  </label>
+                </div>
+              </div>
+
               <div className="flex justify-end gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false);
                     setEditingCategory(null);
-                    setFormData({ name: '', description: '' });
+                    setFormData({ name: '', description: '', name_gujarati: '', description_gujarati: '', is_active: true });
                   }}
                   className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
                 >
@@ -562,6 +837,18 @@ const TestSeriesDetailPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ isOpen: false, category: null, action: 'delete', loading: false })}
+        onConfirm={handleConfirmDelete}
+        title={getConfirmModalContent().title}
+        message={getConfirmModalContent().message}
+        confirmText={confirmModal.action.includes('delete') ? 'Delete' : confirmModal.action.includes('activate') ? 'Activate' : 'Deactivate'}
+        type={confirmModal.action.includes('delete') ? 'danger' : 'warning'}
+        loading={confirmModal.loading}
+      />
     </div>
   );
 };
