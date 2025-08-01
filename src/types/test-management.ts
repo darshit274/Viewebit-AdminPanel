@@ -14,8 +14,7 @@ import type {
   CategoryBulkOperationParams,
   SubCategoryBulkOperationParams,
   TestBulkOperationParams,
-  QuestionBulkOperationParams,
-  BulkOperationHelpers
+  QuestionBulkOperationParams
 } from '../lib/api/base-service';
 
 // Re-export common types from base service
@@ -31,7 +30,7 @@ export type {
 };
 
 // Re-export utility helpers
-export { BulkOperationHelpers };
+// BulkOperationHelpers is imported directly from base-service where needed
 
 // Common entity base interface
 export interface BaseEntity {

@@ -6,7 +6,8 @@ import { toast } from 'react-hot-toast';
 
 // Import services and types  
 import { testManagementService } from '../services/test-management.service';
-import type { Test, TestFormData, SubCategory, BulkOperationHelpers } from '../types/test-management';
+import { BulkOperationHelpers } from '../lib/api/base-service';
+import type { Test, TestFormData, SubCategory } from '../types/test-management';
 
 // Import reusable components
 import { DataTable, Column } from '../components/common/DataTable/DataTable';
@@ -113,7 +114,7 @@ const SubCategoryDetailPageNew: React.FC = () => {
     clearSelection,
     selectedCount,
   } = useBulkSelection({
-    items: data?.data.tests || [],
+    items: data?.tests || [],
     getItemId: (item) => item.uuid,
   });
 
@@ -479,8 +480,8 @@ const SubCategoryDetailPageNew: React.FC = () => {
     );
   }
 
-  const subCategory = data?.data.subCategory;
-  const tests = data?.data.tests || [];
+  const subCategory = data?.subCategory;
+  const tests = data?.tests || [];
   const stats = data?.stats;
 
   return (

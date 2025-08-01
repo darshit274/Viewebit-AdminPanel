@@ -14,7 +14,8 @@
 import { TEST_MANAGEMENT_ENDPOINTS } from '../lib/api/endpoints';
 import { 
   createApiService, 
-  createNestedApiService,
+  NestedApiService,
+  PaginationParams,
   TestSeriesBulkOperationParams,
   CategoryBulkOperationParams,
   SubCategoryBulkOperationParams,
@@ -45,44 +46,124 @@ const testSeriesService = createApiService<TestSeries, TestSeriesFormData, TestS
 });
 
 /**
- * Categories Service - Nested under test series
+ * Categories Service - Nested under test series (with custom list method)
  */
-const categoriesService = createNestedApiService<Category, CategoryFormData, CategoryBulkOperationParams>({
-  list: TEST_MANAGEMENT_ENDPOINTS.CATEGORIES.BY_TEST_SERIES,
-  byId: TEST_MANAGEMENT_ENDPOINTS.CATEGORIES.BY_ID,
-  create: TEST_MANAGEMENT_ENDPOINTS.CATEGORIES.BY_TEST_SERIES,
-  bulk: TEST_MANAGEMENT_ENDPOINTS.CATEGORIES.BULK,
-});
+class CategoriesService extends NestedApiService<Category, CategoryFormData, CategoryBulkOperationParams> {
+  protected endpoints = {
+    list: TEST_MANAGEMENT_ENDPOINTS.CATEGORIES.BY_TEST_SERIES,
+    byId: TEST_MANAGEMENT_ENDPOINTS.CATEGORIES.BY_ID,
+    create: TEST_MANAGEMENT_ENDPOINTS.CATEGORIES.BY_TEST_SERIES,
+    bulk: TEST_MANAGEMENT_ENDPOINTS.CATEGORIES.BULK,
+  };
+
+  // Override list method to handle the special response structure
+  async list(parentUuid: string, params: PaginationParams = {}) {
+    const { buildEndpoint } = await import('../lib/api/endpoints');
+    const { apiClient } = await import('../lib/api/client');
+    
+    const endpoint = buildEndpoint(this.endpoints.list(parentUuid), params);
+    const response = await apiClient.get(endpoint);
+    
+    // Return the full structure (not just response.data.data)
+    return {
+      ...response.data.data,
+      pagination: response.data.pagination,
+      stats: response.data.stats,
+    };
+  }
+}
+
+const categoriesService = new CategoriesService();
 
 /**
- * Sub-categories Service - Nested under categories
+ * Sub-categories Service - Nested under categories (with custom list method)
  */
-const subCategoriesService = createNestedApiService<SubCategory, SubCategoryFormData, SubCategoryBulkOperationParams>({
-  list: TEST_MANAGEMENT_ENDPOINTS.SUB_CATEGORIES.BY_CATEGORY,
-  byId: TEST_MANAGEMENT_ENDPOINTS.SUB_CATEGORIES.BY_ID,
-  create: TEST_MANAGEMENT_ENDPOINTS.SUB_CATEGORIES.BY_CATEGORY,
-  bulk: TEST_MANAGEMENT_ENDPOINTS.SUB_CATEGORIES.BULK,
-});
+class SubCategoriesService extends NestedApiService<SubCategory, SubCategoryFormData, SubCategoryBulkOperationParams> {
+  protected endpoints = {
+    list: TEST_MANAGEMENT_ENDPOINTS.SUB_CATEGORIES.BY_CATEGORY,
+    byId: TEST_MANAGEMENT_ENDPOINTS.SUB_CATEGORIES.BY_ID,
+    create: TEST_MANAGEMENT_ENDPOINTS.SUB_CATEGORIES.BY_CATEGORY,
+    bulk: TEST_MANAGEMENT_ENDPOINTS.SUB_CATEGORIES.BULK,
+  };
+
+  // Override list method to handle the special response structure
+  async list(parentUuid: string, params: PaginationParams = {}) {
+    const { buildEndpoint } = await import('../lib/api/endpoints');
+    const { apiClient } = await import('../lib/api/client');
+    
+    const endpoint = buildEndpoint(this.endpoints.list(parentUuid), params);
+    const response = await apiClient.get(endpoint);
+    
+    // Return the full structure (not just response.data.data)
+    return {
+      ...response.data.data,
+      pagination: response.data.pagination,
+      stats: response.data.stats,
+    };
+  }
+}
+
+const subCategoriesService = new SubCategoriesService();
 
 /**
- * Tests Service - Nested under sub-categories
+ * Tests Service - Nested under sub-categories (with custom list method)
  */
-const testsService = createNestedApiService<Test, TestFormData, TestBulkOperationParams>({
-  list: TEST_MANAGEMENT_ENDPOINTS.TESTS.BY_SUB_CATEGORY,
-  byId: TEST_MANAGEMENT_ENDPOINTS.TESTS.BY_ID,
-  create: TEST_MANAGEMENT_ENDPOINTS.TESTS.BY_SUB_CATEGORY,
-  bulk: TEST_MANAGEMENT_ENDPOINTS.TESTS.BULK,
-});
+class TestsService extends NestedApiService<Test, TestFormData, TestBulkOperationParams> {
+  protected endpoints = {
+    list: TEST_MANAGEMENT_ENDPOINTS.TESTS.BY_SUB_CATEGORY,
+    byId: TEST_MANAGEMENT_ENDPOINTS.TESTS.BY_ID,
+    create: TEST_MANAGEMENT_ENDPOINTS.TESTS.BY_SUB_CATEGORY,
+    bulk: TEST_MANAGEMENT_ENDPOINTS.TESTS.BULK,
+  };
+
+  // Override list method to handle the special response structure
+  async list(parentUuid: string, params: PaginationParams = {}) {
+    const { buildEndpoint } = await import('../lib/api/endpoints');
+    const { apiClient } = await import('../lib/api/client');
+    
+    const endpoint = buildEndpoint(this.endpoints.list(parentUuid), params);
+    const response = await apiClient.get(endpoint);
+    
+    // Return the full structure (not just response.data.data)
+    return {
+      ...response.data.data,
+      pagination: response.data.pagination,
+      stats: response.data.stats,
+    };
+  }
+}
+
+const testsService = new TestsService();
 
 /**
- * Questions Service - Nested under tests
+ * Questions Service - Nested under tests (with custom list method)
  */
-const questionsService = createNestedApiService<Question, QuestionFormData, QuestionBulkOperationParams>({
-  list: TEST_MANAGEMENT_ENDPOINTS.QUESTIONS.BY_TEST,
-  byId: TEST_MANAGEMENT_ENDPOINTS.QUESTIONS.BY_ID,
-  create: TEST_MANAGEMENT_ENDPOINTS.QUESTIONS.BY_TEST,
-  bulk: TEST_MANAGEMENT_ENDPOINTS.QUESTIONS.BULK,
-});
+class QuestionsService extends NestedApiService<Question, QuestionFormData, QuestionBulkOperationParams> {
+  protected endpoints = {
+    list: TEST_MANAGEMENT_ENDPOINTS.QUESTIONS.BY_TEST,
+    byId: TEST_MANAGEMENT_ENDPOINTS.QUESTIONS.BY_ID,
+    create: TEST_MANAGEMENT_ENDPOINTS.QUESTIONS.BY_TEST,
+    bulk: TEST_MANAGEMENT_ENDPOINTS.QUESTIONS.BULK,
+  };
+
+  // Override list method to handle the special response structure
+  async list(parentUuid: string, params: PaginationParams = {}) {
+    const { buildEndpoint } = await import('../lib/api/endpoints');
+    const { apiClient } = await import('../lib/api/client');
+    
+    const endpoint = buildEndpoint(this.endpoints.list(parentUuid), params);
+    const response = await apiClient.get(endpoint);
+    
+    // Return the full structure (not just response.data.data)
+    return {
+      ...response.data.data,
+      pagination: response.data.pagination,
+      stats: response.data.stats,
+    };
+  }
+}
+
+const questionsService = new QuestionsService();
 
 /**
  * Unified Test Management Service Export

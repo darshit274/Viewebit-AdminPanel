@@ -6,7 +6,8 @@ import { toast } from 'react-hot-toast';
 
 // New centralized services and types
 import { testManagementService } from '../services/test-management.service';
-import type { Question, QuestionFormData, Test, BulkOperationHelpers } from '../types/test-management';
+import { BulkOperationHelpers } from '../lib/api/base-service';
+import type { Question, QuestionFormData, Test } from '../types/test-management';
 
 // New reusable components
 import { DataTable, Column } from '../components/common/DataTable/DataTable';
@@ -67,7 +68,7 @@ const TestDetailPageNew: React.FC = () => {
     clearSelection,
     selectedCount,
   } = useBulkSelection({
-    items: data?.data.questions || [],
+    items: data?.questions || [],
     getItemId: (item) => item.uuid,
   });
 
@@ -418,8 +419,8 @@ const TestDetailPageNew: React.FC = () => {
     );
   }
 
-  const test = data?.data.test;
-  const questions = data?.data.questions || [];
+  const test = data?.test;
+  const questions = data?.questions || [];
   const stats = data?.stats;
 
   return (

@@ -24,7 +24,14 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
   onClearSelection,
   className = '',
 }) => {
-  if (selectedCount === 0) return null;
+  // Show a placeholder when no items are selected to indicate bulk actions are available
+  if (selectedCount === 0) {
+    return (
+      <div className={`px-4 py-2 bg-gray-50 border-b border-gray-200 text-sm text-gray-500 ${className}`}>
+        💡 Select items to see bulk actions
+      </div>
+    );
+  }
 
   const getActionClasses = (variant: BulkAction['variant'] = 'primary') => {
     const baseClasses = 'px-3 py-1.5 text-white text-sm rounded-md flex items-center gap-1 transition-colors disabled:opacity-50 disabled:cursor-not-allowed';

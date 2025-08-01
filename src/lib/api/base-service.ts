@@ -68,6 +68,22 @@ export interface ApiListResponse<T> {
   stats?: Record<string, any>;
 }
 
+// Special interface for nested resource responses (like categories under test series)
+export interface NestedApiListResponse<TParent, TChild> {
+  testSeries?: TParent;
+  categories?: TChild[];
+  subCategories?: TChild[];
+  tests?: TChild[];
+  questions?: TChild[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+  stats?: Record<string, any>;
+}
+
 /**
  * Base service class providing common CRUD operations
  */

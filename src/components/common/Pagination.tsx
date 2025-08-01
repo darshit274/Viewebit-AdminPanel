@@ -4,7 +4,10 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
+  totalItems?: number;
+  itemsPerPage?: number;
   onPageChange: (page: number) => void;
+  onItemsPerPageChange?: (limit: number) => void;
   showFirstLast?: boolean;
   maxVisiblePages?: number;
 }
@@ -12,16 +15,20 @@ interface PaginationProps {
 export const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
+  totalItems,
+  itemsPerPage,
   onPageChange,
+  onItemsPerPageChange,
   showFirstLast = true,
   maxVisiblePages = 5
 }) => {
-  if (totalPages <= 1) return null;
+  // Only hide if there are no items at all
+  if (totalPages === 0 || (totalItems !== undefined && totalItems === 0)) return null;
 
   const getVisiblePages = () => {
     const halfVisible = Math.floor(maxVisiblePages / 2);
     let start = Math.max(1, currentPage - halfVisible);
-    let end = Math.min(totalPages, start + maxVisiblePages - 1);
+    const end = Math.min(totalPages, start + maxVisiblePages - 1);
 
     // Adjust start if we're near the end
     if (end - start + 1 < maxVisiblePages) {
@@ -63,8 +70,9 @@ export const Pagination: React.FC<PaginationProps> = ({
           </p>
         </div>
 
-        <div>
-          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+        {totalPages > 1 && (
+          <div>
+            <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
             {/* Previous button */}
             <button
               onClick={() => onPageChange(currentPage - 1)}
@@ -133,8 +141,42 @@ export const Pagination: React.FC<PaginationProps> = ({
               <span className="sr-only">Next</span>
               <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
             </button>
-          </nav>
-        </div>
+            </nav>
+          </div>
+        )}
+        
+        {/* Items per page selector and total items info */}
+        {(totalItems || onItemsPerPageChange) && (
+          <div className="flex items-center gap-4">
+            {totalItems && (
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">{Math.min((currentPage - 1) * (itemsPerPage || 10) + 1, totalItems)}</span> to{' '}
+                <span className="font-medium">{Math.min(currentPage * (itemsPerPage || 10), totalItems)}</span> of{' '}
+                <span className="font-medium">{totalItems}</span> results
+              </p>
+            )}
+            
+            {onItemsPerPageChange && (
+              <div className="flex items-center gap-2">
+                <label htmlFor="items-per-page" className="text-sm text-gray-700">
+                  Show:
+                </label>
+                <select
+                  id="items-per-page"
+                  value={itemsPerPage || 10}
+                  onChange={(e) => onItemsPerPageChange(parseInt(e.target.value))}
+                  className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
