@@ -156,7 +156,7 @@ class PDFService {
 
   // Get test series for dropdown
   async getTestSeries(): Promise<{ success: boolean; data: Array<{ id: string; title: string }> }> {
-    const response = await api.get('/admin/test-series');
+    const response = await api.get('/admin/test-management');
     return response.data;
   }
 

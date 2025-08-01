@@ -211,7 +211,7 @@ export const questionsService = {
 
   // Get questions by test series
   getQuestionsByTestSeries: async (testSeriesId: string): Promise<{ success: boolean; data: Question[] }> => {
-    const response = await api.get(`/admin/test-series/${testSeriesId}/questions`);
+    const response = await api.get(`/admin/test-management/series/${testSeriesId}/questions`);
     return response.data;
   },
 
