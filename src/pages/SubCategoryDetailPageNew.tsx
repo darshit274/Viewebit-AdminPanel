@@ -735,7 +735,7 @@ const SubCategoryDetailPageNew: React.FC = () => {
                     />
                     <div className="ml-2">
                       <label htmlFor="is_demo" className="block text-sm font-medium text-gray-700">
-                        🎯 Demo Test
+                       Demo Test
                       </label>
                       <p className="text-xs text-gray-500">Free preview test for paid series</p>
                     </div>
@@ -751,7 +751,7 @@ const SubCategoryDetailPageNew: React.FC = () => {
                     />
                     <div className="ml-2">
                       <label htmlFor="is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
-                        🆓 Free in Paid Series
+                        Free in Paid Series
                       </label>
                       <p className="text-xs text-gray-500">Available without subscription in paid series</p>
                     </div>
@@ -767,7 +767,7 @@ const SubCategoryDetailPageNew: React.FC = () => {
                     />
                     <div className="ml-2">
                       <label htmlFor="negative_marking_enabled" className="block text-sm font-medium text-gray-700">
-                        ❌ Negative Marking
+                        Negative Marking
                       </label>
                       <p className="text-xs text-gray-500">Deduct marks for wrong answers</p>
                     </div>
@@ -783,7 +783,7 @@ const SubCategoryDetailPageNew: React.FC = () => {
                     />
                     <div className="ml-2">
                       <label htmlFor="is_one_time_only" className="block text-sm font-medium text-gray-700">
-                        🔒 One-time Test
+                        One-time Test
                       </label>
                       <p className="text-xs text-gray-500">Student can take this test only once</p>
                     </div>
@@ -831,7 +831,7 @@ const SubCategoryDetailPageNew: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      🎯 Passing Marks (optional)
+                      Passing Marks (optional)
                     </label>
                     <input
                       type="number"

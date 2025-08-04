@@ -711,7 +711,7 @@ const TestManagementPageNew: React.FC = () => {
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {item.pricing_type === 'paid' ? '💳 Paid' : '🆓 Free'}
+                          {item.pricing_type === 'paid' ? 'Paid' : 'Free'}
                         </span>
                         {item.pricing_type === 'paid' && item.price && (
                           <span className="text-sm font-medium text-gray-900">
@@ -883,8 +883,8 @@ const TestManagementPageNew: React.FC = () => {
                       onChange={(e) => setFormData({ ...formData, pricing_type: e.target.value as 'free' | 'paid' })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      <option value="free">🆓 Free - Open access for all students</option>
-                      <option value="paid">💳 Paid - Requires subscription to access</option>
+                      <option value="free">Free - Open access for all students</option>
+                      <option value="paid">Paid - Requires subscription to access</option>
                     </select>
                   </div>
 

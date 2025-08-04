@@ -22,7 +22,7 @@ const navigation = [
   { name: 'Students', href: '/students', icon: Users },
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
   { name: 'Test Management', href: '/test-management', icon: BookOpen },
-  { name: 'Questions', href: '/questions', icon: GraduationCap },
+  // { name: 'Questions', href: '/questions', icon: GraduationCap },
   { name: 'PDFs', href: '/pdfs', icon: FileText },
   { name: 'Categories', href: '/categories', icon: FolderOpen },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
