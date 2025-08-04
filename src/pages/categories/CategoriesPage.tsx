@@ -33,11 +33,12 @@ interface CategoryModalProps {
 const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, category, categories, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
+    name_gujarati: '',
     description: '',
+    description_gujarati: '',
     parent_id: '',
-    icon: '',
-    color: '#3B82F6',
-    order_index: 0,
+    hierarchy_level: 0,
+    display_order: 0,
     is_active: true
   });
   const [loading, setLoading] = useState(false);
@@ -46,21 +47,23 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, category
     if (category) {
       setFormData({
         name: category.name || '',
+        name_gujarati: (category as any).name_gujarati || '',
         description: category.description || '',
+        description_gujarati: (category as any).description_gujarati || '',
         parent_id: category.parent_id?.toString() || '',
-        icon: category.icon || '',
-        color: category.color || '#3B82F6',
-        order_index: category.order_index || 0,
+        hierarchy_level: (category as any).hierarchy_level || 0,
+        display_order: category.order_index || 0,
         is_active: category.is_active !== undefined ? category.is_active : true
       });
     } else {
       setFormData({
         name: '',
+        name_gujarati: '',
         description: '',
+        description_gujarati: '',
         parent_id: '',
-        icon: '',
-        color: '#3B82F6',
-        order_index: 0,
+        hierarchy_level: 0,
+        display_order: 0,
         is_active: true
       });
     }
@@ -72,8 +75,14 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, category
 
     try {
       const payload = {
-        ...formData,
-        parent_id: formData.parent_id ? parseInt(formData.parent_id) : null
+        name: formData.name,
+        name_gujarati: formData.name_gujarati,
+        description: formData.description,
+        description_gujarati: formData.description_gujarati,
+        parent_id: formData.parent_id ? parseInt(formData.parent_id) : null,
+        hierarchy_level: formData.hierarchy_level,
+        display_order: formData.display_order,
+        is_active: formData.is_active
       };
 
       if (category) {
@@ -97,140 +106,189 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, category
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">
-            {category ? 'Edit Category' : 'Create Category'}
+            {category ? '✏️ Edit Category' : '➕ Add Category'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
           >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information Section */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Category Name *
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="input-field"
-              placeholder="Enter category name"
-              required
-            />
-          </div>
+            <h3 className="text-md font-medium text-gray-800 mb-4">📝 Basic Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter category name"
+                  required
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="input-field"
-              rows={3}
-              placeholder="Enter category description"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Parent Category
-            </label>
-            <select
-              value={formData.parent_id}
-              onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
-              className="input-field"
-            >
-              <option value="">None (Top Level)</option>
-              {categories
-                .filter(c => c.id !== category?.id)
-                .map(c => (
-                  <option key={c.id} value={c.id.toString()}>
-                    {c.parent ? `${c.parent.name} > ${c.name}` : c.name}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Icon (Emoji/Symbol)
-              </label>
-              <input
-                type="text"
-                value={formData.icon}
-                onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                className="input-field"
-                placeholder="📚"
-                maxLength={2}
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Parent Category
+                </label>
+                <select
+                  value={formData.parent_id}
+                  onChange={(e) => setFormData({ ...formData, parent_id: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">None (Top Level)</option>
+                  {categories
+                    .filter(c => c.id !== category?.id)
+                    .map(c => (
+                      <option key={c.id} value={c.id.toString()}>
+                        {c.parent ? `${c.parent.name} > ${c.name}` : c.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
 
-            <div>
+            <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Color
+                Description
               </label>
-              <input
-                type="color"
-                value={formData.color}
-                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="input-field h-10"
+              <textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter category description"
               />
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Order Index
-            </label>
-            <input
-              type="number"
-              value={formData.order_index}
-              onChange={(e) => setFormData({ ...formData, order_index: parseInt(e.target.value) || 0 })}
-              className="input-field"
-              min="0"
-            />
+          {/* Gujarati Translation Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-md font-medium text-gray-800 mb-4">🌐 Gujarati Translation</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Name (Gujarati)
+                </label>
+                <input
+                  type="text"
+                  value={formData.name_gujarati}
+                  onChange={(e) => setFormData({ ...formData, name_gujarati: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="ગુજરાતીમાં કેટેગરીનું નામ"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description (Gujarati)
+                </label>
+                <textarea
+                  value={formData.description_gujarati}
+                  onChange={(e) => setFormData({ ...formData, description_gujarati: e.target.value })}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="ગુજરાતીમાં વર્ણન"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="is_active"
-              checked={formData.is_active}
-              onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
-              Active
-            </label>
+          {/* Hierarchy & Organization Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-md font-medium text-gray-800 mb-4">📊 Hierarchy & Organization</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Hierarchy Level
+                  <span className="text-xs text-gray-500 ml-1">(0: Exam-wise, 1: Topic-wise, 2: Chapter-wise)</span>
+                </label>
+                <select
+                  value={formData.hierarchy_level}
+                  onChange={(e) => setFormData({ ...formData, hierarchy_level: parseInt(e.target.value) })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value={0}>0 - Exam-wise (Top Level)</option>
+                  <option value={1}>1 - Topic-wise (Sub Level)</option>
+                  <option value={2}>2 - Chapter-wise (Detail Level)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Display Order
+                  <span className="text-xs text-gray-500 ml-1">(Lower number = appears first)</span>
+                </label>
+                <input
+                  type="number"
+                  value={formData.display_order}
+                  onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  min="0"
+                  placeholder="0"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="flex space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 btn-secondary"
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 btn-primary"
-              disabled={loading}
-            >
-              {loading ? 'Saving...' : category ? 'Update' : 'Create'}
-            </button>
+          {/* Status Section */}
+          <div className="border-t pt-4">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="is_active"
+                checked={formData.is_active}
+                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
+                ✅ Active (category is available for use)
+              </label>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="border-t pt-6">
+            <div className="flex space-x-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {category ? 'Updating...' : 'Creating...'}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    {category ? '💾 Update Category' : '➕ Create Category'}
+                  </div>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

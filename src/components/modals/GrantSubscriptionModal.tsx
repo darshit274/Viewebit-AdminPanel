@@ -12,7 +12,7 @@ interface User {
 interface TestSeries {
   id: number;
   title: string;
-  price: string;
+  price: number;
 }
 
 interface GrantSubscriptionModalProps {
@@ -60,12 +60,12 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
   const fetchTestSeries = async () => {
     try {
-      const response = await api.get('/admin/test-series', {
+      const response = await api.get('/admin/test-management', {
         params: { limit: 100 }
       });
       
       // Safely extract the testSeries array with fallback
-      const testSeriesData = response.data?.data?.testSeries || [];
+      const testSeriesData = response.data?.data || [];
       
       // Ensure it's an array before setting state
       if (Array.isArray(testSeriesData)) {
@@ -126,7 +126,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
   };
 
   const handleTestSeriesChange = (testSeriesId: string) => {
-    const selectedTestSeries = testSeries.find(ts => ts.id === testSeriesId);
+    const selectedTestSeries = testSeries.find(ts => ts.id.toString() === testSeriesId);
     setFormData({
       ...formData,
       test_series_id: testSeriesId,
@@ -269,7 +269,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                 <h3 className="font-medium text-blue-900 mb-2">Subscription Summary</h3>
                 <div className="text-sm text-blue-800 space-y-1">
                   <p><span className="font-medium">User:</span> {users.find(u => u.uuid === formData.user_id)?.username}</p>
-                  <p><span className="font-medium">Test Series:</span> {testSeries.find(ts => ts.id === formData.test_series_id)?.title}</p>
+                  <p><span className="font-medium">Test Series:</span> {testSeries.find(ts => ts.id.toString() === formData.test_series_id)?.title}</p>
                   <p><span className="font-medium">Amount:</span> ₹{formData.amount_paid} {formData.amount_paid === 0 ? '(Free)' : ''}</p>
                   <p><span className="font-medium">Duration:</span> {formData.expiry_months === 0 ? 'Lifetime' : `${formData.expiry_months} months`}</p>
                   <p><span className="font-medium">Type:</span> {formData.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
