@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { PlusIcon, EyeIcon, PencilIcon, TrashIcon, ArrowLeftIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import { formatDate } from '../lib/utils';
 
 // New centralized services and types
 import { testManagementService } from '../services/test-management.service';
@@ -241,7 +242,7 @@ const TestSeriesDetailPageNew: React.FC = () => {
       sortable: true,
       render: (item) => (
         <span className="text-sm text-gray-500">
-          {new Date(item.created_at).toLocaleDateString()}
+          {formatDate(item.created_at)}
         </span>
       ),
     },

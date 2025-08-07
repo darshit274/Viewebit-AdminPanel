@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Eye, Edit, Trash2, UserPlus, X } from 'lucide-react';
+import { Search, Filter, Download, Eye, Edit, Trash2, UserPlus, X, CheckCircle, XCircle } from 'lucide-react';
 import { LoadingSpinner, CardSkeleton } from '../../components/common/LoadingSpinner';
 import { ApiError, ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { studentsService } from '../../services/students';
 import { StudentModal } from '../../components/modals/StudentModal';
 import { ConfirmModal } from '../../components/modals/ConfirmModal';
 import toast from 'react-hot-toast';
+import { formatDate } from '../../lib/utils';
 
 export const StudentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -177,6 +178,16 @@ export const StudentsPage: React.FC = () => {
 
   const handleModalSuccess = () => {
     fetchStudents();
+  };
+
+  const handleVerifyStudent = async (student: any) => {
+    try {
+      await studentsService.verifyStudent(student.uuid);
+      toast.success(`Student ${student.isEmailVerified ? 'unverified' : 'verified'} successfully`);
+      fetchStudents(); // Refresh the list
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to update verification status');
+    }
   };
 
   if (error) {
@@ -537,7 +548,7 @@ export const StudentsPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <p className="text-sm text-gray-900">
-                          {new Date(student.created_at).toLocaleDateString()}
+                          {formatDate(student.created_at)}
                         </p>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -555,6 +566,13 @@ export const StudentsPage: React.FC = () => {
                             title="Edit Student"
                           >
                             <Edit className="h-4 w-4" />
+                          </button>
+                          <button 
+                            onClick={() => handleVerifyStudent(student)}
+                            className={`${student.isEmailVerified ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'}`}
+                            title={student.isEmailVerified ? 'Unverify Student' : 'Verify Student'}
+                          >
+                            {student.isEmailVerified ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
                           </button>
                           <button 
                             onClick={() => handleDeleteStudent(student)}

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon, EyeIcon, PencilIcon, TrashIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import { formatDate } from '../lib/utils';
 
 // API Base URL - Note: VITE_API_URL already includes /api, we just need to add /admin
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5004/api') + '/admin';
@@ -736,7 +737,7 @@ const TestManagementPageNew: React.FC = () => {
                       {item.categories_count}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(item.created_at).toLocaleDateString()}
+                      {formatDate(item.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex gap-2">
