@@ -48,7 +48,7 @@ const pdfsService = {
   },
 
   getTestSeries: async () => {
-    const response = await api.get('/admin/test-series');
+    const response = await api.get('/admin/test-management');
     return { data: response.data };
   }
 };

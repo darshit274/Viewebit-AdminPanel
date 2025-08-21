@@ -293,11 +293,13 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
                 required
               >
                 <option value="">Select a category</option>
-                {categories.map(category => (
+                {Array.isArray(categories) && categories.length > 0 ? categories.map(category => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
-                ))}
+                )) : (
+                  <option value="" disabled>Loading categories...</option>
+                )}
               </select>
             </div>
           </div>
@@ -342,11 +344,13 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">None</option>
-                  {testSeries.map(ts => (
+                  {Array.isArray(testSeries) && testSeries.length > 0 ? testSeries.map(ts => (
                     <option key={ts.id} value={ts.id}>
                       {ts.title}
                     </option>
-                  ))}
+                  )) : (
+                    <option value="" disabled>Loading test series...</option>
+                  )}
                 </select>
               </div>
             )}
@@ -362,11 +366,13 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">None</option>
-                  {examTypes.map(et => (
+                  {Array.isArray(examTypes) && examTypes.length > 0 ? examTypes.map(et => (
                     <option key={et.id} value={et.id}>
                       {et.name}
                     </option>
-                  ))}
+                  )) : (
+                    <option value="" disabled>Loading exam types...</option>
+                  )}
                 </select>
               </div>
             )}

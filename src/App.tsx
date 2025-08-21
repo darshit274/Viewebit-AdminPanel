@@ -6,15 +6,21 @@ import { AuthProvider, useAuth, ProtectedRoute } from './hooks/useAuth';
 import { LoginForm } from './components/auth/LoginForm';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './pages/dashboard/Dashboard';
-import { StudentsPageFixed as StudentsPage } from './pages/users/StudentsPageFixed';
-import { TestSeriesPage } from './pages/tests/TestSeriesPage';
+import { StudentsPage } from './pages/users/StudentsPage';
 import { QuestionsPage } from './pages/questions/QuestionsPage';
 import { PDFManagement } from './pages/PDFManagement';
 import { ExamManagement } from './pages/ExamManagement';
-import { TopicTestSeriesManagement } from './pages/TopicTestSeriesManagement';
-import { FreeTestsManagement } from './pages/FreeTestsManagement';
 import PYQManagement from './pages/PYQManagement';
 import SubscriptionsPage from './pages/subscriptions/SubscriptionsPage';
+import { CategoriesPage } from './pages/categories/CategoriesPage';
+import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
+import { PerformanceReportsPage } from './pages/performance/PerformanceReportsPage';
+import { SettingsPage } from './pages/settings/SettingsPage';
+import TestManagementPageNew from './pages/TestManagementPageNew';
+import TestSeriesDetailPageNew from './pages/TestSeriesDetailPageNew';
+import CategoryDetailPageNew from './pages/CategoryDetailPageNew';
+import SubCategoryDetailPageNew from './pages/SubCategoryDetailPageNew';
+import TestDetailPageNew from './pages/TestDetailPageNew';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -56,9 +62,29 @@ const AuthWrapper: React.FC = () => {
             <StudentsPage />
           </ProtectedRoute>
         } />
-        <Route path="test-series" element={
+        <Route path="test-management" element={
           <ProtectedRoute>
-            <TestSeriesPage />
+            <TestManagementPageNew />
+          </ProtectedRoute>
+        } />
+        <Route path="test-series/:testSeriesUuid" element={
+          <ProtectedRoute>
+            <TestSeriesDetailPageNew />
+          </ProtectedRoute>
+        } />
+        <Route path="categories/:categoryUuid" element={
+          <ProtectedRoute>
+            <CategoryDetailPageNew />
+          </ProtectedRoute>
+        } />
+        <Route path="sub-categories/:subCategoryUuid" element={
+          <ProtectedRoute>
+            <SubCategoryDetailPageNew />
+          </ProtectedRoute>
+        } />
+        <Route path="tests/:testUuid" element={
+          <ProtectedRoute>
+            <TestDetailPageNew />
           </ProtectedRoute>
         } />
         <Route path="questions" element={
@@ -81,16 +107,6 @@ const AuthWrapper: React.FC = () => {
             <ExamManagement />
           </ProtectedRoute>
         } />
-        <Route path="subjects" element={
-          <ProtectedRoute>
-            <TopicTestSeriesManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="free-tests" element={
-          <ProtectedRoute>
-            <FreeTestsManagement />
-          </ProtectedRoute>
-        } />
         <Route path="pyqs" element={
           <ProtectedRoute>
             <PYQManagement />
@@ -98,34 +114,22 @@ const AuthWrapper: React.FC = () => {
         } />
         <Route path="categories" element={
           <ProtectedRoute>
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Category Management</h2>
-              <p className="text-gray-600">Category management functionality coming soon...</p>
-            </div>
+            <CategoriesPage />
           </ProtectedRoute>
         } />
         <Route path="analytics" element={
           <ProtectedRoute>
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Analytics</h2>
-              <p className="text-gray-600">Analytics functionality coming soon...</p>
-            </div>
+            <AnalyticsPage />
           </ProtectedRoute>
         } />
         <Route path="performance" element={
           <ProtectedRoute>
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Performance Reports</h2>
-              <p className="text-gray-600">Performance reports functionality coming soon...</p>
-            </div>
+            <PerformanceReportsPage />
           </ProtectedRoute>
         } />
         <Route path="settings" element={
           <ProtectedRoute>
-            <div className="card p-6">
-              <h2 className="text-xl font-semibold mb-4">Settings</h2>
-              <p className="text-gray-600">Settings functionality coming soon...</p>
-            </div>
+            <SettingsPage />
           </ProtectedRoute>
         } />
       </Route>

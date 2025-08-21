@@ -5,6 +5,8 @@ export interface ExamType {
   name: string;
   code: string;
   description?: string;
+  name_gujarati?: string;
+  description_gujarati?: string;
   is_active: boolean;
   testSeriesCount?: number;
   pyqCount?: number;
@@ -98,7 +100,7 @@ class ExamService {
 
   // Get test series by exam type
   async getTestSeriesByExam(examTypeId: number): Promise<{ success: boolean; data: TestSeriesByExam[] }> {
-    const response = await api.get(`/admin/test-series?exam_type_id=${examTypeId}`);
+    const response = await api.get(`/admin/test-management?exam_type_id=${examTypeId}`);
     return response.data;
   }
 

@@ -106,31 +106,31 @@ class PDFService {
     if (filters.sort_by) params.append('sortBy', filters.sort_by);
     if (filters.sort_order) params.append('sortOrder', filters.sort_order);
 
-    const response = await api.get(`/admin/pdf/list?${params.toString()}`);
+    const response = await api.get(`/admin/pdfs?${params.toString()}`);
     return response.data;
   }
 
   // Get single PDF by ID
   async getPDFById(id: string): Promise<{ success: boolean; data: PDF }> {
-    const response = await api.get(`/admin/pdf/${id}`);
+    const response = await api.get(`/admin/pdfs/${id}`);
     return response.data;
   }
 
   // Get PDF categories
-  async getCategories(): Promise<{ success: boolean; data: PDFCategory[] }> {
-    const response = await api.get('/admin/pdf/categories');
+  async getCategories(): Promise<{ success: boolean; data: { categories: PDFCategory[]; examTypes: any[]; accessLevels: any[] } }> {
+    const response = await api.get('/admin/pdfs/filters');
     return response.data;
   }
 
   // Get PDF statistics
   async getStats(): Promise<{ success: boolean; data: PDFStats }> {
-    const response = await api.get('/admin/pdf/stats');
+    const response = await api.get('/admin/pdfs/stats');
     return response.data;
   }
 
   // Download PDF
   async downloadPDF(id: string): Promise<Blob> {
-    const response = await api.get(`/admin/pdf/${id}/download`, {
+    const response = await api.get(`/admin/pdfs/${id}/download`, {
       responseType: 'blob'
     });
     return response.data;
@@ -138,13 +138,13 @@ class PDFService {
 
   // Update PDF
   async updatePDF(id: string, data: Partial<PDF>): Promise<{ success: boolean; data: PDF }> {
-    const response = await api.put(`/admin/pdf/${id}`, data);
+    const response = await api.put(`/admin/pdfs/${id}`, data);
     return response.data;
   }
 
   // Delete PDF
   async deletePDF(id: string): Promise<{ success: boolean; message: string }> {
-    const response = await api.delete(`/admin/pdf/${id}`);
+    const response = await api.delete(`/admin/pdfs/${id}`);
     return response.data;
   }
 
@@ -156,13 +156,13 @@ class PDFService {
 
   // Get test series for dropdown
   async getTestSeries(): Promise<{ success: boolean; data: Array<{ id: string; title: string }> }> {
-    const response = await api.get('/admin/test-series');
+    const response = await api.get('/admin/test-management');
     return response.data;
   }
 
   // Upload PDF file
   async uploadPDF(formData: FormData): Promise<{ success: boolean; data: PDF; message: string }> {
-    const response = await api.post('/admin/pdf/upload', formData, {
+    const response = await api.post('/admin/pdfs/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

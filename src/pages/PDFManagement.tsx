@@ -134,33 +134,36 @@ export const PDFManagement: React.FC = () => {
   const loadCategories = async () => {
     try {
       const response = await pdfService.getCategories();
-      if (response.success) {
-        setCategories(response.data);
+      if (response.success && response.data) {
+        setCategories(response.data.categories || []);
       }
     } catch (error) {
       console.error('Error loading categories:', error);
+      setCategories([]);
     }
   };
 
   const loadExamTypes = async () => {
     try {
       const response = await pdfService.getExamTypes();
-      if (response.success) {
+      if (response.success && response.data) {
         setExamTypes(response.data);
       }
     } catch (error) {
       console.error('Error loading exam types:', error);
+      setExamTypes([]);
     }
   };
 
   const loadTestSeries = async () => {
     try {
       const response = await pdfService.getTestSeries();
-      if (response.success) {
+      if (response.success && response.data) {
         setTestSeries(response.data);
       }
     } catch (error) {
       console.error('Error loading test series:', error);
+      setTestSeries([]);
     }
   };
 

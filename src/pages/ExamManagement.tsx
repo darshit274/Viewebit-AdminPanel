@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Search, RefreshCw, BookOpen, FileText, BarChart3, Filter, Grid, List } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ExamTypeCard } from '../components/exams/ExamTypeCard';
 import { ExamTypeModal } from '../components/modals/ExamTypeModal';
 import { ConfirmModal } from '../components/modals/ConfirmModal';
@@ -8,6 +9,9 @@ import examService, { ExamType, ExamFilters } from '../services/examService';
 import toast from 'react-hot-toast';
 
 export const ExamManagement: React.FC = () => {
+  // Hooks
+  const navigate = useNavigate();
+  
   // State management
   const [examTypes, setExamTypes] = useState<ExamType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -125,14 +129,12 @@ export const ExamManagement: React.FC = () => {
 
   const handleViewTestSeries = (examType: ExamType) => {
     // Navigate to test series page with exam type filter
-    toast.info(`Viewing test series for ${examType.name}`);
-    // TODO: Implement navigation to test series page
+    navigate('/test-series', { state: { examTypeId: examType.id, examTypeName: examType.name } });
   };
 
   const handleViewPYQs = (examType: ExamType) => {
     // Navigate to PYQs page with exam type filter
-    toast.info(`Viewing PYQs for ${examType.name}`);
-    // TODO: Implement navigation to PYQs page
+    navigate('/pyqs', { state: { examTypeId: examType.id, examTypeName: examType.name } });
   };
 
   const handlePageChange = (page: number) => {
