@@ -21,6 +21,8 @@ import TestSeriesDetailPageNew from './pages/TestSeriesDetailPageNew';
 import CategoryDetailPageNew from './pages/CategoryDetailPageNew';
 import SubCategoryDetailPageNew from './pages/SubCategoryDetailPageNew';
 import TestDetailPageNew from './pages/TestDetailPageNew';
+import DynamicHierarchyPage from './pages/DynamicHierarchyPage';
+import SimpleDynamicHierarchyPage from './pages/SimpleDynamicHierarchyPage';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -70,6 +72,21 @@ const AuthWrapper: React.FC = () => {
         <Route path="test-series/:testSeriesUuid" element={
           <ProtectedRoute>
             <TestSeriesDetailPageNew />
+          </ProtectedRoute>
+        } />
+        <Route path="dynamic-hierarchy/:testSeriesId" element={
+          <ProtectedRoute>
+            <DynamicHierarchyPage />
+          </ProtectedRoute>
+        } />
+        <Route path="simple-hierarchy/:testSeriesUuid" element={
+          <ProtectedRoute>
+            <SimpleDynamicHierarchyPage />
+          </ProtectedRoute>
+        } />
+        <Route path="simple-hierarchy/:testSeriesUuid/categories/:categoryUuid" element={
+          <ProtectedRoute>
+            <SimpleDynamicHierarchyPage />
           </ProtectedRoute>
         } />
         <Route path="categories/:categoryUuid" element={

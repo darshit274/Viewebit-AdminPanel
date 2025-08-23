@@ -164,9 +164,11 @@ const TestManagementPageNew: React.FC = () => {
   });
 
   // Data fetching using simple API
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['testSeries', filters],
     queryFn: () => testSeriesApi.fetchTestSeries(filters),
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always refetch when needed
   });
 
   // Bulk selection management
@@ -193,9 +195,39 @@ const TestManagementPageNew: React.FC = () => {
   // Mutations using simple API
   const createMutation = useMutation({
     mutationFn: testSeriesApi.createTestSeries,
-    onSuccess: () => {
-      toast.success('Test series created successfully');
-      queryClient.invalidateQueries({ queryKey: ['testSeries'] });
+    onSuccess: async () => {
+      toast.success('Course created successfully');
+      
+      // Multiple strategies to ensure refresh
+      try {
+        // 1. Invalidate all related queries
+        await queryClient.invalidateQueries({ queryKey: ['testSeries'] });
+        
+        // 2. Force refetch with exact query key
+        await queryClient.refetchQueries({ 
+          queryKey: ['testSeries', filters], 
+          type: 'active' 
+        });
+        
+        // 3. Direct refetch of current query
+        await refetch();
+        
+        // 4. Clear query cache and refetch
+        queryClient.removeQueries({ queryKey: ['testSeries'] });
+        await refetch();
+        
+        // 5. Force refresh after delay to ensure backend consistency
+        setTimeout(async () => {
+          console.log('🔄 Delayed refresh - invalidating queries...');
+          await queryClient.invalidateQueries({ queryKey: ['testSeries'] });
+          await refetch();
+          console.log('🔄 Delayed refresh completed');
+        }, 1500);
+        
+      } catch (error) {
+        console.log('Refresh error:', error);
+      }
+      
       setShowModal(false);
       resetForm();
     },
@@ -207,9 +239,39 @@ const TestManagementPageNew: React.FC = () => {
   const updateMutation = useMutation({
     mutationFn: ({ uuid, data }: { uuid: string; data: TestSeriesFormData }) =>
       testSeriesApi.updateTestSeries(uuid, data),
-    onSuccess: () => {
-      toast.success('Test series updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['testSeries'] });
+    onSuccess: async () => {
+      toast.success('Course updated successfully');
+      
+      // Multiple strategies to ensure refresh
+      try {
+        // 1. Invalidate all related queries
+        await queryClient.invalidateQueries({ queryKey: ['testSeries'] });
+        
+        // 2. Force refetch with exact query key
+        await queryClient.refetchQueries({ 
+          queryKey: ['testSeries', filters], 
+          type: 'active' 
+        });
+        
+        // 3. Direct refetch of current query
+        await refetch();
+        
+        // 4. Clear query cache and refetch
+        queryClient.removeQueries({ queryKey: ['testSeries'] });
+        await refetch();
+        
+        // 5. Force refresh after delay to ensure backend consistency  
+        setTimeout(async () => {
+          console.log('🔄 Update: Delayed refresh - invalidating queries...');
+          await queryClient.invalidateQueries({ queryKey: ['testSeries'] });
+          await refetch();
+          console.log('🔄 Update: Delayed refresh completed');
+        }, 1500);
+        
+      } catch (error) {
+        console.log('Refresh error:', error);
+      }
+      
       setShowModal(false);
       setEditingTestSeries(null);
       resetForm();
@@ -485,22 +547,22 @@ const TestManagementPageNew: React.FC = () => {
   const getConfirmModalContent = () => {
     if (confirmModal.action === 'delete' && confirmModal.item) {
       return {
-        title: 'Delete Test Series',
+        title: 'Delete Course',
         message: `Are you sure you want to delete "${confirmModal.item.title}"? This will also delete all associated categories, sub-categories, tests, and questions. This action cannot be undone.`,
       };
     } else if (confirmModal.action === 'bulk_delete') {
       return {
-        title: 'Delete Test Series',
+        title: 'Delete Course',
         message: `Are you sure you want to delete ${selectedCount} test series? This will also delete all associated content. This action cannot be undone.`,
       };
     } else if (confirmModal.action === 'bulk_activate') {
       return {
-        title: 'Activate Test Series',
+        title: 'Activate Course',
         message: `Are you sure you want to activate ${selectedCount} test series?`,
       };
     } else if (confirmModal.action === 'bulk_deactivate') {
       return {
-        title: 'Deactivate Test Series',
+        title: 'Deactivate Course',
         message: `Are you sure you want to deactivate ${selectedCount} test series?`,
       };
     }
@@ -526,15 +588,15 @@ const TestManagementPageNew: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Test Management</h1>
-          <p className="text-gray-600 mt-1">Manage your test series and their hierarchical structure</p>
+          <h1 className="text-2xl font-bold text-gray-900">Course Management</h1>
+          <p className="text-gray-600 mt-1">Manage your course series and their hierarchical structure</p>
         </div>
         <button
           onClick={handleCreate}
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
         >
           <PlusIcon className="h-5 w-5" />
-          Add Test Series
+          Add Course
         </button>
       </div>
 
@@ -809,7 +871,7 @@ const TestManagementPageNew: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">
-              {editingTestSeries ? 'Edit Test Series' : 'Add Test Series'}
+              {editingTestSeries ? 'Edit Course' : 'Add Course'}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-4">
