@@ -6,6 +6,7 @@ import { CardSkeleton } from '../../components/common/LoadingSpinner';
 import { ApiError, ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { QuestionModal } from '../../components/modals/QuestionModal';
 import { ConfirmModal } from '../../components/modals/ConfirmModal';
+import QuestionImportModal from '../../components/modals/QuestionImportModal';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -36,6 +37,7 @@ export const QuestionsPage: React.FC = () => {
   // Modal states
   const [questionModal, setQuestionModal] = useState({ isOpen: false, mode: 'create' as 'create' | 'edit', question: null as any });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, question: null as any, loading: false });
+  const [importModal, setImportModal] = useState({ isOpen: false, categoryId: null as number | null, categoryName: '' });
   
   // Bulk operations state
   const [selectedQuestions, setSelectedQuestions] = useState<Set<number>>(new Set());
@@ -188,37 +190,20 @@ export const QuestionsPage: React.FC = () => {
   };
 
   const handleBulkImport = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.csv,.xlsx,.json';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      try {
-        setBulkLoading(true);
-        const response = await api.post('/admin/questions/import', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        
-        if (response.data.success) {
-          toast.success(`${response.data.data.imported_count} questions imported successfully`);
-          if (response.data.data.failed_count > 0) {
-            toast.warning(`${response.data.data.failed_count} questions failed to import`);
-          }
-          refresh();
-        }
-      } catch (error: any) {
-        console.error('Import error:', error);
-        toast.error(error.response?.data?.message || 'Import failed');
-      } finally {
-        setBulkLoading(false);
-      }
-    };
-    input.click();
+    // For now, open a simple category selection modal
+    // In a real implementation, this would be more sophisticated
+    const categoryId = parseInt(prompt('Enter Category ID for import:') || '0');
+    const categoryName = prompt('Enter Category Name:') || 'Selected Category';
+    
+    if (categoryId > 0) {
+      setImportModal({ 
+        isOpen: true, 
+        categoryId, 
+        categoryName 
+      });
+    } else {
+      toast.error('Please provide a valid category ID');
+    }
   };
 
   if (error) {
@@ -619,6 +604,19 @@ export const QuestionsPage: React.FC = () => {
           type="danger"
           loading={confirmModal.loading}
         />
+
+        {importModal.categoryId && (
+          <QuestionImportModal
+            isOpen={importModal.isOpen}
+            onClose={() => setImportModal({ isOpen: false, categoryId: null, categoryName: '' })}
+            categoryId={importModal.categoryId}
+            categoryName={importModal.categoryName}
+            onImportComplete={() => {
+              refresh();
+              setImportModal({ isOpen: false, categoryId: null, categoryName: '' });
+            }}
+          />
+        )}
       </div>
     </ErrorBoundary>
   );

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, RotateCcw, ChevronDown } from 'lucide-react';
-import { PDFFilters as PDFFiltersType, PDFCategory } from '../../services/pdfService';
+import { PDFFilters as PDFFiltersType } from '../../services/pdfService';
 
 interface PDFFiltersProps {
   filters: PDFFiltersType;
   onFiltersChange: (filters: PDFFiltersType) => void;
-  categories: PDFCategory[];
   examTypes: Array<{ id: number; name: string }>;
   testSeries: Array<{ id: string; title: string }>;
   loading?: boolean;
@@ -14,7 +13,6 @@ interface PDFFiltersProps {
 export const PDFFilters: React.FC<PDFFiltersProps> = ({
   filters,
   onFiltersChange,
-  categories,
   examTypes,
   testSeries,
   loading = false
@@ -62,8 +60,7 @@ export const PDFFilters: React.FC<PDFFiltersProps> = ({
     onFiltersChange({ ...localFilters, page: 1 });
   };
 
-  const hasActiveFilters = localFilters.category_id || 
-                          localFilters.access_level || 
+  const hasActiveFilters = localFilters.access_level || 
                           localFilters.exam_type_id || 
                           localFilters.test_series_id ||
                           localFilters.search;
@@ -96,7 +93,7 @@ export const PDFFilters: React.FC<PDFFiltersProps> = ({
           Filters
           {hasActiveFilters && (
             <span className="ml-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {[localFilters.category_id, localFilters.access_level, localFilters.exam_type_id, localFilters.test_series_id, localFilters.search].filter(Boolean).length}
+              {[localFilters.access_level, localFilters.exam_type_id, localFilters.test_series_id, localFilters.search].filter(Boolean).length}
             </span>
           )}
           <ChevronDown className={`h-4 w-4 ml-2 transform transition-transform ${isAdvancedOpen ? 'rotate-180' : ''}`} />
@@ -116,29 +113,7 @@ export const PDFFilters: React.FC<PDFFiltersProps> = ({
       {/* Advanced Filters */}
       {isAdvancedOpen && (
         <div className="border-t border-gray-100 pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            {/* Category Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
-              <select
-                value={localFilters.category_id || ''}
-                onChange={(e) => handleInputChange('category_id', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                disabled={loading}
-              >
-                <option value="">All Categories</option>
-                {Array.isArray(categories) && categories.length > 0 ? categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name} {category.pdf_count !== undefined && `(${category.pdf_count})`}
-                  </option>
-                )) : (
-                  <option value="" disabled>Loading categories...</option>
-                )}
-              </select>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             {/* Access Level Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -182,7 +157,7 @@ export const PDFFilters: React.FC<PDFFiltersProps> = ({
             {/* Test Series Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Test Series
+                Course
               </label>
               <select
                 value={localFilters.test_series_id || ''}
@@ -190,13 +165,13 @@ export const PDFFilters: React.FC<PDFFiltersProps> = ({
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
               >
-                <option value="">All Test Series</option>
+                <option value="">All Courses</option>
                 {Array.isArray(testSeries) && testSeries.length > 0 ? testSeries.map((series) => (
                   <option key={series.id} value={series.id}>
                     {series.title}
                   </option>
                 )) : (
-                  <option value="" disabled>Loading test series...</option>
+                  <option value="" disabled>Loading courses...</option>
                 )}
               </select>
             </div>

@@ -6,10 +6,9 @@ import toast from 'react-hot-toast';
 interface PDFUploadDropzoneProps {
   onUploadSuccess?: (pdf: any) => void;
   onUploadError?: (error: string) => void;
-  categories: Array<{
-    id: number;
-    name: string;
-    color: string;
+  courses: Array<{
+    id: string;
+    title: string;
   }>;
   testSeries?: Array<{
     id: string;
@@ -24,7 +23,7 @@ interface PDFUploadDropzoneProps {
 export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
   onUploadSuccess,
   onUploadError,
-  categories,
+  courses,
   testSeries = [],
   examTypes = []
 }) => {
@@ -35,7 +34,7 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category_id: '',
+    course_id: '',
     access_level: 'free',
     test_series_id: '',
     exam_type_id: '',
@@ -107,7 +106,7 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
   };
 
   const handleUpload = async () => {
-    if (!selectedFile || !formData.title || !formData.category_id) {
+    if (!selectedFile || !formData.title || !formData.course_id) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -120,7 +119,7 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
       uploadData.append('pdf', selectedFile);
       uploadData.append('title', formData.title);
       uploadData.append('description', formData.description);
-      uploadData.append('category_id', formData.category_id);
+      uploadData.append('course_id', formData.course_id);
       uploadData.append('access_level', formData.access_level);
       
       if (formData.test_series_id) {
@@ -155,7 +154,7 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
       setFormData({
         title: '',
         description: '',
-        category_id: '',
+        course_id: '',
         access_level: 'free',
         test_series_id: '',
         exam_type_id: '',
@@ -284,21 +283,21 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category *
+                Course *
               </label>
               <select
-                value={formData.category_id}
-                onChange={(e) => setFormData(prev => ({ ...prev, category_id: e.target.value }))}
+                value={formData.course_id}
+                onChange={(e) => setFormData(prev => ({ ...prev, course_id: e.target.value }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
-                <option value="">Select a category</option>
-                {Array.isArray(categories) && categories.length > 0 ? categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
+                <option value="">Select a course</option>
+                {Array.isArray(courses) && courses.length > 0 ? courses.map(course => (
+                  <option key={course.id} value={course.id}>
+                    {course.title}
                   </option>
                 )) : (
-                  <option value="" disabled>Loading categories...</option>
+                  <option value="" disabled>Loading courses...</option>
                 )}
               </select>
             </div>
@@ -412,7 +411,7 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
           <div className="flex justify-end">
             <button
               onClick={handleUpload}
-              disabled={isUploading || !formData.title || !formData.category_id}
+              disabled={isUploading || !formData.title || !formData.course_id}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Upload className="h-4 w-4 mr-2" />

@@ -7,7 +7,7 @@ interface PDFEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   pdf: any;
-  categories: any[];
+  courses: any[];
   testSeries: any[];
   examTypes: any[];
   onUpdate: () => void;
@@ -17,7 +17,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
   isOpen,
   onClose,
   pdf,
-  categories,
+  courses,
   testSeries,
   examTypes,
   onUpdate
@@ -25,7 +25,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    category_id: '',
+    course_id: '',
     access_level: 'free',
     test_series_id: '',
     exam_type_id: '',
@@ -38,7 +38,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
       setFormData({
         title: pdf.title || '',
         description: pdf.description || '',
-        category_id: pdf.category_id?.toString() || '',
+        course_id: pdf.course_id?.toString() || '',
         access_level: pdf.access_level || 'free',
         test_series_id: pdf.test_series_id?.toString() || '',
         exam_type_id: pdf.exam_type_id?.toString() || '',
@@ -55,7 +55,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
     try {
       const updateData = {
         ...formData,
-        category_id: formData.category_id ? parseInt(formData.category_id) : null,
+        course_id: formData.course_id ? parseInt(formData.course_id) : null,
         test_series_id: formData.test_series_id || null,
         exam_type_id: formData.exam_type_id ? parseInt(formData.exam_type_id) : null,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : null
@@ -127,21 +127,21 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
+                Course
               </label>
               <select
-                name="category_id"
-                value={formData.category_id}
+                name="course_id"
+                value={formData.course_id}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="">Select category</option>
-                {Array.isArray(categories) && categories.length > 0 ? categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
+                <option value="">Select course</option>
+                {Array.isArray(courses) && courses.length > 0 ? courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.title}
                   </option>
                 )) : (
-                  <option value="" disabled>Loading categories...</option>
+                  <option value="" disabled>Loading courses...</option>
                 )}
               </select>
             </div>

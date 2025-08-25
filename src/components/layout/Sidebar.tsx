@@ -21,12 +21,9 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Students', href: '/students', icon: Users },
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
-  { name: 'Test Management', href: '/test-management', icon: BookOpen },
-  // { name: 'Questions', href: '/questions', icon: GraduationCap },
+  { name: 'Course Management', href: '/test-management', icon: BookOpen },
   { name: 'PDFs', href: '/pdfs', icon: FileText },
-  { name: 'Categories', href: '/categories', icon: FolderOpen },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Performance', href: '/performance', icon: TrendingUp },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
