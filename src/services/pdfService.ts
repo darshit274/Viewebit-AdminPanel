@@ -162,7 +162,7 @@ class PDFService {
 
   // Upload PDF file
   async uploadPDF(formData: FormData): Promise<{ success: boolean; data: PDF; message: string }> {
-    const response = await api.post('/admin/pdfs/upload', formData, {
+    const response = await api.post('/admin/pdf/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
