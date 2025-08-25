@@ -1,32 +1,29 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { clsx } from 'clsx';
 import {
   BarChart3,
   BookOpen,
+  CreditCard,
   FileText,
+  FolderOpen,
+  GraduationCap,
   Home,
   LogOut,
   Settings,
-  Shield,
-  Users,
-  GraduationCap,
-  FolderOpen,
   TrendingUp,
-  CreditCard,
+  Users
 } from 'lucide-react';
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import logo from '../../assets/MockTale.jpg'; // Adjust the path as necessary
 import { useAuth } from '../../hooks/useAuth';
-import { clsx } from 'clsx';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Students', href: '/students', icon: Users },
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
-  { name: 'Test Series', href: '/test-series', icon: BookOpen },
-  { name: 'Questions', href: '/questions', icon: GraduationCap },
+  { name: 'Course Management', href: '/test-management', icon: BookOpen },
   { name: 'PDFs', href: '/pdfs', icon: FileText },
-  { name: 'Categories', href: '/categories', icon: FolderOpen },
   { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Performance', href: '/performance', icon: TrendingUp },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
@@ -42,8 +39,8 @@ export const Sidebar: React.FC = () => {
     <div className="flex flex-col w-64 bg-white shadow-lg border-r border-gray-200 h-full">
       {/* Logo and Title */}
       <div className="flex items-center px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center">
-          <Shield className="h-8 w-8 text-primary-600" />
+        <div className="flex items-center w-10 h-10">
+            <img src={logo} alt="MockTale Logo" style={{borderRadius:"50%"}} />
           <div className="ml-3">
             <h1 className="text-lg font-semibold text-gray-900">MockTale</h1>
             <p className="text-xs text-gray-500">Admin Panel</p>

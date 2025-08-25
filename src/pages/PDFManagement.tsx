@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Upload, Plus, Grid, List, RefreshCw, Settings } from 'lucide-react';
+import { Upload, Plus, Grid, List, RefreshCw } from 'lucide-react';
 import { PDFCard } from '../components/pdf/PDFCard';
 import { PDFFilters } from '../components/pdf/PDFFilters';
 import { PDFStats } from '../components/pdf/PDFStats';
@@ -7,18 +7,17 @@ import { PDFEditModal } from '../components/modals/PDFEditModal';
 import { PDFPreviewModal } from '../components/modals/PDFPreviewModal';
 import { PDFUploadDropzone } from '../components/pdf/PDFUploadDropzone';
 import { ConfirmModal } from '../components/modals/ConfirmModal';
-import { CategoryManager } from '../components/pdf/CategoryManager';
 import { PDFListSkeleton, PDFHeaderSkeleton, PDFFilterSkeleton } from '../components/common/PDFSkeletonLoader';
-import pdfService, { PDF, PDFFilters as PDFFiltersType, PDFCategory, PDFStats as PDFStatsType } from '../services/pdfService';
+import pdfService, { PDF, PDFFilters as PDFFiltersType, PDFStats as PDFStatsType } from '../services/pdfService';
 import toast from 'react-hot-toast';
 
 export const PDFManagement: React.FC = () => {
   // State management
   const [pdfs, setPdfs] = useState<PDF[]>([]);
   const [stats, setStats] = useState<PDFStatsType | null>(null);
-  const [categories, setCategories] = useState<PDFCategory[]>([]);
   const [examTypes, setExamTypes] = useState<Array<{ id: number; name: string }>>([]);
   const [testSeries, setTestSeries] = useState<Array<{ id: string; title: string }>>([]);
+  const [courses, setCourses] = useState<Array<{ id: string; title: string }>>([]);
   
   // Loading states
   const [loading, setLoading] = useState(true);
@@ -28,7 +27,6 @@ export const PDFManagement: React.FC = () => {
   // UI states
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showUploadForm, setShowUploadForm] = useState(false);
-  const [showCategoryManager, setShowCategoryManager] = useState(false);
   
   // Modal states
   const [editModal, setEditModal] = useState({ isOpen: false, pdf: null as PDF | null });
@@ -74,9 +72,9 @@ export const PDFManagement: React.FC = () => {
     try {
       await Promise.all([
         loadStats(),
-        loadCategories(),
         loadExamTypes(),
-        loadTestSeries()
+        loadTestSeries(),
+        loadCourses()
       ]);
     } catch (error) {
       console.error('Error loading initial data:', error);
@@ -131,36 +129,60 @@ export const PDFManagement: React.FC = () => {
     }
   };
 
-  const loadCategories = async () => {
-    try {
-      const response = await pdfService.getCategories();
-      if (response.success) {
-        setCategories(response.data);
-      }
-    } catch (error) {
-      console.error('Error loading categories:', error);
-    }
-  };
 
   const loadExamTypes = async () => {
     try {
       const response = await pdfService.getExamTypes();
-      if (response.success) {
+      if (response.success && response.data) {
         setExamTypes(response.data);
       }
     } catch (error) {
       console.error('Error loading exam types:', error);
+      setExamTypes([]);
     }
   };
 
   const loadTestSeries = async () => {
     try {
       const response = await pdfService.getTestSeries();
-      if (response.success) {
+      if (response.success && response.data) {
         setTestSeries(response.data);
       }
     } catch (error) {
       console.error('Error loading test series:', error);
+      setTestSeries([]);
+    }
+  };
+
+  const loadCourses = async () => {
+    try {
+      // Use the test management API to get courses
+      const token = localStorage.getItem('admin_token');
+      const response = await fetch('http://localhost:3000/api/admin/test-management', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      console.log('Course API Response:', data);
+      console.log('Response success:', data.success);
+      console.log('Response data:', data.data);
+      if (data.success && data.data) {
+        // Map test series data to courses format
+        const coursesList = data.data.map((series: any) => {
+          console.log('Mapping series:', series);
+          return {
+            id: series.uuid,
+            title: series.title
+          };
+        });
+        console.log('Final courses list:', coursesList);
+        setCourses(coursesList);
+      } else {
+        console.log('API call failed or no data:', data);
+        setCourses([]);
+      }
+    } catch (error) {
+      console.error('Error loading courses:', error);
+      setCourses([]);
     }
   };
 
@@ -170,7 +192,7 @@ export const PDFManagement: React.FC = () => {
   }, []);
 
   const handleRefresh = async () => {
-    await Promise.all([loadPDFs(), loadStats(), loadCategories()]);
+    await Promise.all([loadPDFs(), loadStats(), loadCourses()]);
     toast.success('Data refreshed successfully');
   };
 
@@ -315,13 +337,6 @@ export const PDFManagement: React.FC = () => {
                   <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
                   Refresh
                 </button>
-                <button
-                  onClick={() => setShowCategoryManager(true)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                >
-                  <Settings className="h-4 w-4 mr-2" />
-                  Categories
-                </button>
                 <div className="flex items-center bg-white border border-gray-200 rounded-lg">
                   <button
                     onClick={() => setViewMode('grid')}
@@ -366,7 +381,7 @@ export const PDFManagement: React.FC = () => {
               </button>
             </div>
             <PDFUploadDropzone
-              categories={categories}
+              courses={courses}
               testSeries={testSeries}
               examTypes={examTypes}
               onUploadSuccess={handleUploadSuccess}
@@ -383,8 +398,7 @@ export const PDFManagement: React.FC = () => {
             <PDFFilters
               filters={filters}
               onFiltersChange={handleFiltersChange}
-              categories={categories}
-              examTypes={examTypes}
+                            examTypes={examTypes}
               testSeries={testSeries}
               loading={loading}
             />
@@ -400,7 +414,7 @@ export const PDFManagement: React.FC = () => {
               <Upload className="h-24 w-24 text-gray-300 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No PDFs found</h3>
               <p className="text-gray-600 mb-6">
-                {filters.search || filters.category_id || filters.access_level
+                {filters.search || filters.access_level
                   ? 'Try adjusting your search criteria or filters.'
                   : 'Upload your first PDF to get started.'}
               </p>
@@ -443,7 +457,7 @@ export const PDFManagement: React.FC = () => {
           isOpen={editModal.isOpen}
           onClose={() => setEditModal({ isOpen: false, pdf: null })}
           pdf={editModal.pdf}
-          categories={categories}
+          courses={courses}
           testSeries={testSeries}
           examTypes={examTypes}
           onUpdate={() => {
@@ -469,16 +483,6 @@ export const PDFManagement: React.FC = () => {
           loading={confirmModal.loading}
         />
 
-        <CategoryManager
-          isOpen={showCategoryManager}
-          onClose={() => setShowCategoryManager(false)}
-          categories={categories}
-          onUpdate={() => {
-            loadCategories();
-            loadPDFs();
-            loadStats();
-          }}
-        />
       </div>
     </div>
   );

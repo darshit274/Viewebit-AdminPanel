@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
-import { Search, Plus, Edit, Trash2, Upload, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Edit, Trash2, Upload, Filter, Download, CheckSquare, Square, MoreHorizontal } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { CardSkeleton } from '../../components/common/LoadingSpinner';
 import { ApiError, ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { QuestionModal } from '../../components/modals/QuestionModal';
 import { ConfirmModal } from '../../components/modals/ConfirmModal';
+import QuestionImportModal from '../../components/modals/QuestionImportModal';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -22,15 +24,33 @@ const questionsService = {
 };
 
 export const QuestionsPage: React.FC = () => {
+  const location = useLocation();
+  const testFilter = location.state as { testId?: string; testTitle?: string; testType?: string } | null;
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [difficulty, setDifficulty] = useState('');
   const [subject, setSubject] = useState('');
+  const [testId, setTestId] = useState(testFilter?.testId || '');
   
   // Modal states
   const [questionModal, setQuestionModal] = useState({ isOpen: false, mode: 'create' as 'create' | 'edit', question: null as any });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, question: null as any, loading: false });
+  const [importModal, setImportModal] = useState({ isOpen: false, categoryId: null as number | null, categoryName: '' });
+  
+  // Bulk operations state
+  const [selectedQuestions, setSelectedQuestions] = useState<Set<number>>(new Set());
+  const [bulkAction, setBulkAction] = useState('');
+  const [showBulkMenu, setShowBulkMenu] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  // Clear location state after reading it
+  useEffect(() => {
+    if (testFilter) {
+      window.history.replaceState({}, document.title);
+    }
+  }, []);
 
   const { 
     data: questionsResponse, 
@@ -42,7 +62,8 @@ export const QuestionsPage: React.FC = () => {
     limit: pageSize,
     search: searchTerm,
     difficulty,
-    subject
+    subject,
+    test_id: testId
   }));
 
   const { data: stats } = useApi(questionsService.getQuestionsStats);
@@ -90,6 +111,101 @@ export const QuestionsPage: React.FC = () => {
     refresh();
   };
 
+  // Bulk operations handlers
+  const handleSelectAll = () => {
+    if (selectedQuestions.size === questions.length) {
+      setSelectedQuestions(new Set());
+    } else {
+      setSelectedQuestions(new Set(questions.map((q: any) => q.id)));
+    }
+  };
+
+  const handleSelectQuestion = (questionId: number) => {
+    const newSelected = new Set(selectedQuestions);
+    if (newSelected.has(questionId)) {
+      newSelected.delete(questionId);
+    } else {
+      newSelected.add(questionId);
+    }
+    setSelectedQuestions(newSelected);
+  };
+
+  const handleBulkAction = async (action: string) => {
+    if (selectedQuestions.size === 0) {
+      toast.error('Please select questions first');
+      return;
+    }
+
+    setBulkLoading(true);
+    try {
+      const questionIds = Array.from(selectedQuestions);
+      
+      switch (action) {
+        case 'delete':
+          await api.delete('/admin/questions/bulk', {
+            data: { question_ids: questionIds }
+          });
+          toast.success(`${questionIds.length} questions deleted successfully`);
+          break;
+        case 'activate':
+          await api.patch('/admin/questions/bulk-update', {
+            question_ids: questionIds,
+            is_active: true
+          });
+          toast.success(`${questionIds.length} questions activated`);
+          break;
+        case 'deactivate':
+          await api.patch('/admin/questions/bulk-update', {
+            question_ids: questionIds,
+            is_active: false
+          });
+          toast.success(`${questionIds.length} questions deactivated`);
+          break;
+        case 'export':
+          const response = await api.get('/admin/questions/export', {
+            params: { question_ids: questionIds.join(',') },
+            responseType: 'blob'
+          });
+          const url = window.URL.createObjectURL(new Blob([response.data]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `questions_${Date.now()}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(url);
+          toast.success('Questions exported successfully');
+          break;
+      }
+      
+      setSelectedQuestions(new Set());
+      refresh();
+    } catch (error: any) {
+      console.error('Bulk action error:', error);
+      toast.error(error.response?.data?.message || 'Bulk action failed');
+    } finally {
+      setBulkLoading(false);
+      setShowBulkMenu(false);
+    }
+  };
+
+  const handleBulkImport = () => {
+    // For now, open a simple category selection modal
+    // In a real implementation, this would be more sophisticated
+    const categoryId = parseInt(prompt('Enter Category ID for import:') || '0');
+    const categoryName = prompt('Enter Category Name:') || 'Selected Category';
+    
+    if (categoryId > 0) {
+      setImportModal({ 
+        isOpen: true, 
+        categoryId, 
+        categoryName 
+      });
+    } else {
+      toast.error('Please provide a valid category ID');
+    }
+  };
+
   if (error) {
     return <ApiError error={error} onRetry={refresh} />;
   }
@@ -101,13 +217,70 @@ export const QuestionsPage: React.FC = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Question Bank</h1>
-            <p className="text-gray-600">Manage quiz questions and organize by subjects</p>
+            <p className="text-gray-600">
+              {testFilter?.testTitle 
+                ? `Managing questions for ${testFilter.testTitle} (${testFilter.testType} test)`
+                : 'Manage quiz questions and organize by subjects'}
+            </p>
           </div>
           <div className="flex space-x-3">
-            <button className="btn-secondary inline-flex items-center">
+            {selectedQuestions.size > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowBulkMenu(!showBulkMenu)}
+                  className="btn-secondary inline-flex items-center"
+                >
+                  <MoreHorizontal className="h-4 w-4 mr-2" />
+                  Bulk Actions ({selectedQuestions.size})
+                </button>
+                
+                {showBulkMenu && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-10">
+                    <div className="py-1">
+                      <button
+                        onClick={() => handleBulkAction('activate')}
+                        disabled={bulkLoading}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        Activate Selected
+                      </button>
+                      <button
+                        onClick={() => handleBulkAction('deactivate')}
+                        disabled={bulkLoading}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        Deactivate Selected
+                      </button>
+                      <button
+                        onClick={() => handleBulkAction('export')}
+                        disabled={bulkLoading}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        Export Selected
+                      </button>
+                      <hr className="my-1" />
+                      <button
+                        onClick={() => handleBulkAction('delete')}
+                        disabled={bulkLoading}
+                        className="block px-4 py-2 text-sm text-red-700 hover:bg-red-50 w-full text-left"
+                      >
+                        Delete Selected
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <button 
+              onClick={handleBulkImport}
+              disabled={bulkLoading}
+              className="btn-secondary inline-flex items-center"
+            >
               <Upload className="h-4 w-4 mr-2" />
               Bulk Import
             </button>
+            
             <button 
               onClick={handleAddQuestion}
               className="btn-primary inline-flex items-center"
@@ -227,20 +400,64 @@ export const QuestionsPage: React.FC = () => {
               </select>
             </div>
 
-            <button 
-              onClick={refresh}
-              className="btn-primary inline-flex items-center"
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Apply Filters
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={refresh}
+                className="btn-primary inline-flex items-center"
+              >
+                <Filter className="h-4 w-4 mr-2" />
+                Apply Filters
+              </button>
+              
+              {testId && (
+                <button 
+                  onClick={() => {
+                    setTestId('');
+                    refresh();
+                  }}
+                  className="btn-secondary inline-flex items-center"
+                >
+                  Clear Test Filter
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Questions List */}
         <div className="card">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Questions</h3>
+          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              {questions.length > 0 && (
+                <button
+                  onClick={handleSelectAll}
+                  className="text-gray-400 hover:text-gray-600"
+                  title={selectedQuestions.size === questions.length ? "Deselect All" : "Select All"}
+                >
+                  {selectedQuestions.size === questions.length ? (
+                    <CheckSquare className="h-5 w-5" />
+                  ) : (
+                    <Square className="h-5 w-5" />
+                  )}
+                </button>
+              )}
+              <h3 className="text-lg font-medium text-gray-900">Questions</h3>
+              {selectedQuestions.size > 0 && (
+                <span className="text-sm text-gray-500">
+                  ({selectedQuestions.size} selected)
+                </span>
+              )}
+            </div>
+            
+            {questions.length > 0 && (
+              <button
+                onClick={() => handleBulkAction('export')}
+                className="btn-secondary text-sm inline-flex items-center"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export All
+              </button>
+            )}
           </div>
 
           {loading ? (
@@ -264,45 +481,58 @@ export const QuestionsPage: React.FC = () => {
               {questions.map((question: any, index: number) => (
                 <div key={question.id} className="p-6 hover:bg-gray-50">
                   <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <span className="text-sm font-medium text-gray-500">
-                          Q{((currentPage - 1) * pageSize) + index + 1}
-                        </span>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDifficultyBadge(question.difficulty)}`}>
-                          {question.difficulty}
-                        </span>
-                        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                          {question.subject}
-                        </span>
-                      </div>
-                      
-                      <h4 className="text-lg font-medium text-gray-900 mb-3">
-                        {question.question_text}
-                      </h4>
-                      
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center">
-                          <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">A</span>
-                          <span className="text-gray-700">{question.option_a}</span>
+                    <div className="flex items-start space-x-3">
+                      <button
+                        onClick={() => handleSelectQuestion(question.id)}
+                        className="mt-1 text-gray-400 hover:text-gray-600"
+                        title={selectedQuestions.has(question.id) ? "Deselect" : "Select"}
+                      >
+                        {selectedQuestions.has(question.id) ? (
+                          <CheckSquare className="h-5 w-5" />
+                        ) : (
+                          <Square className="h-5 w-5" />
+                        )}
+                      </button>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <span className="text-sm font-medium text-gray-500">
+                            Q{((currentPage - 1) * pageSize) + index + 1}
+                          </span>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDifficultyBadge(question.difficulty)}`}>
+                            {question.difficulty}
+                          </span>
+                          <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                            {question.subject}
+                          </span>
                         </div>
-                        <div className="flex items-center">
-                          <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">B</span>
-                          <span className="text-gray-700">{question.option_b}</span>
+                        
+                        <h4 className="text-lg font-medium text-gray-900 mb-3">
+                          {question.question_text}
+                        </h4>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div className="flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">A</span>
+                            <span className="text-gray-700">{question.option_a}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">B</span>
+                            <span className="text-gray-700">{question.option_b}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">C</span>
+                            <span className="text-gray-700">{question.option_c}</span>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">D</span>
+                            <span className="text-gray-700">{question.option_d}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center">
-                          <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">C</span>
-                          <span className="text-gray-700">{question.option_c}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">D</span>
-                          <span className="text-gray-700">{question.option_d}</span>
-                        </div>
-                      </div>
 
-                      {question.topic && (
-                        <p className="text-sm text-gray-500 mt-2">Topic: {question.topic}</p>
-                      )}
+                        {question.topic && (
+                          <p className="text-sm text-gray-500 mt-2">Topic: {question.topic}</p>
+                        )}
+                      </div>
                     </div>
 
                     <div className="ml-6 flex space-x-2">
@@ -374,6 +604,19 @@ export const QuestionsPage: React.FC = () => {
           type="danger"
           loading={confirmModal.loading}
         />
+
+        {importModal.categoryId && (
+          <QuestionImportModal
+            isOpen={importModal.isOpen}
+            onClose={() => setImportModal({ isOpen: false, categoryId: null, categoryName: '' })}
+            categoryId={importModal.categoryId}
+            categoryName={importModal.categoryName}
+            onImportComplete={() => {
+              refresh();
+              setImportModal({ isOpen: false, categoryId: null, categoryName: '' });
+            }}
+          />
+        )}
       </div>
     </ErrorBoundary>
   );

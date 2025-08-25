@@ -127,137 +127,168 @@ export const StudentModal: React.FC<StudentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="flex items-center justify-between p-6 border-b">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">
-            {mode === 'create' ? 'Add New Student' : 'Edit Student'}
+            {mode === 'create' ? ' Add New Student' : '✏️ Edit Student'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-lg"
           >
-            <X className="h-6 w-6" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information Section */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Username *
-            </label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                className={`input-field pl-10 ${errors.username ? 'border-red-500' : ''}`}
-                placeholder="Enter username"
-              />
+            <h3 className="text-md font-medium text-gray-800 mb-4">Basic Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Username *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.username ? 'border-red-500' : ''}`}
+                    placeholder="Enter username"
+                  />
+                </div>
+                {errors.username && (
+                  <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email *
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.email ? 'border-red-500' : ''}`}
+                    placeholder="Enter email address"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
+              </div>
             </div>
-            {errors.username && (
-              <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+          </div>
+
+          {/* Security Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-md font-medium text-gray-800 mb-4">Security & Authentication</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password {mode === 'create' ? '*' : ''}
+                  <span className="text-xs text-gray-500 ml-1">
+                    {mode === 'edit' ? '(leave blank to keep current)' : '(minimum 6 characters)'}
+                  </span>
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    className={`w-full px-3 py-2 pl-10 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.password ? 'border-red-500' : ''}`}
+                    placeholder={mode === 'create' ? 'Enter password' : 'Enter new password'}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                  <span className="text-xs text-gray-500 ml-1">(optional)</span>
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {mode === 'edit' && (
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isEmailVerified"
+                    id="isEmailVerified"
+                    checked={formData.isEmailVerified}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="isEmailVerified" className="ml-3 block text-sm font-medium text-gray-700">
+                    ✅ Email Verified
+                    <span className="text-xs text-gray-500 block">Check if student's email is verified</span>
+                  </label>
+                </div>
+              </div>
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email *
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className={`input-field pl-10 ${errors.email ? 'border-red-500' : ''}`}
-                placeholder="Enter email"
-              />
-            </div>
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password {mode === 'create' ? '*' : '(leave blank to keep current)'}
-            </label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`input-field pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
-                placeholder={mode === 'create' ? 'Enter password' : 'Enter new password'}
-              />
+          {/* Action Buttons */}
+          <div className="border-t pt-6">
+            <div className="flex space-x-3">
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    {mode === 'create' ? 'Creating...' : 'Updating...'}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    {mode === 'create' ? '➕ Create Student' : '💾 Update Student'}
+                  </div>
+                )}
               </button>
             </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone
-            </label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="input-field pl-10"
-                placeholder="Enter phone number"
-              />
-            </div>
-          </div>
-
-          {mode === 'edit' && (
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                name="isEmailVerified"
-                id="isEmailVerified"
-                checked={formData.isEmailVerified}
-                onChange={handleChange}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isEmailVerified" className="ml-2 block text-sm text-gray-700">
-                Email Verified
-              </label>
-            </div>
-          )}
-
-          <div className="flex space-x-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 btn-secondary"
-              disabled={loading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 btn-primary"
-              disabled={loading}
-            >
-              {loading ? 'Saving...' : mode === 'create' ? 'Create Student' : 'Update Student'}
-            </button>
           </div>
         </form>
       </div>

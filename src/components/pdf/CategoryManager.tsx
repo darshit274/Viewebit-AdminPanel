@@ -108,7 +108,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             </div>
 
             <div className="space-y-3">
-              {categories.map((category) => (
+              {Array.isArray(categories) && categories.length > 0 ? categories.map((category) => (
                 <div
                   key={category.id}
                   className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
@@ -144,7 +144,11 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     </button>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="text-center py-8 text-gray-500">
+                  No categories available
+                </div>
+              )}
             </div>
           </div>
 

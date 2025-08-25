@@ -494,8 +494,8 @@ export default function SubscriptionsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{subscription.testSeries.title}</div>
-                        <div className="text-sm text-gray-500">ID: {subscription.test_series_id}</div>
+                        <div className="text-sm text-gray-900">{subscription?.testSeries?.title}</div>
+                        <div className="text-sm text-gray-500">ID: {subscription?.test_series_id}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{subscription.transaction_id}</div>

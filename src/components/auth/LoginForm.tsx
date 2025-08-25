@@ -1,11 +1,11 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Eye, EyeOff, Lock, Mail, Shield } from 'lucide-react';
-import { authService } from '../../services/auth';
 import toast from 'react-hot-toast';
-
+import { z } from 'zod';
+import logo from '../../assets/MockTale.jpg'; // Adjust the path as necessary
+import { authService } from '../../services/auth';
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -47,8 +47,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-primary-100">
-            <Shield className="h-8 w-8 text-primary-600" />
+          <div className="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-primary-100">
+            {/* <Shield className="h-8 w-8 text-primary-600" /> */}
+            <img src={logo} alt="MockTale Logo" style={{borderRadius:"50%"}} />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             MockTale Admin

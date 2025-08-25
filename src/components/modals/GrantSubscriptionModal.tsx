@@ -10,7 +10,7 @@ interface User {
 }
 
 interface TestSeries {
-  id: string;
+  id: number;
   title: string;
   price: number;
 }
@@ -60,13 +60,24 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
   const fetchTestSeries = async () => {
     try {
-      const response = await api.get('/admin/test-series', {
+      const response = await api.get('/admin/test-management', {
         params: { limit: 100 }
       });
-      setTestSeries(response.data.data);
+      
+      // Safely extract the testSeries array with fallback
+      const testSeriesData = response.data?.data || [];
+      
+      // Ensure it's an array before setting state
+      if (Array.isArray(testSeriesData)) {
+        setTestSeries(testSeriesData);
+      } else {
+        console.warn('Expected testSeries to be an array, got:', typeof testSeriesData);
+        setTestSeries([]);
+      }
     } catch (error) {
       console.error('Error fetching test series:', error);
       toast.error('Failed to fetch test series');
+      setTestSeries([]); // Ensure state remains as empty array on error
     }
   };
 
@@ -115,7 +126,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
   };
 
   const handleTestSeriesChange = (testSeriesId: string) => {
-    const selectedTestSeries = testSeries.find(ts => ts.id === testSeriesId);
+    const selectedTestSeries = testSeries.find(ts => ts.id.toString() === testSeriesId);
     setFormData({
       ...formData,
       test_series_id: testSeriesId,
@@ -192,7 +203,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                 required
               >
                 <option value="">Select test series</option>
-                {testSeries.map(ts => (
+                {Array.isArray(testSeries) && testSeries.map(ts => (
                   <option key={ts.id} value={ts.id}>
                     {ts.title} (₹{ts.price})
                   </option>
@@ -258,7 +269,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                 <h3 className="font-medium text-blue-900 mb-2">Subscription Summary</h3>
                 <div className="text-sm text-blue-800 space-y-1">
                   <p><span className="font-medium">User:</span> {users.find(u => u.uuid === formData.user_id)?.username}</p>
-                  <p><span className="font-medium">Test Series:</span> {testSeries.find(ts => ts.id === formData.test_series_id)?.title}</p>
+                  <p><span className="font-medium">Test Series:</span> {testSeries.find(ts => ts.id.toString() === formData.test_series_id)?.title}</p>
                   <p><span className="font-medium">Amount:</span> ₹{formData.amount_paid} {formData.amount_paid === 0 ? '(Free)' : ''}</p>
                   <p><span className="font-medium">Duration:</span> {formData.expiry_months === 0 ? 'Lifetime' : `${formData.expiry_months} months`}</p>
                   <p><span className="font-medium">Type:</span> {formData.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
