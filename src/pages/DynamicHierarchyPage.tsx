@@ -71,7 +71,7 @@ const DynamicHierarchyPage: React.FC = () => {
   const [createModalParent, setCreateModalParent] = useState<number | null>(null);
 
   // API Base URL
-  const API_BASE_URL = 'http://localhost:3000/api/admin/test-management';
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/test-management`;
 
   // Get admin token
   const getAuthToken = () => {

@@ -171,7 +171,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
   });
 
   // API Configuration
-  const API_BASE = 'http://localhost:3000/api/admin/test-management/simple-hierarchy';
+  const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/test-management/simple-hierarchy`;
   
   const getAuthToken = () => {
     return localStorage.getItem('admin_token') || 
