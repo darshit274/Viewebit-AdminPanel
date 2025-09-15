@@ -779,10 +779,16 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={() => setShowQuestionModal(true)}
-                  disabled={!data?.buttons_state.can_add_question}
+                  onClick={() => {
+                    if (isRootLevel) {
+                      toast.error('Questions cannot be added directly to the course level. Please create categories first and add questions inside them.');
+                      return;
+                    }
+                    setShowQuestionModal(true);
+                  }}
+                  disabled={!data?.buttons_state.can_add_question || isRootLevel}
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                    data?.buttons_state.can_add_question
+                    data?.buttons_state.can_add_question && !isRootLevel
                       ? 'bg-green-600 text-white hover:bg-green-700'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
@@ -792,10 +798,16 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 </button>
 
                 <button
-                  onClick={() => setShowImportModal(true)}
-                  disabled={!data?.buttons_state.can_add_question}
+                  onClick={() => {
+                    if (isRootLevel) {
+                      toast.error('Bulk import cannot be used at the course level. Please create categories first and import questions inside them.');
+                      return;
+                    }
+                    setShowImportModal(true);
+                  }}
+                  disabled={!data?.buttons_state.can_add_question || isRootLevel}
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                    data?.buttons_state.can_add_question
+                    data?.buttons_state.can_add_question && !isRootLevel
                       ? 'bg-blue-600 text-white hover:bg-blue-700'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
@@ -2040,9 +2052,10 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
       {/* Constraint Rules Info */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-amber-800 mb-2">Either-Or Hierarchy Rules:</h3>
+          <h3 className="text-sm font-medium text-amber-800 mb-2">Hierarchy Rules:</h3>
           <ul className="text-xs text-amber-700 space-y-1">
-            <li>• Each level can contain EITHER categories OR questions, never both</li>
+            <li>• <strong>Course Level:</strong> Questions cannot be added directly - create categories first</li>
+            <li>• <strong>Category Levels:</strong> Each level can contain EITHER categories OR questions, never both</li>
             <li>• Once you add a category, the "Add Question" button gets disabled</li>
             <li>• Once you add a question, the "Add Category" button gets disabled</li>
             <li>• Navigate into categories to create deeper hierarchies</li>
