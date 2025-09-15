@@ -29,7 +29,13 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
     access_level: 'free',
     test_series_id: '',
     exam_type_id: '',
-    tags: ''
+    tags: '',
+    // Pricing fields
+    price: 0,
+    currency: 'INR',
+    discount_percentage: 0,
+    subscription_required: false,
+    preview_pages: 0
   });
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +48,13 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
         access_level: pdf.access_level || 'free',
         test_series_id: pdf.test_series_id?.toString() || '',
         exam_type_id: pdf.exam_type_id?.toString() || '',
-        tags: pdf.tags ? (Array.isArray(pdf.tags) ? pdf.tags.join(', ') : pdf.tags) : ''
+        tags: pdf.tags ? (Array.isArray(pdf.tags) ? pdf.tags.join(', ') : pdf.tags) : '',
+        // Pricing fields
+        price: pdf.price || 0,
+        currency: pdf.currency || 'INR',
+        discount_percentage: pdf.discount_percentage || 0,
+        subscription_required: pdf.subscription_required || false,
+        preview_pages: pdf.preview_pages || 0
       });
     }
   }, [pdf, isOpen]);
@@ -61,7 +73,7 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : null
       };
 
-      await api.put(`/admin/pdfs/${pdf.id}`, updateData);
+      await api.put(`/admin/pdf/${pdf.id}`, updateData);
       toast.success('PDF updated successfully');
       onUpdate();
       onClose();
@@ -74,8 +86,13 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : type === 'number' ? parseFloat(value) || 0 : value
+    }));
   };
 
   if (!isOpen || !pdf) return null;
@@ -222,6 +239,104 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
             <p className="text-sm text-gray-500 mt-1">
               Separate multiple tags with commas (e.g., physics, chemistry, biology)
             </p>
+          </div>
+
+          {/* Pricing Section */}
+          <div className="border-t pt-6">
+            <h4 className="text-lg font-medium text-gray-900 mb-4">Pricing Settings</h4>
+
+            <div className="space-y-4">
+              {/* Price and Currency (show only if Premium) */}
+              {formData.access_level === 'premium' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Price
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleChange}
+                      step="0.01"
+                      min="0"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Currency
+                    </label>
+                    <select
+                      name="currency"
+                      value={formData.currency}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="INR">INR (₹)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Discount Percentage (show only if Premium) */}
+              {formData.access_level === 'premium' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount Percentage
+                  </label>
+                  <input
+                    type="number"
+                    name="discount_percentage"
+                    value={formData.discount_percentage}
+                    onChange={handleChange}
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="0.00"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Optional discount percentage (0-100)</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Subscription Required */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="subscription_required"
+                    id="subscription_required"
+                    checked={formData.subscription_required}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="subscription_required" className="ml-2 block text-sm text-gray-700">
+                    Requires subscription
+                  </label>
+                </div>
+
+                {/* Preview Pages */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preview Pages
+                  </label>
+                  <input
+                    type="number"
+                    name="preview_pages"
+                    value={formData.preview_pages}
+                    onChange={handleChange}
+                    min="0"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="0"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Number of free preview pages</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
