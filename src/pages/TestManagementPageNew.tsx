@@ -96,11 +96,13 @@ interface TestSeries {
   pricing_type?: 'free' | 'paid';
   price?: number;
   currency?: string;
-  demo_tests_count?: number;  
+  demo_tests_count?: number;
   subscription_duration_days?: number;
   discount_percentage?: number;
   is_featured?: boolean;
   features?: any;
+  has_negative_marking?: boolean;
+  negative_marks?: number;
   created_at: string;
   updated_at: string;
   categories_count: number;
@@ -120,6 +122,8 @@ interface TestSeriesFormData {
   discount_percentage?: number;
   is_featured?: boolean;
   features?: any;
+  has_negative_marking?: boolean;
+  negative_marks?: number;
 }
 
 // Import existing components
@@ -160,7 +164,9 @@ const TestManagementPageNew: React.FC = () => {
     subscription_duration_days: 365,
     discount_percentage: 0,
     is_featured: false,
-    features: null
+    features: null,
+    has_negative_marking: false,
+    negative_marks: 0.25
   });
 
   // Data fetching using simple API
@@ -353,7 +359,9 @@ const TestManagementPageNew: React.FC = () => {
       subscription_duration_days: 365,
       discount_percentage: 0,
       is_featured: false,
-      features: null
+      features: null,
+      has_negative_marking: false,
+      negative_marks: 0.25
     });
   };
 
@@ -378,7 +386,9 @@ const TestManagementPageNew: React.FC = () => {
       subscription_duration_days: testSeries.subscription_duration_days || 365,
       discount_percentage: testSeries.discount_percentage || 0,
       is_featured: testSeries.is_featured || false,
-      features: testSeries.features || null
+      features: testSeries.features || null,
+      has_negative_marking: (testSeries as any).has_negative_marking || false,
+      negative_marks: (testSeries as any).negative_marks || 0.25
     });
     setShowModal(true);
   };
@@ -1046,6 +1056,55 @@ const TestManagementPageNew: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Test Configuration */}
+              <div className="border-t pt-4">
+                <h3 className="text-md font-medium text-gray-800 mb-3">⚙️ Test Configuration</h3>
+
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <input
+                      type="checkbox"
+                      id="has_negative_marking"
+                      checked={formData.has_negative_marking}
+                      onChange={(e) => setFormData({ ...formData, has_negative_marking: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                    />
+                    <div className="ml-3">
+                      <label htmlFor="has_negative_marking" className="block text-sm font-medium text-gray-700">
+                        Enable Negative Marking
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Deduct marks for incorrect answers to prevent random guessing
+                      </p>
+                    </div>
+                  </div>
+
+                  {formData.has_negative_marking && (
+                    <div className="ml-7">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Negative Marks per Wrong Answer
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          step="0.25"
+                          min="0"
+                          max="1"
+                          value={formData.negative_marks}
+                          onChange={(e) => setFormData({ ...formData, negative_marks: parseFloat(e.target.value) || 0.25 })}
+                          className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required={formData.has_negative_marking}
+                        />
+                        <span className="text-sm text-gray-600">marks</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Common values: 0.25 (for 4-option MCQs), 0.33 (for 3-option MCQs)
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Status Toggle */}
