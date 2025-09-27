@@ -33,14 +33,20 @@ interface Category {
 interface Question {
   id: number;
   uuid: string;
-  question_text: string;
-  option_a: string;
-  option_b: string;
-  option_c: string;
-  option_d: string;
+  question_text: string | null;
+  option_a: string | null;
+  option_b: string | null;
+  option_c: string | null;
+  option_d: string | null;
   correct_answer: 'A' | 'B' | 'C' | 'D';
-  explanation?: string;
+  explanation?: string | null;
   marks: number;
+  question_text_gujarati?: string | null;
+  option_a_gujarati?: string | null;
+  option_b_gujarati?: string | null;
+  option_c_gujarati?: string | null;
+  option_d_gujarati?: string | null;
+  explanation_gujarati?: string | null;
 }
 
 interface HierarchyData {
@@ -660,7 +666,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
       const question = confirmModal.item as Question;
       return {
         title: 'Delete Question',
-        message: `Are you sure you want to delete this question: "${question.question_text.slice(0, 50)}..."? This action cannot be undone.`,
+        message: `Are you sure you want to delete this question: "${(question.question_text || question.question_text_gujarati || 'No question text').slice(0, 50)}..."? This action cannot be undone.`,
       };
     }
     return { title: '', message: '' };
@@ -996,26 +1002,38 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                             className="mt-1 mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           />
                           <div className="flex-1">
-                          <h3 className="font-medium text-gray-900 mb-2">
-                            Q{index + 1}. {question.question_text}
-                          </h3>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h3 className="font-medium text-gray-900">
+                              Q{index + 1}. {question.question_text || question.question_text_gujarati || 'No question text'}
+                            </h3>
+                            {/* Language indicator */}
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              question.question_text && question.question_text_gujarati ? 'bg-purple-100 text-purple-800' :
+                              question.question_text ? 'bg-blue-100 text-blue-800' :
+                              question.question_text_gujarati ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {question.question_text && question.question_text_gujarati ? 'Both' :
+                               question.question_text ? 'English' :
+                               question.question_text_gujarati ? 'Gujarati' : 'Unknown'}
+                            </span>
+                          </div>
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             <div className={`p-2 rounded ${question.correct_answer === 'A' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                              A. {question.option_a}
+                              A. {question.option_a || question.option_a_gujarati || 'No option A'}
                             </div>
                             <div className={`p-2 rounded ${question.correct_answer === 'B' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                              B. {question.option_b}
+                              B. {question.option_b || question.option_b_gujarati || 'No option B'}
                             </div>
                             <div className={`p-2 rounded ${question.correct_answer === 'C' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                              C. {question.option_c}
+                              C. {question.option_c || question.option_c_gujarati || 'No option C'}
                             </div>
                             <div className={`p-2 rounded ${question.correct_answer === 'D' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                              D. {question.option_d}
+                              D. {question.option_d || question.option_d_gujarati || 'No option D'}
                             </div>
                           </div>
-                          {question.explanation && (
+                          {(question.explanation || question.explanation_gujarati) && (
                             <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                              <strong>Explanation:</strong> {question.explanation}
+                              <strong>Explanation:</strong> {question.explanation || question.explanation_gujarati}
                             </div>
                           )}
                           <div className="mt-2 text-xs text-gray-500">
