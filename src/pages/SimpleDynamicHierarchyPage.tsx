@@ -12,6 +12,7 @@ import { Upload } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { ConfirmModal } from '../components/modals/ConfirmModal';
 import QuestionImportModal from '../components/modals/QuestionImportModal';
+import RichTextEditor from '../components/common/RichTextEditor';
 
 // Types
 interface TestSeries {
@@ -28,6 +29,9 @@ interface Category {
   description?: string;
   node_type: 'unset' | 'container' | 'question_holder';
   hierarchy_level: number;
+  negative_marking_enabled?: boolean;
+  negative_marks_per_wrong?: number;
+  test_duration_minutes?: number;
 }
 
 interface Question {
@@ -92,6 +96,9 @@ interface CategoryFormData {
   description: string;
   name_gujarati: string;
   description_gujarati: string;
+  negative_marking_enabled: boolean;
+  negative_marks_per_wrong: number;
+  test_duration_minutes: number;
 }
 
 interface QuestionFormData {
@@ -153,11 +160,14 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
     item: null as Category | Question | null,
     action: '' as 'delete_category' | 'delete_question' | ''
   });
-  const [categoryForm, setCategoryForm] = useState<CategoryFormData>({ 
-    name: '', 
-    description: '', 
-    name_gujarati: '', 
-    description_gujarati: '' 
+  const [categoryForm, setCategoryForm] = useState<CategoryFormData>({
+    name: '',
+    description: '',
+    name_gujarati: '',
+    description_gujarati: '',
+    negative_marking_enabled: false,
+    negative_marks_per_wrong: 0.25,
+    test_duration_minutes: 60
   });
   const [questionForm, setQuestionForm] = useState<QuestionFormData>({
     question_text: '',
@@ -262,6 +272,27 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
     }
   };
 
+  // Helper function to determine if negative marking should be shown
+  // Rule: Only show for categories with node_type === 'question_holder'
+  const shouldShowNegativeMarking = (): boolean => {
+    if (!data) return false;
+
+    // When editing a category, check the editingCategory's node_type directly
+    if (editingCategory) {
+      return editingCategory.node_type === 'question_holder';
+    }
+
+    // For creating new categories, check if current level supports questions
+    // (can_add_question means this level can have question_holder categories)
+    return data.buttons_state?.can_add_question || false;
+  };
+
+  // Helper function to determine if test timing should be shown
+  // Rule: Only show for categories with node_type === 'question_holder' (same as negative marking)
+  const shouldShowTestTiming = (): boolean => {
+    return shouldShowNegativeMarking();
+  };
+
   // Create category
   const createCategory = async () => {
     try {
@@ -278,6 +309,9 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
         description: categoryForm.description.trim() || undefined,
         name_gujarati: categoryForm.name_gujarati.trim() || undefined,
         description_gujarati: categoryForm.description_gujarati.trim() || undefined,
+        negative_marking_enabled: categoryForm.negative_marking_enabled,
+        negative_marks_per_wrong: categoryForm.negative_marks_per_wrong,
+        test_duration_minutes: categoryForm.test_duration_minutes,
         ...(categoryUuid ? {} : { testSeriesUuid })
       };
 
@@ -296,7 +330,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
       if (result.success) {
         toast.success('Category created successfully');
         setShowCategoryModal(false);
-        setCategoryForm({ name: '', description: '', name_gujarati: '', description_gujarati: '' });
+        setCategoryForm({
+          name: '',
+          description: '',
+          name_gujarati: '',
+          description_gujarati: '',
+          negative_marking_enabled: false,
+          negative_marks_per_wrong: 0.25,
+          test_duration_minutes: 60
+        });
         await fetchData();
       } else {
         toast.error(result.message || 'Failed to create category');
@@ -378,7 +420,10 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
       name: category.name,
       description: category.description || '',
       name_gujarati: (category as any).name_gujarati || '',
-      description_gujarati: (category as any).description_gujarati || ''
+      description_gujarati: (category as any).description_gujarati || '',
+      negative_marking_enabled: category.negative_marking_enabled || false,
+      negative_marks_per_wrong: category.negative_marks_per_wrong || 0.25,
+      test_duration_minutes: category.test_duration_minutes || 60
     });
     setShowEditCategoryModal(true);
   };
@@ -400,7 +445,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
       if (result.success) {
         toast.success('Category updated successfully');
         setShowEditCategoryModal(false);
-        setCategoryForm({ name: '', description: '', name_gujarati: '', description_gujarati: '' });
+        setCategoryForm({
+          name: '',
+          description: '',
+          name_gujarati: '',
+          description_gujarati: '',
+          negative_marking_enabled: false,
+          negative_marks_per_wrong: 0.25,
+          test_duration_minutes: 60
+        });
         setEditingCategory(null);
         await fetchData();
       } else {
@@ -1356,8 +1409,128 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Negative Marking Configuration */}
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-800 mb-3">⚖️ Negative Marking (For Question-Holder Categories)</h4>
+                <div className="space-y-4">
+                  {shouldShowNegativeMarking() && (
+                  <>
+                    <div className="flex items-start">
+                      <input
+                        type="checkbox"
+                        id="negative_marking_enabled"
+                        checked={categoryForm.negative_marking_enabled}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, negative_marking_enabled: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      />
+                      <div className="ml-3">
+                        <label htmlFor="negative_marking_enabled" className="block text-sm font-medium text-gray-700">
+                          Enable Negative Marking
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Deduct marks for incorrect answers in this category. Only applies to categories with questions.
+                        </p>
+                      </div>
+                    </div>
+
+                    {categoryForm.negative_marking_enabled && (
+                      <div className="ml-7">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Negative Marks per Wrong Answer
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            step="0.25"
+                            min="0"
+                            max="1"
+                            value={categoryForm.negative_marks_per_wrong}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, negative_marks_per_wrong: parseFloat(e.target.value) || 0.25 })}
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required={categoryForm.negative_marking_enabled}
+                          />
+                          <span className="text-sm text-gray-600">marks</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Common values: 0.25 (for 4-option MCQs), 0.33 (for 3-option MCQs)
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {!shouldShowNegativeMarking() && (
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-blue-700">
+                          <strong>Negative marking is not available for this category.</strong><br />
+                          Negative marking only applies to categories that directly contain questions.
+                          This category contains subcategories or is empty, so negative marking is not applicable.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                </div>
+              </div>
+
+              {/* Test Timing Configuration */}
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-800 mb-3">⏱️ Test Timing (For Question-Holder Categories)</h4>
+                <div className="space-y-4">
+                  {shouldShowTestTiming() && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Test Duration (Minutes)
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="number"
+                          min="1"
+                          max="600"
+                          step="1"
+                          value={categoryForm.test_duration_minutes}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, test_duration_minutes: parseInt(e.target.value) || 60 })}
+                          className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                        <span className="text-sm text-gray-600">minutes</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Set the test duration for questions in this category (default: 60 minutes)
+                      </p>
+                    </div>
+                  )}
+
+                  {!shouldShowTestTiming() && (
+                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-blue-700">
+                            <strong>Test timing is not available for this category.</strong><br />
+                            Test timing only applies to categories that directly contain questions.
+                            This category contains subcategories or is empty, so test timing is not applicable.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            
+
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => setShowCategoryModal(false)}
@@ -1571,12 +1744,11 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Explanation (Gujarati)
                     </label>
-                    <textarea
+                    <RichTextEditor
                       value={questionForm.explanation_gujarati}
-                      onChange={(e) => setQuestionForm({ ...questionForm, explanation_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="ગુજરાતીમાં સમજુતી દાખલ કરો (વૈકલ્પિક)"
-                      rows={3}
+                      onChange={(content) => setQuestionForm({ ...questionForm, explanation_gujarati: content })}
+                      placeholder="ગુજરાતીમાં સમજુતી દાખલ કરો (વૈકલ્પિક)..."
+                      height={200}
                     />
                   </div>
                 </div>
@@ -1673,14 +1845,142 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Negative Marking Configuration */}
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-800 mb-3">⚖️ Negative Marking (For Question-Holder Categories)</h4>
+                <div className="space-y-4">
+                  {shouldShowNegativeMarking() && (
+                    <>
+                      <div className="flex items-start">
+                        <input
+                          type="checkbox"
+                          id="edit_negative_marking_enabled"
+                          checked={categoryForm.negative_marking_enabled}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, negative_marking_enabled: e.target.checked })}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                        />
+                        <div className="ml-3">
+                          <label htmlFor="edit_negative_marking_enabled" className="block text-sm font-medium text-gray-700">
+                            Enable Negative Marking
+                          </label>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Deduct marks for incorrect answers in this category. Only applies to categories with questions.
+                          </p>
+                        </div>
+                      </div>
+
+                      {categoryForm.negative_marking_enabled && (
+                        <div className="ml-7">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Negative Marks per Wrong Answer
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="number"
+                              step="0.25"
+                              min="0"
+                              max="1"
+                              value={categoryForm.negative_marks_per_wrong}
+                              onChange={(e) => setCategoryForm({ ...categoryForm, negative_marks_per_wrong: parseFloat(e.target.value) || 0.25 })}
+                              className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              required={categoryForm.negative_marking_enabled}
+                            />
+                            <span className="text-sm text-gray-600">marks</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Common values: 0.25 (for 4-option MCQs), 0.33 (for 3-option MCQs)
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {!shouldShowNegativeMarking() && (
+                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-blue-700">
+                            <strong>Negative marking is not available for this category.</strong><br />
+                            Negative marking only applies to categories that directly contain questions.
+                            This category contains subcategories or is empty, so negative marking is not applicable.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Test Timing Configuration */}
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-800 mb-3">⏱️ Test Timing (For Question-Holder Categories)</h4>
+                <div className="space-y-4">
+                  {shouldShowTestTiming() && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Test Duration (Minutes)
+                      </label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="number"
+                          min="1"
+                          max="600"
+                          step="1"
+                          value={categoryForm.test_duration_minutes}
+                          onChange={(e) => setCategoryForm({ ...categoryForm, test_duration_minutes: parseInt(e.target.value) || 60 })}
+                          className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                        <span className="text-sm text-gray-600">minutes</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Set the test duration for questions in this category (default: 60 minutes)
+                      </p>
+                    </div>
+                  )}
+
+                  {!shouldShowTestTiming() && (
+                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-blue-700">
+                            <strong>Test timing is not available for this category.</strong><br />
+                            Test timing only applies to categories that directly contain questions.
+                            This category contains subcategories or is empty, so test timing is not applicable.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-            
+
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => {
                   setShowEditCategoryModal(false);
                   setEditingCategory(null);
-                  setCategoryForm({ name: '', description: '', name_gujarati: '', description_gujarati: '' });
+                  setCategoryForm({
+          name: '',
+          description: '',
+          name_gujarati: '',
+          description_gujarati: '',
+          negative_marking_enabled: false,
+          negative_marks_per_wrong: 0.25,
+          test_duration_minutes: 60
+        });
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
               >
@@ -1811,15 +2111,14 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Explanation
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Explanation (Rich Text Editor)
                 </label>
-                <textarea
+                <RichTextEditor
                   value={questionForm.explanation}
-                  onChange={(e) => setQuestionForm({ ...questionForm, explanation: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter explanation (optional)"
-                  rows={3}
+                  onChange={(content) => setQuestionForm({ ...questionForm, explanation: content })}
+                  placeholder="Enter explanation (optional)..."
+                  height={200}
                 />
               </div>
               
@@ -1896,12 +2195,11 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Explanation (Gujarati)
                     </label>
-                    <textarea
+                    <RichTextEditor
                       value={questionForm.explanation_gujarati}
-                      onChange={(e) => setQuestionForm({ ...questionForm, explanation_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="ગુજરાતીમાં સમજુતી દાખલ કરો (વૈકલ્પિક)"
-                      rows={3}
+                      onChange={(content) => setQuestionForm({ ...questionForm, explanation_gujarati: content })}
+                      placeholder="ગુજરાતીમાં સમજુતી દાખલ કરો (વૈકલ્પિક)..."
+                      height={200}
                     />
                   </div>
                 </div>
