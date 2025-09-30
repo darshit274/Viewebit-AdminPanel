@@ -237,22 +237,28 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
           {/* Question Text */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Question Text * ({activeLanguageTab === 'english' ? 'English' : 'ગુજરાતી'})
+              <div className="flex items-center space-x-2">
+                <HelpCircle className="h-4 w-4" />
+                <span>Question Text * ({activeLanguageTab === 'english' ? 'English' : 'ગુજરાતી'})</span>
+              </div>
             </label>
-            <div className="relative">
-              <HelpCircle className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
-              <textarea
-                name={activeLanguageTab === 'english' ? 'question_text' : 'question_text_gujarati'}
-                value={activeLanguageTab === 'english' ? formData.question_text : formData.question_text_gujarati}
-                onChange={handleChange}
-                rows={3}
-                className={`input-field pl-10 ${errors.question_text ? 'border-red-500' : ''}`}
-                placeholder={activeLanguageTab === 'english' ? 'Enter the question text...' : 'પ્રશ્ન લખો...'}
-              />
-            </div>
-            {errors.question_text && (
-              <p className="text-red-500 text-sm mt-1">{errors.question_text}</p>
-            )}
+            <RichTextEditor
+              value={activeLanguageTab === 'english' ? formData.question_text : formData.question_text_gujarati}
+              onChange={(content) => {
+                const fieldName = activeLanguageTab === 'english' ? 'question_text' : 'question_text_gujarati';
+                setFormData(prev => ({
+                  ...prev,
+                  [fieldName]: content
+                }));
+                // Clear error when user starts typing
+                if (errors.question_text) {
+                  setErrors(prev => ({ ...prev, question_text: '' }));
+                }
+              }}
+              placeholder={activeLanguageTab === 'english' ? 'Enter the question text...' : 'પ્રશ્ન લખો...'}
+              height={250}
+              error={errors.question_text}
+            />
           </div>
 
           {/* Options */}

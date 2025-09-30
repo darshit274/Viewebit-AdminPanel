@@ -96,8 +96,6 @@ interface TestSeries {
   pricing_type?: 'free' | 'paid';
   price?: number;
   currency?: string;
-  demo_tests_count?: number;
-  subscription_duration_days?: number;
   discount_percentage?: number;
   is_featured?: boolean;
   features?: any;
@@ -118,8 +116,6 @@ interface TestSeriesFormData {
   pricing_type?: 'free' | 'paid';
   price?: number;
   currency?: string;
-  demo_tests_count?: number;
-  subscription_duration_days?: number;
   discount_percentage?: number;
   is_featured?: boolean;
   features?: any;
@@ -162,8 +158,6 @@ const TestManagementPageNew: React.FC = () => {
     pricing_type: 'free',
     price: 0,
     currency: 'INR',
-    demo_tests_count: 0,
-    subscription_duration_days: 365,
     discount_percentage: 0,
     is_featured: false,
     features: null,
@@ -356,8 +350,6 @@ const TestManagementPageNew: React.FC = () => {
       pricing_type: 'free',
       price: 0,
       currency: 'INR',
-      demo_tests_count: 0,
-      subscription_duration_days: 365,
       discount_percentage: 0,
       is_featured: false,
       features: null,
@@ -383,8 +375,6 @@ const TestManagementPageNew: React.FC = () => {
       pricing_type: testSeries.pricing_type || 'free',
       price: testSeries.price || 0,
       currency: testSeries.currency || 'INR',
-      demo_tests_count: testSeries.demo_tests_count || 0,
-      subscription_duration_days: testSeries.subscription_duration_days || 365,
       discount_percentage: testSeries.discount_percentage || 0,
       is_featured: testSeries.is_featured || false,
       features: testSeries.features || null,
@@ -990,40 +980,6 @@ const TestManagementPageNew: React.FC = () => {
                   )}
                 </div>
 
-                {formData.pricing_type === 'paid' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Demo Tests Count
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={formData.demo_tests_count}
-                        onChange={(e) => setFormData({ ...formData, demo_tests_count: parseInt(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Number of free demo tests"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Subscription Duration (Days)
-                      </label>
-                      <select
-                        value={formData.subscription_duration_days}
-                        onChange={(e) => setFormData({ ...formData, subscription_duration_days: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value={30}>30 Days (1 Month)</option>
-                        <option value={90}>90 Days (3 Months)</option>
-                        <option value={180}>180 Days (6 Months)</option>
-                        <option value={365}>365 Days (1 Year)</option>
-                        <option value={730}>730 Days (2 Years)</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
 
                 {formData.pricing_type === 'paid' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

@@ -59,8 +59,6 @@ export interface TestSeries extends BaseEntity {
   pricing_type: 'free' | 'paid';
   price: number;
   currency: string;
-  demo_tests_count: number;
-  subscription_duration_days: number;
   features?: any;
   discount_percentage: number;
   is_featured: boolean;
@@ -75,8 +73,6 @@ export interface TestSeriesFormData {
   pricing_type?: 'free' | 'paid';
   price?: number;
   currency?: string;
-  demo_tests_count?: number;
-  subscription_duration_days?: number;
   features?: any;
   discount_percentage?: number;
   is_featured?: boolean;

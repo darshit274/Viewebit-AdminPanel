@@ -32,6 +32,7 @@ interface Category {
   negative_marking_enabled?: boolean;
   negative_marks_per_wrong?: number;
   test_duration_minutes?: number;
+  is_free_in_paid_series?: boolean;
 }
 
 interface Question {
@@ -99,6 +100,7 @@ interface CategoryFormData {
   negative_marking_enabled: boolean;
   negative_marks_per_wrong: number;
   test_duration_minutes: number;
+  is_free_in_paid_series: boolean;
 }
 
 interface QuestionFormData {
@@ -167,7 +169,8 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
     description_gujarati: '',
     negative_marking_enabled: false,
     negative_marks_per_wrong: 0.25,
-    test_duration_minutes: 60
+    test_duration_minutes: 60,
+    is_free_in_paid_series: false
   });
   const [questionForm, setQuestionForm] = useState<QuestionFormData>({
     question_text: '',
@@ -282,9 +285,9 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
       return editingCategory.node_type === 'question_holder';
     }
 
-    // For creating new categories, check if current level supports questions
-    // (can_add_question means this level can have question_holder categories)
-    return data.buttons_state?.can_add_question || false;
+    // For creating new categories, DON'T show these fields
+    // We don't know the node_type yet (it will be 'unset' until questions/subcategories are added)
+    return false;
   };
 
   // Helper function to determine if test timing should be shown
@@ -312,6 +315,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
         negative_marking_enabled: categoryForm.negative_marking_enabled,
         negative_marks_per_wrong: categoryForm.negative_marks_per_wrong,
         test_duration_minutes: categoryForm.test_duration_minutes,
+        is_free_in_paid_series: categoryForm.is_free_in_paid_series,
         ...(categoryUuid ? {} : { testSeriesUuid })
       };
 
@@ -337,7 +341,8 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
           description_gujarati: '',
           negative_marking_enabled: false,
           negative_marks_per_wrong: 0.25,
-          test_duration_minutes: 60
+          test_duration_minutes: 60,
+          is_free_in_paid_series: false
         });
         await fetchData();
       } else {
@@ -423,7 +428,8 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
       description_gujarati: (category as any).description_gujarati || '',
       negative_marking_enabled: category.negative_marking_enabled || false,
       negative_marks_per_wrong: category.negative_marks_per_wrong || 0.25,
-      test_duration_minutes: category.test_duration_minutes || 60
+      test_duration_minutes: category.test_duration_minutes || 60,
+      is_free_in_paid_series: category.is_free_in_paid_series || false
     });
     setShowEditCategoryModal(true);
   };
@@ -452,7 +458,8 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
           description_gujarati: '',
           negative_marking_enabled: false,
           negative_marks_per_wrong: 0.25,
-          test_duration_minutes: 60
+          test_duration_minutes: 60,
+          is_free_in_paid_series: false
         });
         setEditingCategory(null);
         await fetchData();
@@ -1529,6 +1536,52 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              {/* Free in Paid Series Configuration */}
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-800 mb-3">💰 Free in Paid Series (For Question-Holder Categories)</h4>
+                <div className="space-y-4">
+                  {shouldShowNegativeMarking() && (
+                    <div className="flex items-start">
+                      <input
+                        type="checkbox"
+                        id="is_free_in_paid_series"
+                        checked={categoryForm.is_free_in_paid_series}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, is_free_in_paid_series: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      />
+                      <div className="ml-3">
+                        <label htmlFor="is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
+                          Mark as Free in Paid Series
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          When enabled, this quiz category will be accessible for free even if the parent test series is paid.
+                          Use this to offer sample/demo quizzes within paid test series.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!shouldShowNegativeMarking() && (
+                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-blue-700">
+                            <strong>Free access option is not available for this category.</strong><br />
+                            This setting only applies to categories that directly contain questions.
+                            This category contains subcategories or is empty, so this option is not applicable.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end space-x-3 mt-6">
@@ -1561,18 +1614,17 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[95vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Create Question</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Question Text *
                 </label>
-                <textarea
+                <RichTextEditor
                   value={questionForm.question_text}
-                  onChange={(e) => setQuestionForm({ ...questionForm, question_text: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(content) => setQuestionForm({ ...questionForm, question_text: content })}
                   placeholder="Enter question text"
-                  rows={3}
+                  height={250}
                 />
               </div>
               
@@ -1662,15 +1714,14 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Explanation
                 </label>
-                <textarea
+                <RichTextEditor
                   value={questionForm.explanation}
-                  onChange={(e) => setQuestionForm({ ...questionForm, explanation: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(content) => setQuestionForm({ ...questionForm, explanation: content })}
                   placeholder="Enter explanation (optional)"
-                  rows={3}
+                  height={200}
                 />
               </div>
-              
+
               {/* Gujarati Fields */}
               <div className="pt-6 border-t border-gray-200">
                 <h4 className="text-lg font-medium text-gray-800 mb-4">🌐 Gujarati Translation</h4>
@@ -1680,12 +1731,11 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Question Text (Gujarati)
                     </label>
-                    <textarea
+                    <RichTextEditor
                       value={questionForm.question_text_gujarati}
-                      onChange={(e) => setQuestionForm({ ...questionForm, question_text_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(content) => setQuestionForm({ ...questionForm, question_text_gujarati: content })}
                       placeholder="પ્રશ્ન ટેક્સ્ટ દાખલ કરો"
-                      rows={3}
+                      height={250}
                     />
                   </div>
                   
@@ -1965,6 +2015,52 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   )}
                 </div>
               </div>
+
+              {/* Free in Paid Series Configuration */}
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-800 mb-3">💰 Free in Paid Series (For Question-Holder Categories)</h4>
+                <div className="space-y-4">
+                  {shouldShowNegativeMarking() && (
+                    <div className="flex items-start">
+                      <input
+                        type="checkbox"
+                        id="edit_is_free_in_paid_series"
+                        checked={categoryForm.is_free_in_paid_series}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, is_free_in_paid_series: e.target.checked })}
+                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      />
+                      <div className="ml-3">
+                        <label htmlFor="edit_is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
+                          Mark as Free in Paid Series
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">
+                          When enabled, this quiz category will be accessible for free even if the parent test series is paid.
+                          Use this to offer sample/demo quizzes within paid test series.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {!shouldShowNegativeMarking() && (
+                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-blue-700">
+                            <strong>Free access option is not available for this category.</strong><br />
+                            This setting only applies to categories that directly contain questions.
+                            This category contains subcategories or is empty, so this option is not applicable.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             <div className="flex justify-end space-x-3 mt-6">
@@ -1979,7 +2075,8 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
           description_gujarati: '',
           negative_marking_enabled: false,
           negative_marks_per_wrong: 0.25,
-          test_duration_minutes: 60
+          test_duration_minutes: 60,
+          is_free_in_paid_series: false
         });
                 }}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
@@ -2009,18 +2106,17 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[95vh] overflow-y-auto">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Edit Question</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Question Text *
                 </label>
-                <textarea
+                <RichTextEditor
                   value={questionForm.question_text}
-                  onChange={(e) => setQuestionForm({ ...questionForm, question_text: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  onChange={(content) => setQuestionForm({ ...questionForm, question_text: content })}
                   placeholder="Enter question text"
-                  rows={3}
+                  height={250}
                 />
               </div>
 
@@ -2131,12 +2227,11 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Question Text (Gujarati)
                     </label>
-                    <textarea
+                    <RichTextEditor
                       value={questionForm.question_text_gujarati}
-                      onChange={(e) => setQuestionForm({ ...questionForm, question_text_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(content) => setQuestionForm({ ...questionForm, question_text_gujarati: content })}
                       placeholder="પ્રશ્ન ટેક્સ્ટ દાખલ કરો"
-                      rows={3}
+                      height={250}
                     />
                   </div>
                   

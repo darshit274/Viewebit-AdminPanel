@@ -27,8 +27,6 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
     description: '',
     course_id: '',
     access_level: 'free',
-    test_series_id: '',
-    exam_type_id: '',
     tags: '',
     // Pricing fields
     price: 0,
@@ -46,8 +44,6 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
         description: pdf.description || '',
         course_id: pdf.course_id?.toString() || '',
         access_level: pdf.access_level || 'free',
-        test_series_id: pdf.test_series_id?.toString() || '',
-        exam_type_id: pdf.exam_type_id?.toString() || '',
         tags: pdf.tags ? (Array.isArray(pdf.tags) ? pdf.tags.join(', ') : pdf.tags) : '',
         // Pricing fields
         price: pdf.price || 0,
@@ -68,8 +64,6 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
       const updateData = {
         ...formData,
         course_id: formData.course_id ? parseInt(formData.course_id) : null,
-        test_series_id: formData.test_series_id || null,
-        exam_type_id: formData.exam_type_id ? parseInt(formData.exam_type_id) : null,
         tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()).filter(Boolean) : null
       };
 
@@ -176,50 +170,6 @@ export const PDFEditModal: React.FC<PDFEditModalProps> = ({
                 <option value="free">Free</option>
                 <option value="premium">Premium</option>
                 <option value="restricted">Restricted</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Test Series
-              </label>
-              <select
-                name="test_series_id"
-                value={formData.test_series_id}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select test series</option>
-                {Array.isArray(testSeries) && testSeries.length > 0 ? testSeries.map((series) => (
-                  <option key={series.id} value={series.id}>
-                    {series.title}
-                  </option>
-                )) : (
-                  <option value="" disabled>Loading test series...</option>
-                )}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Exam Type
-              </label>
-              <select
-                name="exam_type_id"
-                value={formData.exam_type_id}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                <option value="">Select exam type</option>
-                {Array.isArray(examTypes) && examTypes.length > 0 ? examTypes.map((examType) => (
-                  <option key={examType.id} value={examType.id}>
-                    {examType.name}
-                  </option>
-                )) : (
-                  <option value="" disabled>Loading exam types...</option>
-                )}
               </select>
             </div>
           </div>

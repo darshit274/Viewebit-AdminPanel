@@ -193,7 +193,27 @@ export const PDFsPage: React.FC = () => {
       const response = await api.get(`/admin/pdf/${pdf.id}/download`, {
         responseType: 'blob'
       });
-      
+
+      // IMPORTANT: Validate that we received a PDF, not JSON
+      const contentType = response.headers['content-type'];
+      console.log('Download response content-type:', contentType);
+
+      // If we got JSON instead of PDF, it's an error
+      if (contentType && contentType.includes('application/json')) {
+        // Try to read the JSON error message
+        const text = await response.data.text();
+        console.error('Received JSON instead of PDF:', text);
+        toast.error('Server error: Received invalid response instead of PDF file. Please contact support.');
+        return;
+      }
+
+      // Validate that we got a real PDF file (minimum size check)
+      if (response.data.size < 100) {
+        console.error('Downloaded file is too small:', response.data.size, 'bytes');
+        toast.error('Downloaded file is invalid (too small). PDF may be corrupted on server.');
+        return;
+      }
+
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -203,11 +223,12 @@ export const PDFsPage: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      
+
       toast.success('PDF downloaded successfully');
     } catch (error: any) {
       console.error('PDF download error:', error);
-      toast.error('Failed to download PDF');
+      const message = error.response?.data?.message || 'Failed to download PDF';
+      toast.error(message);
     }
   };
 
