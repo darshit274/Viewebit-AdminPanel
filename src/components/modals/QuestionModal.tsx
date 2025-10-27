@@ -10,6 +10,7 @@ interface QuestionModalProps {
   onSuccess: () => void;
   question?: any; // For edit mode
   mode: 'create' | 'edit';
+  simplified?: boolean; // For report editing - hides difficulty, marks, subject, topic
 }
 
 export const QuestionModal: React.FC<QuestionModalProps> = ({
@@ -17,7 +18,8 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   onClose,
   onSuccess,
   question,
-  mode
+  mode,
+  simplified = false
 }) => {
   const [formData, setFormData] = useState({
     question_text: '',
@@ -114,16 +116,19 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
       }
     });
 
-    if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required';
-    }
+    // Only validate subject, marks, and negative_marks if not in simplified mode
+    if (!simplified) {
+      if (!formData.subject.trim()) {
+        newErrors.subject = 'Subject is required';
+      }
 
-    if (formData.marks <= 0) {
-      newErrors.marks = 'Marks must be greater than 0';
-    }
+      if (formData.marks <= 0) {
+        newErrors.marks = 'Marks must be greater than 0';
+      }
 
-    if (formData.negative_marks < 0) {
-      newErrors.negative_marks = 'Negative marks cannot be negative';
+      if (formData.negative_marks < 0) {
+        newErrors.negative_marks = 'Negative marks cannot be negative';
+      }
     }
 
     setErrors(newErrors);
@@ -291,7 +296,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
           </div>
 
           {/* Correct Answer and Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className={`grid grid-cols-1 ${simplified ? 'md:grid-cols-1' : 'md:grid-cols-4'} gap-4`}>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Correct Answer *
@@ -312,105 +317,111 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Difficulty *
-              </label>
-              <select
-                name="difficulty"
-                value={formData.difficulty}
-                onChange={handleChange}
-                className="input-field"
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
+            {!simplified && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Difficulty *
+                  </label>
+                  <select
+                    name="difficulty"
+                    value={formData.difficulty}
+                    onChange={handleChange}
+                    className="input-field"
+                  >
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Marks
-              </label>
-              <input
-                type="number"
-                name="marks"
-                value={formData.marks}
-                onChange={handleChange}
-                min="0.1"
-                step="0.1"
-                className={`input-field ${errors.marks ? 'border-red-500' : ''}`}
-              />
-              {errors.marks && (
-                <p className="text-red-500 text-sm mt-1">{errors.marks}</p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Marks
+                  </label>
+                  <input
+                    type="number"
+                    name="marks"
+                    value={formData.marks}
+                    onChange={handleChange}
+                    min="0.1"
+                    step="0.1"
+                    className={`input-field ${errors.marks ? 'border-red-500' : ''}`}
+                  />
+                  {errors.marks && (
+                    <p className="text-red-500 text-sm mt-1">{errors.marks}</p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Negative Marks
-              </label>
-              <input
-                type="number"
-                name="negative_marks"
-                value={formData.negative_marks}
-                onChange={handleChange}
-                min="0"
-                step="0.1"
-                className={`input-field ${errors.negative_marks ? 'border-red-500' : ''}`}
-              />
-              {errors.negative_marks && (
-                <p className="text-red-500 text-sm mt-1">{errors.negative_marks}</p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Negative Marks
+                  </label>
+                  <input
+                    type="number"
+                    name="negative_marks"
+                    value={formData.negative_marks}
+                    onChange={handleChange}
+                    min="0"
+                    step="0.1"
+                    className={`input-field ${errors.negative_marks ? 'border-red-500' : ''}`}
+                  />
+                  {errors.negative_marks && (
+                    <p className="text-red-500 text-sm mt-1">{errors.negative_marks}</p>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Subject and Topic */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subject *
-              </label>
-              <div className="relative">
-                <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <select
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className={`input-field pl-10 ${errors.subject ? 'border-red-500' : ''}`}
-                >
-                  <option value="">Select Subject</option>
-                  <option value="Mathematics">Mathematics</option>
-                  <option value="Science">Science</option>
-                  <option value="English">English</option>
-                  <option value="History">History</option>
-                  <option value="Geography">Geography</option>
-                  <option value="Physics">Physics</option>
-                  <option value="Chemistry">Chemistry</option>
-                  <option value="Biology">Biology</option>
-                  <option value="General Knowledge">General Knowledge</option>
-                  <option value="Current Affairs">Current Affairs</option>
-                </select>
+          {/* Subject and Topic - Only show if not simplified */}
+          {!simplified && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject *
+                </label>
+                <div className="relative">
+                  <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <select
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className={`input-field pl-10 ${errors.subject ? 'border-red-500' : ''}`}
+                  >
+                    <option value="">Select Subject</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Science">Science</option>
+                    <option value="English">English</option>
+                    <option value="History">History</option>
+                    <option value="Geography">Geography</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="General Knowledge">General Knowledge</option>
+                    <option value="Current Affairs">Current Affairs</option>
+                  </select>
+                </div>
+                {errors.subject && (
+                  <p className="text-red-500 text-sm mt-1">{errors.subject}</p>
+                )}
               </div>
-              {errors.subject && (
-                <p className="text-red-500 text-sm mt-1">{errors.subject}</p>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Topic
-              </label>
-              <input
-                type="text"
-                name="topic"
-                value={formData.topic}
-                onChange={handleChange}
-                className="input-field"
-                placeholder="Enter topic (optional)"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Topic
+                </label>
+                <input
+                  type="text"
+                  name="topic"
+                  value={formData.topic}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Enter topic (optional)"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Explanation with Rich Text Editor */}
           <div>

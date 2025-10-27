@@ -23,6 +23,8 @@ import SubCategoryDetailPageNew from './pages/SubCategoryDetailPageNew';
 import TestDetailPageNew from './pages/TestDetailPageNew';
 import DynamicHierarchyPage from './pages/DynamicHierarchyPage';
 import SimpleDynamicHierarchyPage from './pages/SimpleDynamicHierarchyPage';
+import { ReportsDashboard } from './pages/reports/ReportsDashboard';
+import { QuestionReportDetails } from './pages/reports/QuestionReportDetails';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -112,6 +114,16 @@ const AuthWrapper: React.FC = () => {
         <Route path="pdfs" element={
           <ProtectedRoute>
             <PDFManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="reports" element={
+          <ProtectedRoute>
+            <ReportsDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="reports/question/:questionId" element={
+          <ProtectedRoute>
+            <QuestionReportDetails />
           </ProtectedRoute>
         } />
         <Route path="subscriptions" element={

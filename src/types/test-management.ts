@@ -56,7 +56,7 @@ export interface TestSeries extends BaseEntity {
   title_gujarati?: string;
   description_gujarati?: string;
   categories_count: number;
-  pricing_type: 'free' | 'paid';
+  pricing_type: 'free' | 'paid' | 'previous_years_question_papers';
   price: number;
   currency: string;
   features?: any;
@@ -70,7 +70,7 @@ export interface TestSeriesFormData {
   title_gujarati?: string;
   description_gujarati?: string;
   is_active?: boolean;
-  pricing_type?: 'free' | 'paid';
+  pricing_type?: 'free' | 'paid' | 'previous_years_question_papers';
   price?: number;
   currency?: string;
   features?: any;

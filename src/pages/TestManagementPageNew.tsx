@@ -93,7 +93,7 @@ interface TestSeries {
   title_gujarati?: string;
   description_gujarati?: string;
   is_active: boolean;
-  pricing_type?: 'free' | 'paid';
+  pricing_type?: 'free' | 'paid' | 'previous_years_question_papers';
   price?: number;
   currency?: string;
   discount_percentage?: number;
@@ -113,7 +113,7 @@ interface TestSeriesFormData {
   title_gujarati?: string;
   description_gujarati?: string;
   is_active?: boolean;
-  pricing_type?: 'free' | 'paid';
+  pricing_type?: 'free' | 'paid' | 'previous_years_question_papers';
   price?: number;
   currency?: string;
   discount_percentage?: number;
@@ -138,7 +138,8 @@ const TestManagementPageNew: React.FC = () => {
     search: '',
     status: 'all'
   });
-  
+  const [pricingTypeFilter, setPricingTypeFilter] = useState<'all' | 'free' | 'paid' | 'previous_years_question_papers'>('all');
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     loading: false,
@@ -174,8 +175,14 @@ const TestManagementPageNew: React.FC = () => {
 
   // Bulk selection management
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  
-  const testSeries = data?.data || [];
+
+  const allTestSeries = data?.data || [];
+
+  // Apply pricing type filter
+  const testSeries = pricingTypeFilter === 'all'
+    ? allTestSeries
+    : allTestSeries.filter((item: TestSeries) => item.pricing_type === pricingTypeFilter);
+
   const selectedCount = selectedIds.length;
   const isAllSelected = testSeries.length > 0 && selectedIds.length === testSeries.length;
   
@@ -674,6 +681,16 @@ const TestManagementPageNew: React.FC = () => {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+            <select
+              value={pricingTypeFilter}
+              onChange={(e) => setPricingTypeFilter(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Types</option>
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+              <option value="previous_years_question_papers">Previous Years Papers</option>
+            </select>
           </div>
         </div>
 
@@ -773,9 +790,16 @@ const TestManagementPageNew: React.FC = () => {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                           item.pricing_type === 'paid'
                             ? 'bg-yellow-100 text-yellow-800'
+                            : item.pricing_type === 'previous_years_question_papers'
+                            ? 'bg-purple-100 text-purple-800'
                             : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {item.pricing_type === 'paid' ? 'Paid' : 'Free'}
+                          {item.pricing_type === 'paid'
+                            ? 'Paid'
+                            : item.pricing_type === 'previous_years_question_papers'
+                            ? 'PYQ'
+                            : 'Free'
+                          }
                         </span>
                         {item.pricing_type === 'paid' && item.price && (
                           <span className="text-sm font-medium text-gray-900">
@@ -939,16 +963,25 @@ const TestManagementPageNew: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Pricing Type * 
-                      <span className="text-xs text-gray-500 ml-1">(Choose Free or Paid access)</span>
+                      Pricing Type *
+                      <span className="text-xs text-gray-500 ml-1">(Choose test series type)</span>
                     </label>
                     <select
                       value={formData.pricing_type}
-                      onChange={(e) => setFormData({ ...formData, pricing_type: e.target.value as 'free' | 'paid' })}
+                      onChange={(e) => {
+                        const newPricingType = e.target.value as 'free' | 'paid' | 'previous_years_question_papers';
+                        setFormData({
+                          ...formData,
+                          pricing_type: newPricingType,
+                          // Reset price if switching to free or PYQ
+                          price: (newPricingType === 'free' || newPricingType === 'previous_years_question_papers') ? 0 : formData.price
+                        });
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="free">Free - Open access for all students</option>
                       <option value="paid">Paid - Requires subscription to access</option>
+                      <option value="previous_years_question_papers">Previous Years Question Papers</option>
                     </select>
                   </div>
 
