@@ -62,6 +62,7 @@ export interface TestSeries extends BaseEntity {
   features?: any;
   discount_percentage: number;
   is_featured: boolean;
+  validity_days?: number;
 }
 
 export interface TestSeriesFormData {
@@ -76,6 +77,7 @@ export interface TestSeriesFormData {
   features?: any;
   discount_percentage?: number;
   is_featured?: boolean;
+  validity_days?: number;
 }
 
 // Category Entity & Form Data

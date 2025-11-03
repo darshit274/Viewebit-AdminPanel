@@ -162,6 +162,7 @@ const TestManagementPageNew: React.FC = () => {
     discount_percentage: 0,
     is_featured: false,
     features: null,
+    validity_days: 365, // Default 1 year
     // Negative marking removed from test series level
   });
 
@@ -386,7 +387,8 @@ const TestManagementPageNew: React.FC = () => {
       is_featured: testSeries.is_featured || false,
       features: testSeries.features || null,
       has_negative_marking: (testSeries as any).has_negative_marking || false,
-      negative_marks: (testSeries as any).negative_marks || 0.25
+      negative_marks: (testSeries as any).negative_marks || 0.25,
+      validity_days: testSeries.validity_days || 365
     });
     setShowModal(true);
   };
@@ -1032,7 +1034,26 @@ const TestManagementPageNew: React.FC = () => {
                       />
                     </div>
 
-                    <div className="flex items-center pt-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Course Validity (Days)
+                        <span className="text-xs text-gray-500 ml-1">(Default: 365 days)</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.validity_days || 365}
+                        onChange={(e) => setFormData({ ...formData, validity_days: parseInt(e.target.value) || 365 })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="365"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.pricing_type === 'paid' && (
+                  <div className="mt-4">
+                    <div className="flex items-center">
                       <input
                         type="checkbox"
                         id="is_featured"
