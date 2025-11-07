@@ -1,16 +1,12 @@
 import { clsx } from 'clsx';
 import {
-  BarChart3,
   BookOpen,
   CreditCard,
   FileText,
   Flag,
-  FolderOpen,
-  GraduationCap,
   Home,
   LogOut,
   Settings,
-  TrendingUp,
   Users
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
@@ -26,7 +22,6 @@ const navigation = [
   { name: 'Course Management', href: '/test-management', icon: BookOpen },
   { name: 'PDFs', href: '/pdfs', icon: FileText },
   { name: 'Reports', href: '/reports', icon: Flag },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
