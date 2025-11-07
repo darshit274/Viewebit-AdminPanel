@@ -94,7 +94,7 @@ export const QuestionReportCard: React.FC<QuestionReportCardProps> = ({
           {question.hierarchyString && (
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Folder className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate" title={question.hierarchyString}>
+              <span className="truncate" title={question.hierarchyString || ''}>
                 {question.hierarchyString}
               </span>
             </div>
@@ -109,11 +109,11 @@ export const QuestionReportCard: React.FC<QuestionReportCardProps> = ({
         </h3>
         <div
           className="text-gray-700 line-clamp-2"
-          title={question.questionText.replace(/<[^>]*>/g, '')}
-          dangerouslySetInnerHTML={{ __html: question.questionText }}
+          title={question.questionText ? question.questionText.replace(/<[^>]*>/g, '') : 'No question text available'}
+          dangerouslySetInnerHTML={{ __html: question.questionText || '<p class="text-gray-400 italic">No question text available</p>' }}
         />
         <p className="text-sm text-green-600 mt-1 font-medium">
-          ✓ Correct Answer: {question.correctAnswer}
+          ✓ Correct Answer: {question.correctAnswer || 'N/A'}
         </p>
       </div>
 
