@@ -67,7 +67,7 @@ curl -s http://localhost:5004 > /dev/null && echo "✅ Backend OK" || echo "❌ 
 **Solution:** 
 1. Check if backend is running on port 5004
 2. Verify admin credentials: admin@mocktail.com / admin123
-3. Clear browser cache and localStorage
+3. Clear browser cache and sessionStorage
 
 ### **Issue: "Network Error" or API calls failing**
 **Solution:**

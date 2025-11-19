@@ -14,7 +14,7 @@ import { ENV } from '../../config/constants';
 const pdfsService = {
   getPdfs: async (params: any) => {
     console.log('pdfsService.getPdfs called with params:', params);
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     console.log('Token in pdfsService:', token ? 'Present' : 'Missing');
     const queryParams = new URLSearchParams(params);
     console.log('Query string:', queryParams.toString());
@@ -151,7 +151,7 @@ export const PDFsPage: React.FC = () => {
   const testApiCall = async () => {
     try {
       console.log('Testing API call...');
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       console.log('Token:', token ? 'Present' : 'Missing');
       
       const response = await fetch(ENV.API_URL + '/api/admin/pdf/list?page=1&limit=10', {

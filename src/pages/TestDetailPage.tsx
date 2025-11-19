@@ -48,7 +48,7 @@ const questionsApi = {
     sortBy?: string;
     sortOrder?: string;
   }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
@@ -81,7 +81,7 @@ const questionsApi = {
     explanation_gujarati?: string;
     is_active?: boolean;
   }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/tests/${testUuid}/questions`, {
       method: 'POST',
       headers: {
@@ -112,7 +112,7 @@ const questionsApi = {
     explanation_gujarati?: string;
     is_active?: boolean;
   }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/questions/${uuid}`, {
       method: 'PUT',
       headers: {
@@ -127,7 +127,7 @@ const questionsApi = {
   },
 
   deleteQuestion: async (uuid: string) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/questions/${uuid}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -137,7 +137,7 @@ const questionsApi = {
   },
 
   bulkOperations: async (action: string, questionIds: string[]) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/questions/bulk`, {
       method: 'POST',
       headers: {

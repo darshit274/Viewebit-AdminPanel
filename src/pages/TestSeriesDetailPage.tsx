@@ -60,7 +60,7 @@ const categoriesApi = {
     sortBy?: string;
     sortOrder?: string;
   }): Promise<ApiResponse> => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
     
     Object.entries(params).forEach(([key, value]) => {
@@ -77,7 +77,7 @@ const categoriesApi = {
   },
 
   createCategory: async (testSeriesUuid: string, category: { name: string; description: string }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/test-series/${testSeriesUuid}/categories`, {
       method: 'POST',
       headers: {
@@ -92,7 +92,7 @@ const categoriesApi = {
   },
 
   updateCategory: async (uuid: string, category: { name: string; description: string }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/categories/${uuid}`, {
       method: 'PUT',
       headers: {
@@ -107,7 +107,7 @@ const categoriesApi = {
   },
 
   deleteCategory: async (uuid: string) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/categories/${uuid}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -117,7 +117,7 @@ const categoriesApi = {
   },
 
   bulkOperations: async (data: { action: string; uuids: string[] }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     
     // Convert uuids to the correct field name expected by backend
     const payload = {

@@ -47,7 +47,7 @@ const testSeriesApi = {
     sortBy?: string;
     sortOrder?: string;
   }): Promise<ApiResponse> => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
     
     Object.entries(params).forEach(([key, value]) => {
@@ -64,7 +64,7 @@ const testSeriesApi = {
   },
 
   createTestSeries: async (testSeries: { title: string; description: string }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management`, {
       method: 'POST',
       headers: {
@@ -79,7 +79,7 @@ const testSeriesApi = {
   },
 
   updateTestSeries: async (uuid: string, testSeries: { title: string; description: string }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/${uuid}`, {
       method: 'PUT',
       headers: {
@@ -94,7 +94,7 @@ const testSeriesApi = {
   },
 
   deleteTestSeries: async (uuid: string) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/${uuid}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -104,7 +104,7 @@ const testSeriesApi = {
   },
 
   bulkOperations: async (data: { action: string; uuids: string[] }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     
     // Convert uuids to the correct field name expected by backend
     const payload = {

@@ -6,6 +6,8 @@ import toast from 'react-hot-toast';
 import { z } from 'zod';
 import logo from '../../assets/MockTale.jpg'; // Adjust the path as necessary
 import { authService } from '../../services/auth';
+import { OTPVerificationForm } from './OTPVerificationForm';
+
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -20,6 +22,8 @@ interface LoginFormProps {
 export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOTPScreen, setShowOTPScreen] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   const {
     register,
@@ -32,9 +36,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      await authService.login(data);
-      toast.success('Login successful!');
-      onSuccess();
+      const response = await authService.login(data);
+
+      if (response.requiresOTP) {
+        // Show OTP screen
+        setUserEmail(response.email);
+        setShowOTPScreen(true);
+        toast.success('Verification code sent to your email');
+      } else {
+        // Direct login (shouldn't happen with 2FA enabled)
+        toast.success('Login successful!');
+        onSuccess();
+      }
     } catch (error: any) {
       const message = error.response?.data?.message || 'Login failed. Please try again.';
       toast.error(message);
@@ -42,6 +55,22 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       setIsLoading(false);
     }
   };
+
+  const handleBackToLogin = () => {
+    setShowOTPScreen(false);
+    setUserEmail('');
+  };
+
+  // If OTP screen should be shown, render it instead
+  if (showOTPScreen && userEmail) {
+    return (
+      <OTPVerificationForm
+        email={userEmail}
+        onSuccess={onSuccess}
+        onBack={handleBackToLogin}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

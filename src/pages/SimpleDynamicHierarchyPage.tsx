@@ -193,9 +193,9 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
   const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/test-management/simple-hierarchy`;
   
   const getAuthToken = () => {
-    return localStorage.getItem('admin_token') || 
-           localStorage.getItem('token') || 
-           localStorage.getItem('authToken');
+    return sessionStorage.getItem('admin_token') || 
+           sessionStorage.getItem('token') || 
+           sessionStorage.getItem('authToken');
   };
 
   const apiHeaders = {

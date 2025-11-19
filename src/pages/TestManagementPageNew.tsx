@@ -11,7 +11,7 @@ const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5004/api')
 // Simple API service that works
 const testSeriesApi = {
   fetchTestSeries: async (params: any = {}) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
     
     Object.entries(params).forEach(([key, value]) => {
@@ -28,7 +28,7 @@ const testSeriesApi = {
   },
 
   createTestSeries: async (testSeries: any) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management`, {
       method: 'POST',
       headers: {
@@ -43,7 +43,7 @@ const testSeriesApi = {
   },
 
   updateTestSeries: async (uuid: string, testSeries: any) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/${uuid}`, {
       method: 'PUT',
       headers: {
@@ -58,7 +58,7 @@ const testSeriesApi = {
   },
 
   deleteTestSeries: async (uuid: string) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/${uuid}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -69,7 +69,7 @@ const testSeriesApi = {
   },
 
   bulkOperations: async (action: string, uuids: string[]) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/bulk`, {
       method: 'POST',
       headers: {

@@ -157,7 +157,7 @@ export const PDFManagement: React.FC = () => {
   const loadCourses = async () => {
     try {
       // Use the test management API to get courses
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/test-management`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });

@@ -182,7 +182,7 @@ apiClient.interceptors.response.use(
     switch (error.response?.status) {
       case 401:
         // Auto-logout and redirect
-        localStorage.clear();
+        sessionStorage.clear();
         window.location.href = '/login';
         break;
       case 422:

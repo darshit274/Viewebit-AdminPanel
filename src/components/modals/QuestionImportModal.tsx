@@ -36,7 +36,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
   const downloadTemplate = async (format: 'excel' | 'csv') => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/stats?download=template&format=${format}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -93,7 +93,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
         formData.append('test_series_id', testSeriesId.toString());
       }
 
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/stats?action=import`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
@@ -137,7 +137,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
   const pollImportStatus = async (importId: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/import/status/${importId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -164,7 +164,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
   const loadPreviewData = async (importId: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/import/preview/${importId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -194,7 +194,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
     setCurrentStep('importing');
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/import/confirm/${importStatus.import_id}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -217,7 +217,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
   const pollFinalImportStatus = async (importId: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/import/status/${importId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });

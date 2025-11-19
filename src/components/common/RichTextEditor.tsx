@@ -35,7 +35,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         method: 'POST',
         body: formData,
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${sessionStorage.getItem('admin_token')}`
         }
       })
       .then(response => {
