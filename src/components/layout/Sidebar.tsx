@@ -6,6 +6,7 @@ import {
   Flag,
   Home,
   LogOut,
+  MessageSquare,
   Settings,
   Users
 } from 'lucide-react';
@@ -21,6 +22,7 @@ const navigation = [
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
   { name: 'Course Management', href: '/test-management', icon: BookOpen },
   { name: 'PDFs', href: '/pdfs', icon: FileText },
+  { name: 'User Queries', href: '/queries', icon: MessageSquare },
   { name: 'Reports', href: '/reports', icon: Flag },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];

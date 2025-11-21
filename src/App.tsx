@@ -25,6 +25,7 @@ import DynamicHierarchyPage from './pages/DynamicHierarchyPage';
 import SimpleDynamicHierarchyPage from './pages/SimpleDynamicHierarchyPage';
 import { ReportsDashboard } from './pages/reports/ReportsDashboard';
 import { QuestionReportDetails } from './pages/reports/QuestionReportDetails';
+import QueriesPage from './pages/QueriesPage';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -114,6 +115,11 @@ const AuthWrapper: React.FC = () => {
         <Route path="pdfs" element={
           <ProtectedRoute>
             <PDFManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="queries" element={
+          <ProtectedRoute>
+            <QueriesPage />
           </ProtectedRoute>
         } />
         <Route path="reports" element={
