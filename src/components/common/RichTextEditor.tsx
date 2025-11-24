@@ -1,6 +1,31 @@
 import React, { useRef } from 'react';
 import { Editor } from '@tinymce/tinymce-react';
 
+// TinyMCE core & theme
+import 'tinymce/tinymce';
+import 'tinymce/themes/silver';
+import 'tinymce/icons/default';
+
+// TinyMCE plugins (all your used plugins)
+import 'tinymce/plugins/advlist';
+import 'tinymce/plugins/autolink';
+import 'tinymce/plugins/lists';
+import 'tinymce/plugins/link';
+import 'tinymce/plugins/image';
+import 'tinymce/plugins/charmap';
+import 'tinymce/plugins/preview';
+import 'tinymce/plugins/anchor';
+import 'tinymce/plugins/searchreplace';
+import 'tinymce/plugins/visualblocks';
+import 'tinymce/plugins/code';
+import 'tinymce/plugins/fullscreen';
+import 'tinymce/plugins/insertdatetime';
+import 'tinymce/plugins/media';
+import 'tinymce/plugins/table';
+import 'tinymce/plugins/help';
+import 'tinymce/plugins/wordcount';
+import 'tinymce/plugins/paste';
+
 interface RichTextEditorProps {
   value: string;
   onChange: (content: string) => void;
@@ -26,11 +51,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   const handleImageUpload = (blobInfo: any, progress: (percent: number) => void): Promise<string> => {
     return new Promise((resolve, reject) => {
-      // Create FormData for image upload
       const formData = new FormData();
       formData.append('image', blobInfo.blob(), blobInfo.filename());
 
-      // Upload to your backend API
       fetch(`${import.meta.env.VITE_API_URL}/admin/upload/image`, {
         method: 'POST',
         body: formData,
@@ -38,23 +61,18 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           'Authorization': `Bearer ${sessionStorage.getItem('admin_token')}`
         }
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Image upload failed');
-        }
-        return response.json();
-      })
-      .then(result => {
-        if (result.success && result.data.url) {
-          resolve(result.data.url);
-        } else {
+        .then(response => {
+          if (!response.ok) throw new Error('Image upload failed');
+          return response.json();
+        })
+        .then(result => {
+          if (result.success && result.data.url) resolve(result.data.url);
+          else reject('Image upload failed');
+        })
+        .catch(error => {
+          console.error('Image upload error:', error);
           reject('Image upload failed');
-        }
-      })
-      .catch(error => {
-        console.error('Image upload error:', error);
-        reject('Image upload failed');
-      });
+        });
     });
   };
 
@@ -91,7 +109,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     images_upload_base_path: '/uploads/',
     automatic_uploads: true,
     file_picker_types: 'image',
-    file_picker_callback: function (callback: any, value: any, meta: any) {
+    file_picker_callback: (callback: any, value: any, meta: any) => {
       if (meta.filetype === 'image') {
         const input = document.createElement('input');
         input.setAttribute('type', 'file');
@@ -113,9 +131,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     },
     setup: (editor: any) => {
       editor.on('init', () => {
-        if (disabled) {
-          editor.mode.set('readonly');
-        }
+        if (disabled) editor.mode.set('readonly');
       });
     }
   };
@@ -124,17 +140,15 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     <div className="space-y-2">
       <div className={`border rounded-lg ${error ? 'border-red-500' : 'border-gray-300'}`}>
         <Editor
-          apiKey={import.meta.env.VITE_TINYMCE_API_KEY || "no-api-key"}
-          onInit={(evt, editor) => editorRef.current = editor}
+          apiKey={import.meta.env.VITE_TINYMCE_API_KEY} // make sure to set in production env
+          onInit={(evt, editor) => (editorRef.current = editor)}
           value={value}
           init={editorConfig}
           onEditorChange={handleEditorChange}
           disabled={disabled}
         />
       </div>
-      {error && (
-        <p className="text-red-500 text-sm">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm">{error}</p>}
     </div>
   );
 };
