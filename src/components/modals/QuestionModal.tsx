@@ -96,8 +96,8 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     const newErrors: Record<string, string> = {};
 
     // Smart validation: Check if we have content in at least one language
-    const hasEnglishQuestion = formData.question_text && formData.question_text.trim() !== '';
-    const hasGujaratiQuestion = formData.question_text_gujarati && formData.question_text_gujarati.trim() !== '';
+    const hasEnglishQuestion = formData.question_text && formData.question_text?.trim() !== '';
+    const hasGujaratiQuestion = formData.question_text_gujarati && formData.question_text_gujarati?.trim() !== '';
 
     if (!hasEnglishQuestion && !hasGujaratiQuestion) {
       newErrors.question_text = 'Question text is required (in English or Gujarati or both)';
@@ -108,8 +108,8 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
       const englishKey = `option_${option}` as keyof typeof formData;
       const gujaratiKey = `option_${option}_gujarati` as keyof typeof formData;
 
-      const hasEnglish = formData[englishKey] && (formData[englishKey] as string).trim() !== '';
-      const hasGujarati = formData[gujaratiKey] && (formData[gujaratiKey] as string).trim() !== '';
+      const hasEnglish = formData[englishKey] && (formData[englishKey] as string)?.trim() !== '';
+      const hasGujarati = formData[gujaratiKey] && (formData[gujaratiKey] as string)?.trim() !== '';
 
       if (!hasEnglish && !hasGujarati) {
         newErrors[englishKey] = `Option ${option.toUpperCase()} is required (in English or Gujarati or both)`;
@@ -118,7 +118,7 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
 
     // Only validate subject, marks, and negative_marks if not in simplified mode
     if (!simplified) {
-      if (!formData.subject.trim()) {
+      if (!formData.subject?.trim()) {
         newErrors.subject = 'Subject is required';
       }
 

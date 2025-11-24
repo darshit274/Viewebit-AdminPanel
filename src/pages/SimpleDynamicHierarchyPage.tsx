@@ -544,8 +544,8 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
       setEditQuestionLoading(true);
 
       // Smart validation: Check if we have content in at least one language
-      const hasEnglishQuestion = questionForm.question_text.trim();
-      const hasGujaratiQuestion = questionForm.question_text_gujarati?.trim();
+      const hasEnglishQuestion = questionForm?.question_text?.trim();
+      const hasGujaratiQuestion = questionForm?.question_text_gujarati?.trim();
 
       if (!hasEnglishQuestion && !hasGujaratiQuestion) {
         toast.error('Question text is required in English or Gujarati or both');
@@ -555,10 +555,10 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
 
       // Validate options - at least one language required for each option
       const optionPairs = [
-        { en: questionForm.option_a.trim(), gu: questionForm.option_a_gujarati?.trim(), label: 'Option A' },
-        { en: questionForm.option_b.trim(), gu: questionForm.option_b_gujarati?.trim(), label: 'Option B' },
-        { en: questionForm.option_c.trim(), gu: questionForm.option_c_gujarati?.trim(), label: 'Option C' },
-        { en: questionForm.option_d.trim(), gu: questionForm.option_d_gujarati?.trim(), label: 'Option D' }
+        { en: questionForm?.option_a?.trim(), gu: questionForm?.option_a_gujarati?.trim(), label: 'Option A' },
+        { en: questionForm?.option_b?.trim(), gu: questionForm?.option_b_gujarati?.trim(), label: 'Option B' },
+        { en: questionForm?.option_c?.trim(), gu: questionForm?.option_c_gujarati?.trim(), label: 'Option C' },
+        { en: questionForm?.option_d?.trim(), gu: questionForm?.option_d_gujarati?.trim(), label: 'Option D' }
       ];
 
       for (const pair of optionPairs) {
