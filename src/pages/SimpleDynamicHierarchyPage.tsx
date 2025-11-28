@@ -172,7 +172,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
     negative_marks_per_wrong: 0.25,
     test_duration_minutes: 60,
     is_free_in_paid_series: false,
-    is_active: false
+    is_active: true
   });
   const [questionForm, setQuestionForm] = useState<QuestionFormData>({
     question_text: '',
@@ -1631,10 +1631,10 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
               </div>
 
               {/* Is Active Configuration */}
-              <div className="border-t pt-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">Active</h4>
-                <div className="space-y-4">
-                  {shouldShowNegativeMarking() && (
+              {shouldShowNegativeMarking() && (
+                <div className="border-t pt-4">
+                  <h4 className="text-md font-medium text-gray-800 mb-3">Active</h4>
+                  <div className="space-y-4">
                     <div className="flex items-start">
                       <input
                         type="checkbox"
@@ -1649,9 +1649,9 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         </label>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="flex justify-end space-x-3 mt-6">
@@ -2133,10 +2133,10 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
               </div>
 
               {/* Is Active Configuration */}
-              <div className="border-t pt-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">Active</h4>
-                <div className="space-y-4">
-                  {shouldShowNegativeMarking() && (
+              {shouldShowNegativeMarking() && (
+                <div className="border-t pt-4">
+                  <h4 className="text-md font-medium text-gray-800 mb-3">Active</h4>
+                  <div className="space-y-4">
                     <div className="flex items-start">
                       <input
                         type="checkbox"
@@ -2151,9 +2151,9 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         </label>
                       </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="flex justify-end space-x-3 mt-6">
