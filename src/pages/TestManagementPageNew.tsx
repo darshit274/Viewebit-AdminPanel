@@ -13,7 +13,7 @@ const testSeriesApi = {
   fetchTestSeries: async (params: any = {}) => {
     const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== '') {
         queryParams.append(key, value.toString());
@@ -126,6 +126,7 @@ interface TestSeriesFormData {
 
 // Import existing components
 import { ConfirmModal } from '../components/modals/ConfirmModal';
+import RichTextEditor from '../components/common/RichTextEditor';
 
 const TestManagementPageNew: React.FC = () => {
   const navigate = useNavigate();
@@ -186,19 +187,19 @@ const TestManagementPageNew: React.FC = () => {
 
   const selectedCount = selectedIds.length;
   const isAllSelected = testSeries.length > 0 && selectedIds.length === testSeries.length;
-  
+
   const toggleSelection = (uuid: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(uuid) ? prev.filter(id => id !== uuid) : [...prev, uuid]
     );
   };
-  
+
   const toggleSelectAll = () => {
     setSelectedIds(isAllSelected ? [] : testSeries.map(item => item.uuid));
   };
-  
+
   const clearSelection = () => setSelectedIds([]);
-  
+
   const isSelected = (uuid: string) => selectedIds.includes(uuid);
 
   // Mutations using simple API
@@ -206,25 +207,25 @@ const TestManagementPageNew: React.FC = () => {
     mutationFn: testSeriesApi.createTestSeries,
     onSuccess: async () => {
       toast.success('Course created successfully');
-      
+
       // Multiple strategies to ensure refresh
       try {
         // 1. Invalidate all related queries
         await queryClient.invalidateQueries({ queryKey: ['testSeries'] });
-        
+
         // 2. Force refetch with exact query key
-        await queryClient.refetchQueries({ 
-          queryKey: ['testSeries', filters], 
-          type: 'active' 
+        await queryClient.refetchQueries({
+          queryKey: ['testSeries', filters],
+          type: 'active'
         });
-        
+
         // 3. Direct refetch of current query
         await refetch();
-        
+
         // 4. Clear query cache and refetch
         queryClient.removeQueries({ queryKey: ['testSeries'] });
         await refetch();
-        
+
         // 5. Force refresh after delay to ensure backend consistency
         setTimeout(async () => {
           console.log('🔄 Delayed refresh - invalidating queries...');
@@ -232,11 +233,11 @@ const TestManagementPageNew: React.FC = () => {
           await refetch();
           console.log('🔄 Delayed refresh completed');
         }, 1500);
-        
+
       } catch (error) {
         console.log('Refresh error:', error);
       }
-      
+
       setShowModal(false);
       resetForm();
     },
@@ -250,25 +251,25 @@ const TestManagementPageNew: React.FC = () => {
       testSeriesApi.updateTestSeries(uuid, data),
     onSuccess: async () => {
       toast.success('Course updated successfully');
-      
+
       // Multiple strategies to ensure refresh
       try {
         // 1. Invalidate all related queries
         await queryClient.invalidateQueries({ queryKey: ['testSeries'] });
-        
+
         // 2. Force refetch with exact query key
-        await queryClient.refetchQueries({ 
-          queryKey: ['testSeries', filters], 
-          type: 'active' 
+        await queryClient.refetchQueries({
+          queryKey: ['testSeries', filters],
+          type: 'active'
         });
-        
+
         // 3. Direct refetch of current query
         await refetch();
-        
+
         // 4. Clear query cache and refetch
         queryClient.removeQueries({ queryKey: ['testSeries'] });
         await refetch();
-        
+
         // 5. Force refresh after delay to ensure backend consistency  
         setTimeout(async () => {
           console.log('🔄 Update: Delayed refresh - invalidating queries...');
@@ -276,11 +277,11 @@ const TestManagementPageNew: React.FC = () => {
           await refetch();
           console.log('🔄 Update: Delayed refresh completed');
         }, 1500);
-        
+
       } catch (error) {
         console.log('Refresh error:', error);
       }
-      
+
       setShowModal(false);
       setEditingTestSeries(null);
       resetForm();
@@ -322,11 +323,11 @@ const TestManagementPageNew: React.FC = () => {
   const openConfirmModal = (item: TestSeries | null, action: string) => {
     setConfirmModal({ isOpen: true, loading: false, item, action });
   };
-  
+
   const closeConfirmModal = () => {
     setConfirmModal({ isOpen: false, loading: false, item: null, action: '' });
   };
-  
+
   const setConfirmModalLoading = (loading: boolean) => {
     setConfirmModal(prev => ({ ...prev, loading }));
   };
@@ -460,11 +461,10 @@ const TestManagementPageNew: React.FC = () => {
       sortable: true,
       render: (item) => (
         <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            item.is_active
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-          }`}
+          className={`px-2 py-1 rounded-full text-xs font-medium ${item.is_active
+            ? 'bg-green-100 text-green-800'
+            : 'bg-red-100 text-red-800'
+            }`}
         >
           {item.is_active ? 'Active' : 'Inactive'}
         </span>
@@ -789,18 +789,17 @@ const TestManagementPageNew: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          item.pricing_type === 'paid'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : item.pricing_type === 'previous_years_question_papers'
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.pricing_type === 'paid'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : item.pricing_type === 'previous_years_question_papers'
                             ? 'bg-purple-100 text-purple-800'
                             : 'bg-blue-100 text-blue-800'
-                        }`}>
+                          }`}>
                           {item.pricing_type === 'paid'
                             ? 'Paid'
                             : item.pricing_type === 'previous_years_question_papers'
-                            ? 'PYQ'
-                            : 'Free'
+                              ? 'PYQ'
+                              : 'Free'
                           }
                         </span>
                         {item.pricing_type === 'paid' && item.price && (
@@ -814,11 +813,10 @@ const TestManagementPageNew: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.is_active
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.is_active
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                        }`}>
                         {item.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
@@ -919,11 +917,17 @@ const TestManagementPageNew: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
-                <textarea
+                {/* <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                /> */}
+                <RichTextEditor
+                  value={formData.description}
+                  onChange={(content) => setFormData({ ...formData, description: content })}
+                  placeholder="Enter explanation (optional)"
+                  height={200}
                 />
               </div>
 
@@ -948,12 +952,18 @@ const TestManagementPageNew: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description (Gujarati)
                   </label>
-                  <textarea
+                  {/* <textarea
                     value={formData.description_gujarati}
                     onChange={(e) => setFormData({ ...formData, description_gujarati: e.target.value })}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="ગુજરાતીમાં વર્ણન"
+                  /> */}
+                  <RichTextEditor
+                    value={formData?.description_gujarati}
+                    onChange={(content) => setFormData({ ...formData, description_gujarati: content })}
+                    placeholder="Enter explanation (optional)"
+                    height={200}
                   />
                 </div>
               </div>
@@ -961,7 +971,7 @@ const TestManagementPageNew: React.FC = () => {
               {/* Pricing Configuration */}
               <div className="border-t pt-4">
                 <h3 className="text-md font-medium text-gray-800 mb-3">💰 Pricing & Subscription Settings</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
