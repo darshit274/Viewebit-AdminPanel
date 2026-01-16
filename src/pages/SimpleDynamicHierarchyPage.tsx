@@ -1041,9 +1041,9 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         >
                           <FolderIcon className="w-5 h-5 text-blue-500 mr-3" />
                           <div>
-                            <h3 className="font-medium text-gray-900">{category.name}</h3>
+                            <h3 className="font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: category.name }}></h3>
                             {category.description && (
-                              <p className="text-sm text-gray-500">{category.description}</p>
+                              <p className="text-sm text-gray-500" dangerouslySetInnerHTML={{ __html: category.description }}></p>
                             )}
                             <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1">
                               <span>Level {category.hierarchy_level}</span>
@@ -1111,1479 +1111,1491 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                           />
                           <div className="flex-1">
                             <div className="flex items-center space-x-2 mb-2">
-                              <h3 className="font-medium text-gray-900">
-                                Q{index + 1}. {question.question_text || question.question_text_gujarati || 'No question text'}
-                              </h3>
-                              {/* Language indicator */}
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${question.question_text && question.question_text_gujarati ? 'bg-purple-100 text-purple-800' :
-                                question.question_text ? 'bg-blue-100 text-blue-800' :
-                                  question.question_text_gujarati ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {question.question_text && question.question_text_gujarati ? 'Both' :
-                                  question.question_text ? 'English' :
-                                    question.question_text_gujarati ? 'Gujarati' : 'Unknown'}
-                              </span>
+                              <h3 className="font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: `Q${index + 1}. ${question.question_text || question.question_text_gujarati || 'No question text'}` }}>
+                              {/* Q{index + 1}. {question.question_text || question.question_text_gujarati || 'No question text'} */}
+                            </h3>
+                            {/* Language indicator */}
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${question.question_text && question.question_text_gujarati ? 'bg-purple-100 text-purple-800' :
+                              question.question_text ? 'bg-blue-100 text-blue-800' :
+                                question.question_text_gujarati ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
+                              }`}>
+                              {question.question_text && question.question_text_gujarati ? 'Both' :
+                                question.question_text ? 'English' :
+                                  question.question_text_gujarati ? 'Gujarati' : 'Unknown'}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div className={`p-2 rounded ${question.correct_answer === 'A' ? 'bg-green-100' : 'bg-gray-100'}`}>
+                              A. {question.option_a || question.option_a_gujarati || 'No option A'}
                             </div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div className={`p-2 rounded ${question.correct_answer === 'A' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                                A. {question.option_a || question.option_a_gujarati || 'No option A'}
-                              </div>
-                              <div className={`p-2 rounded ${question.correct_answer === 'B' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                                B. {question.option_b || question.option_b_gujarati || 'No option B'}
-                              </div>
-                              <div className={`p-2 rounded ${question.correct_answer === 'C' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                                C. {question.option_c || question.option_c_gujarati || 'No option C'}
-                              </div>
-                              <div className={`p-2 rounded ${question.correct_answer === 'D' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                                D. {question.option_d || question.option_d_gujarati || 'No option D'}
-                              </div>
+                            <div className={`p-2 rounded ${question.correct_answer === 'B' ? 'bg-green-100' : 'bg-gray-100'}`}>
+                              B. {question.option_b || question.option_b_gujarati || 'No option B'}
                             </div>
-                            {(question.explanation || question.explanation_gujarati) && (
-                              <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                                <strong>Explanation:</strong> {question.explanation || question.explanation_gujarati}
-                              </div>
-                            )}
-                            <div className="mt-2 text-xs text-gray-500">
-                              Marks: {question.marks}
+                            <div className={`p-2 rounded ${question.correct_answer === 'C' ? 'bg-green-100' : 'bg-gray-100'}`}>
+                              C. {question.option_c || question.option_c_gujarati || 'No option C'}
+                            </div>
+                            <div className={`p-2 rounded ${question.correct_answer === 'D' ? 'bg-green-100' : 'bg-gray-100'}`}>
+                              D. {question.option_d || question.option_d_gujarati || 'No option D'}
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2 ml-4">
-                          <button
-                            onClick={() => {
-                              editQuestion(question);
-                            }}
-                            className="p-1 text-gray-400 hover:text-blue-600"
-                          >
-                            <PencilIcon className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              openConfirmModal(question, 'delete_question');
-                            }}
-                            className="p-1 text-gray-400 hover:text-red-600"
-                          >
-                            <TrashIcon className="w-4 h-4" />
-                          </button>
+                          {(question.explanation || question.explanation_gujarati) && (
+                            <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+                              <strong>Explanation:</strong> {question.explanation || question.explanation_gujarati}
+                            </div>
+                          )}
+                          <div className="mt-2 text-xs text-gray-500">
+                            Marks: {question.marks}
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center space-x-2 ml-4">
+                        <button
+                          onClick={() => {
+                            editQuestion(question);
+                          }}
+                          className="p-1 text-gray-400 hover:text-blue-600"
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            openConfirmModal(question, 'delete_question');
+                          }}
+                          className="p-1 text-gray-400 hover:text-red-600"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                     </div>
                   ))}
-                </div>
+              </div>
               </div>
             ) : null}
 
-            {/* Enhanced Statistics */}
-            {data?.statistics && (
-              <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
-                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
-                  </svg>
-                  Detailed Statistics
-                </h3>
+          {/* Enhanced Statistics */}
+          {data?.statistics && (
+            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <svg className="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
+                  <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
+                </svg>
+                Detailed Statistics
+              </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Basic Counts */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Basic Counts */}
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <h4 className="font-medium text-gray-700 mb-2">Current Level</h4>
+                  <div className="space-y-1 text-sm">
+                    {data.statistics.root_categories_count !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Categories:</span>
+                        <span className="font-semibold text-blue-600">{data.statistics.root_categories_count}</span>
+                      </div>
+                    )}
+                    {data.statistics.root_questions_count !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Questions:</span>
+                        <span className="font-semibold text-green-600">{data.statistics.root_questions_count}</span>
+                      </div>
+                    )}
+                    {data.statistics.child_categories_count !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Subcategories:</span>
+                        <span className="font-semibold text-purple-600">{data.statistics.child_categories_count}</span>
+                      </div>
+                    )}
+                    {data.statistics.questions_count !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Category Questions:</span>
+                        <span className="font-semibold text-orange-600">{data.statistics.questions_count}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Category-specific information */}
+                {(data.statistics.hierarchy_level !== undefined ||
+                  data.statistics.total_descendants !== undefined ||
+                  data.statistics.total_descendant_questions !== undefined) && (
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <h4 className="font-medium text-gray-700 mb-2">Category Details</h4>
+                      <div className="space-y-1 text-sm">
+                        {data.statistics.hierarchy_level !== undefined && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Current Level:</span>
+                            <span className="font-semibold text-blue-600">{data.statistics.hierarchy_level}</span>
+                          </div>
+                        )}
+                        {data.statistics.is_leaf_category !== undefined && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Type:</span>
+                            <span className={`font-semibold ${data.statistics.is_leaf_category ? 'text-orange-600' : 'text-purple-600'}`}>
+                              {data.statistics.is_leaf_category ? 'Leaf Category' : 'Parent Category'}
+                            </span>
+                          </div>
+                        )}
+                        {data.statistics.total_descendants !== undefined && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Descendants:</span>
+                            <span className="font-semibold text-indigo-600">{data.statistics.total_descendants}</span>
+                          </div>
+                        )}
+                        {data.statistics.total_descendant_questions !== undefined && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">All Questions:</span>
+                            <span className="font-semibold text-green-600">{data.statistics.total_descendant_questions}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Hierarchy Overview */}
+                {(data.statistics.total_hierarchy_levels !== undefined ||
+                  data.statistics.total_nested_categories !== undefined ||
+                  data.statistics.total_questions_all_levels !== undefined) && (
+                    <div className="bg-white p-4 rounded-lg shadow-sm">
+                      <h4 className="font-medium text-gray-700 mb-2">Hierarchy Overview</h4>
+                      <div className="space-y-1 text-sm">
+                        {data.statistics.total_hierarchy_levels !== undefined && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Max Levels:</span>
+                            <span className="font-semibold text-indigo-600">{data.statistics.total_hierarchy_levels}</span>
+                          </div>
+                        )}
+                        {data.statistics.total_nested_categories !== undefined && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Nested Categories:</span>
+                            <span className="font-semibold text-blue-600">{data.statistics.total_nested_categories}</span>
+                          </div>
+                        )}
+                        {data.statistics.total_questions_all_levels !== undefined && (
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Total Questions:</span>
+                            <span className="font-semibold text-green-600">{data.statistics.total_questions_all_levels}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                {/* Content Distribution */}
+                {data.statistics.content_distribution && (
                   <div className="bg-white p-4 rounded-lg shadow-sm">
-                    <h4 className="font-medium text-gray-700 mb-2">Current Level</h4>
+                    <h4 className="font-medium text-gray-700 mb-2">Content Distribution</h4>
                     <div className="space-y-1 text-sm">
-                      {data.statistics.root_categories_count !== undefined && (
+                      {/* Course Level Stats */}
+                      {data.statistics.content_distribution.categories_with_subcategories !== undefined && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Categories:</span>
-                          <span className="font-semibold text-blue-600">{data.statistics.root_categories_count}</span>
+                          <span className="text-gray-600">With Subcategories:</span>
+                          <span className="font-semibold text-purple-600">{data.statistics.content_distribution.categories_with_subcategories}</span>
                         </div>
                       )}
-                      {data.statistics.root_questions_count !== undefined && (
+                      {data.statistics.content_distribution.categories_with_questions !== undefined && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Questions:</span>
-                          <span className="font-semibold text-green-600">{data.statistics.root_questions_count}</span>
+                          <span className="text-gray-600">With Questions:</span>
+                          <span className="font-semibold text-green-600">{data.statistics.content_distribution.categories_with_questions}</span>
                         </div>
                       )}
-                      {data.statistics.child_categories_count !== undefined && (
+                      {data.statistics.content_distribution.leaf_categories !== undefined && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Subcategories:</span>
-                          <span className="font-semibold text-purple-600">{data.statistics.child_categories_count}</span>
+                          <span className="text-gray-600">Leaf Categories:</span>
+                          <span className="font-semibold text-orange-600">{data.statistics.content_distribution.leaf_categories}</span>
                         </div>
                       )}
-                      {data.statistics.questions_count !== undefined && (
+
+                      {/* Category Level Stats */}
+                      {data.statistics.content_distribution.direct_questions !== undefined && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Category Questions:</span>
-                          <span className="font-semibold text-orange-600">{data.statistics.questions_count}</span>
+                          <span className="text-gray-600">Direct Questions:</span>
+                          <span className="font-semibold text-green-600">{data.statistics.content_distribution.direct_questions}</span>
+                        </div>
+                      )}
+                      {data.statistics.content_distribution.nested_categories !== undefined && (
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Child Categories:</span>
+                          <span className="font-semibold text-blue-600">{data.statistics.content_distribution.nested_categories}</span>
                         </div>
                       )}
                     </div>
                   </div>
+                )}
 
-                  {/* Category-specific information */}
-                  {(data.statistics.hierarchy_level !== undefined ||
-                    data.statistics.total_descendants !== undefined ||
-                    data.statistics.total_descendant_questions !== undefined) && (
-                      <div className="bg-white p-4 rounded-lg shadow-sm">
-                        <h4 className="font-medium text-gray-700 mb-2">Category Details</h4>
-                        <div className="space-y-1 text-sm">
-                          {data.statistics.hierarchy_level !== undefined && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Current Level:</span>
-                              <span className="font-semibold text-blue-600">{data.statistics.hierarchy_level}</span>
+                {/* Active vs Inactive */}
+                {data.statistics.active_vs_inactive && (
+                  <div className="bg-white p-4 rounded-lg shadow-sm">
+                    <h4 className="font-medium text-gray-700 mb-2">Active vs Inactive</h4>
+                    <div className="space-y-2">
+                      {/* Course Level Categories */}
+                      {(data.statistics.active_vs_inactive.active_categories !== undefined ||
+                        data.statistics.active_vs_inactive.inactive_categories !== undefined) && (
+                          <div>
+                            <div className="text-xs text-gray-500 mb-1">All Categories</div>
+                            <div className="flex justify-between text-sm">
+                              {data.statistics.active_vs_inactive.active_categories !== undefined && (
+                                <span className="text-green-600">
+                                  ✓ {data.statistics.active_vs_inactive.active_categories}
+                                </span>
+                              )}
+                              {data.statistics.active_vs_inactive.inactive_categories !== undefined && (
+                                <span className="text-red-600">
+                                  ✗ {data.statistics.active_vs_inactive.inactive_categories}
+                                </span>
+                              )}
                             </div>
-                          )}
-                          {data.statistics.is_leaf_category !== undefined && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Type:</span>
-                              <span className={`font-semibold ${data.statistics.is_leaf_category ? 'text-orange-600' : 'text-purple-600'}`}>
-                                {data.statistics.is_leaf_category ? 'Leaf Category' : 'Parent Category'}
-                              </span>
-                            </div>
-                          )}
-                          {data.statistics.total_descendants !== undefined && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Descendants:</span>
-                              <span className="font-semibold text-indigo-600">{data.statistics.total_descendants}</span>
-                            </div>
-                          )}
-                          {data.statistics.total_descendant_questions !== undefined && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">All Questions:</span>
-                              <span className="font-semibold text-green-600">{data.statistics.total_descendant_questions}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                  {/* Hierarchy Overview */}
-                  {(data.statistics.total_hierarchy_levels !== undefined ||
-                    data.statistics.total_nested_categories !== undefined ||
-                    data.statistics.total_questions_all_levels !== undefined) && (
-                      <div className="bg-white p-4 rounded-lg shadow-sm">
-                        <h4 className="font-medium text-gray-700 mb-2">Hierarchy Overview</h4>
-                        <div className="space-y-1 text-sm">
-                          {data.statistics.total_hierarchy_levels !== undefined && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Max Levels:</span>
-                              <span className="font-semibold text-indigo-600">{data.statistics.total_hierarchy_levels}</span>
-                            </div>
-                          )}
-                          {data.statistics.total_nested_categories !== undefined && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Nested Categories:</span>
-                              <span className="font-semibold text-blue-600">{data.statistics.total_nested_categories}</span>
-                            </div>
-                          )}
-                          {data.statistics.total_questions_all_levels !== undefined && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Total Questions:</span>
-                              <span className="font-semibold text-green-600">{data.statistics.total_questions_all_levels}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                  {/* Content Distribution */}
-                  {data.statistics.content_distribution && (
-                    <div className="bg-white p-4 rounded-lg shadow-sm">
-                      <h4 className="font-medium text-gray-700 mb-2">Content Distribution</h4>
-                      <div className="space-y-1 text-sm">
-                        {/* Course Level Stats */}
-                        {data.statistics.content_distribution.categories_with_subcategories !== undefined && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">With Subcategories:</span>
-                            <span className="font-semibold text-purple-600">{data.statistics.content_distribution.categories_with_subcategories}</span>
-                          </div>
-                        )}
-                        {data.statistics.content_distribution.categories_with_questions !== undefined && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">With Questions:</span>
-                            <span className="font-semibold text-green-600">{data.statistics.content_distribution.categories_with_questions}</span>
-                          </div>
-                        )}
-                        {data.statistics.content_distribution.leaf_categories !== undefined && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Leaf Categories:</span>
-                            <span className="font-semibold text-orange-600">{data.statistics.content_distribution.leaf_categories}</span>
                           </div>
                         )}
 
-                        {/* Category Level Stats */}
-                        {data.statistics.content_distribution.direct_questions !== undefined && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Direct Questions:</span>
-                            <span className="font-semibold text-green-600">{data.statistics.content_distribution.direct_questions}</span>
+                      {/* Category Level Children */}
+                      {(data.statistics.active_vs_inactive.active_children !== undefined ||
+                        data.statistics.active_vs_inactive.inactive_children !== undefined) && (
+                          <div>
+                            <div className="text-xs text-gray-500 mb-1">Child Categories</div>
+                            <div className="flex justify-between text-sm">
+                              {data.statistics.active_vs_inactive.active_children !== undefined && (
+                                <span className="text-green-600">
+                                  ✓ {data.statistics.active_vs_inactive.active_children}
+                                </span>
+                              )}
+                              {data.statistics.active_vs_inactive.inactive_children !== undefined && (
+                                <span className="text-red-600">
+                                  ✗ {data.statistics.active_vs_inactive.inactive_children}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         )}
-                        {data.statistics.content_distribution.nested_categories !== undefined && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Child Categories:</span>
-                            <span className="font-semibold text-blue-600">{data.statistics.content_distribution.nested_categories}</span>
+                      {(data.statistics.active_vs_inactive.active_questions !== undefined ||
+                        data.statistics.active_vs_inactive.inactive_questions !== undefined) && (
+                          <div>
+                            <div className="text-xs text-gray-500 mb-1">Questions</div>
+                            <div className="flex justify-between text-sm">
+                              {data.statistics.active_vs_inactive.active_questions !== undefined && (
+                                <span className="text-green-600">
+                                  ✓ {data.statistics.active_vs_inactive.active_questions}
+                                </span>
+                              )}
+                              {data.statistics.active_vs_inactive.inactive_questions !== undefined && (
+                                <span className="text-red-600">
+                                  ✗ {data.statistics.active_vs_inactive.inactive_questions}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         )}
-                      </div>
                     </div>
-                  )}
-
-                  {/* Active vs Inactive */}
-                  {data.statistics.active_vs_inactive && (
-                    <div className="bg-white p-4 rounded-lg shadow-sm">
-                      <h4 className="font-medium text-gray-700 mb-2">Active vs Inactive</h4>
-                      <div className="space-y-2">
-                        {/* Course Level Categories */}
-                        {(data.statistics.active_vs_inactive.active_categories !== undefined ||
-                          data.statistics.active_vs_inactive.inactive_categories !== undefined) && (
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">All Categories</div>
-                              <div className="flex justify-between text-sm">
-                                {data.statistics.active_vs_inactive.active_categories !== undefined && (
-                                  <span className="text-green-600">
-                                    ✓ {data.statistics.active_vs_inactive.active_categories}
-                                  </span>
-                                )}
-                                {data.statistics.active_vs_inactive.inactive_categories !== undefined && (
-                                  <span className="text-red-600">
-                                    ✗ {data.statistics.active_vs_inactive.inactive_categories}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                        {/* Category Level Children */}
-                        {(data.statistics.active_vs_inactive.active_children !== undefined ||
-                          data.statistics.active_vs_inactive.inactive_children !== undefined) && (
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Child Categories</div>
-                              <div className="flex justify-between text-sm">
-                                {data.statistics.active_vs_inactive.active_children !== undefined && (
-                                  <span className="text-green-600">
-                                    ✓ {data.statistics.active_vs_inactive.active_children}
-                                  </span>
-                                )}
-                                {data.statistics.active_vs_inactive.inactive_children !== undefined && (
-                                  <span className="text-red-600">
-                                    ✗ {data.statistics.active_vs_inactive.inactive_children}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        {(data.statistics.active_vs_inactive.active_questions !== undefined ||
-                          data.statistics.active_vs_inactive.inactive_questions !== undefined) && (
-                            <div>
-                              <div className="text-xs text-gray-500 mb-1">Questions</div>
-                              <div className="flex justify-between text-sm">
-                                {data.statistics.active_vs_inactive.active_questions !== undefined && (
-                                  <span className="text-green-600">
-                                    ✓ {data.statistics.active_vs_inactive.active_questions}
-                                  </span>
-                                )}
-                                {data.statistics.active_vs_inactive.inactive_questions !== undefined && (
-                                  <span className="text-red-600">
-                                    ✗ {data.statistics.active_vs_inactive.inactive_questions}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
+    </div>
 
-      {/* Create Category Modal */}
-      {showCategoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">
-              Create {isRootLevel ? 'Category' : 'Subcategory'}
-            </h3>
+      {/* Create Category Modal */ }
+  {
+    showCategoryModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <h3 className="text-lg font-semibold mb-4">
+            Create {isRootLevel ? 'Category' : 'Subcategory'}
+          </h3>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name *
-                </label>
-                <input
-                  type="text"
-                  value={categoryForm.name}
-                  onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter category name"
-                />
-              </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Name *
+              </label>
+              <input
+                type="text"
+                value={categoryForm.name}
+                onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter category name"
+              />
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
-                </label>
-                {/* <textarea
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              {/* <textarea
                   value={categoryForm.description}
                   onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter description (optional)"
                   rows={3}
                 /> */}
-                <RichTextEditor
-                  value={categoryForm.description}
-                  onChange={(value) => setCategoryForm({ ...categoryForm, description: value })}
-                />
-              </div>
+              <RichTextEditor
+                value={categoryForm.description}
+                onChange={(value) => setCategoryForm({ ...categoryForm, description: value })}
+              />
+            </div>
 
-              {/* Gujarati Fields */}
-              <div className="pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-800 mb-3">🌐 Gujarati Translation</h4>
+            {/* Gujarati Fields */}
+            <div className="pt-4 border-t border-gray-200">
+              <h4 className="text-sm font-medium text-gray-800 mb-3">🌐 Gujarati Translation</h4>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Name (Gujarati)
-                    </label>
-                    <input
-                      type="text"
-                      value={categoryForm.name_gujarati}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, name_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="કેટેગરી નામ દાખલ કરો"
-                    />
-                  </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name (Gujarati)
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryForm.name_gujarati}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, name_gujarati: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="કેટેગરી નામ દાખલ કરો"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description (Gujarati)
-                    </label>
-                    {/* <textarea
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description (Gujarati)
+                  </label>
+                  {/* <textarea
                       value={categoryForm.description_gujarati}
                       onChange={(e) => setCategoryForm({ ...categoryForm, description_gujarati: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="વર્ણન દાખલ કરો (વૈકલ્પિક)"
                       rows={3}
                     /> */}
-                    <RichTextEditor
-                      value={categoryForm.description_gujarati}
-                      onChange={(value) => setCategoryForm({ ...categoryForm, description_gujarati: value })}
-                    />
-                  </div>
+                  <RichTextEditor
+                    value={categoryForm.description_gujarati}
+                    onChange={(value) => setCategoryForm({ ...categoryForm, description_gujarati: value })}
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Negative Marking Configuration */}
-              <div className="border-t pt-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">⚖️ Negative Marking (For Question-Holder Categories)</h4>
-                <div className="space-y-4">
-                  {shouldShowNegativeMarking() && (
-                    <>
-                      <div className="flex items-start">
-                        <input
-                          type="checkbox"
-                          id="negative_marking_enabled"
-                          checked={categoryForm.negative_marking_enabled}
-                          onChange={(e) => setCategoryForm({ ...categoryForm, negative_marking_enabled: e.target.checked })}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                        />
-                        <div className="ml-3">
-                          <label htmlFor="negative_marking_enabled" className="block text-sm font-medium text-gray-700">
-                            Enable Negative Marking
-                          </label>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Deduct marks for incorrect answers in this category. Only applies to categories with questions.
-                          </p>
-                        </div>
-                      </div>
-
-                      {categoryForm.negative_marking_enabled && (
-                        <div className="ml-7">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Negative Marks per Wrong Answer
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              step="0.25"
-                              min="0"
-                              max="1"
-                              value={categoryForm.negative_marks_per_wrong}
-                              onChange={(e) => setCategoryForm({ ...categoryForm, negative_marks_per_wrong: parseFloat(e.target.value) || 0.25 })}
-                              className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              required={categoryForm.negative_marking_enabled}
-                            />
-                            <span className="text-sm text-gray-600">marks</span>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Common values: 0.25 (for 4-option MCQs), 0.33 (for 3-option MCQs)
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {!shouldShowNegativeMarking() && (
-                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-blue-700">
-                            <strong>Negative marking is not available for this category.</strong><br />
-                            Negative marking only applies to categories that directly contain questions.
-                            This category contains subcategories or is empty, so negative marking is not applicable.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Test Timing Configuration */}
-              <div className="border-t pt-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">⏱️ Test Timing (For Question-Holder Categories)</h4>
-                <div className="space-y-4">
-                  {shouldShowTestTiming() && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Test Duration (Minutes)
-                      </label>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="number"
-                          min="1"
-                          max="600"
-                          step="1"
-                          value={categoryForm.test_duration_minutes}
-                          onChange={(e) => setCategoryForm({ ...categoryForm, test_duration_minutes: parseInt(e.target.value) || 60 })}
-                          className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
-                        <span className="text-sm text-gray-600">minutes</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Set the test duration for questions in this category (default: 60 minutes)
-                      </p>
-                    </div>
-                  )}
-
-                  {!shouldShowTestTiming() && (
-                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-blue-700">
-                            <strong>Test timing is not available for this category.</strong><br />
-                            Test timing only applies to categories that directly contain questions.
-                            This category contains subcategories or is empty, so test timing is not applicable.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Free in Paid Series Configuration */}
-              <div className="border-t pt-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">💰 Free in Paid Series (For Question-Holder Categories)</h4>
-                <div className="space-y-4">
-                  {shouldShowNegativeMarking() && (
+            {/* Negative Marking Configuration */}
+            <div className="border-t pt-4">
+              <h4 className="text-md font-medium text-gray-800 mb-3">⚖️ Negative Marking (For Question-Holder Categories)</h4>
+              <div className="space-y-4">
+                {shouldShowNegativeMarking() && (
+                  <>
                     <div className="flex items-start">
                       <input
                         type="checkbox"
-                        id="is_free_in_paid_series"
-                        checked={categoryForm.is_free_in_paid_series}
-                        onChange={(e) => setCategoryForm({ ...categoryForm, is_free_in_paid_series: e.target.checked })}
+                        id="negative_marking_enabled"
+                        checked={categoryForm.negative_marking_enabled}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, negative_marking_enabled: e.target.checked })}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
                       />
                       <div className="ml-3">
-                        <label htmlFor="is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
-                          Mark as Free in Paid Series
+                        <label htmlFor="negative_marking_enabled" className="block text-sm font-medium text-gray-700">
+                          Enable Negative Marking
                         </label>
                         <p className="text-xs text-gray-500 mt-1">
-                          When enabled, this quiz category will be accessible for free even if the parent test series is paid.
-                          Use this to offer sample/demo quizzes within paid test series.
+                          Deduct marks for incorrect answers in this category. Only applies to categories with questions.
                         </p>
                       </div>
                     </div>
-                  )}
 
-                  {!shouldShowNegativeMarking() && (
-                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-blue-700">
-                            <strong>Free access option is not available for this category.</strong><br />
-                            This setting only applies to categories that directly contain questions.
-                            This category contains subcategories or is empty, so this option is not applicable.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Is Active Configuration */}
-              {shouldShowNegativeMarking() && (
-                <div className="border-t pt-4">
-                  <h4 className="text-md font-medium text-gray-800 mb-3">Active</h4>
-                  <div className="space-y-4">
-                    <div className="flex items-start">
-                      <input
-                        type="checkbox"
-                        id="is_active"
-                        checked={categoryForm.is_active}
-                        onChange={(e) => setCategoryForm({ ...categoryForm, is_active: e.target.checked })}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                      />
-                      <div className="ml-3">
-                        <label htmlFor="is_active" className="block text-sm font-medium text-gray-700">
-                          Active (test is available for use)
+                    {categoryForm.negative_marking_enabled && (
+                      <div className="ml-7">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Negative Marks per Wrong Answer
                         </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            step="0.25"
+                            min="0"
+                            max="1"
+                            value={categoryForm.negative_marks_per_wrong}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, negative_marks_per_wrong: parseFloat(e.target.value) || 0.25 })}
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required={categoryForm.negative_marking_enabled}
+                          />
+                          <span className="text-sm text-gray-600">marks</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Common values: 0.25 (for 4-option MCQs), 0.33 (for 3-option MCQs)
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {!shouldShowNegativeMarking() && (
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-blue-700">
+                          <strong>Negative marking is not available for this category.</strong><br />
+                          Negative marking only applies to categories that directly contain questions.
+                          This category contains subcategories or is empty, so negative marking is not applicable.
+                        </p>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setShowCategoryModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createCategory}
-                disabled={categoryLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                {categoryLoading && (
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
                 )}
-                {categoryLoading ? 'Creating...' : 'Create'}
-              </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Create Question Modal */}
-      {showQuestionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[95vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Create Question</h3>
+            {/* Test Timing Configuration */}
+            <div className="border-t pt-4">
+              <h4 className="text-md font-medium text-gray-800 mb-3">⏱️ Test Timing (For Question-Holder Categories)</h4>
+              <div className="space-y-4">
+                {shouldShowTestTiming() && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Test Duration (Minutes)
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="600"
+                        step="1"
+                        value={categoryForm.test_duration_minutes}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, test_duration_minutes: parseInt(e.target.value) || 60 })}
+                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                      <span className="text-sm text-gray-600">minutes</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Set the test duration for questions in this category (default: 60 minutes)
+                    </p>
+                  </div>
+                )}
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Question Text *
-                </label>
-                <RichTextEditor
-                  value={questionForm.question_text}
-                  onChange={(content) => setQuestionForm({ ...questionForm, question_text: content })}
-                  placeholder="Enter question text"
-                  height={250}
-                />
+                {!shouldShowTestTiming() && (
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-blue-700">
+                          <strong>Test timing is not available for this category.</strong><br />
+                          Test timing only applies to categories that directly contain questions.
+                          This category contains subcategories or is empty, so test timing is not applicable.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Option A *
-                  </label>
-                  <input
-                    type="text"
-                    value={questionForm.option_a}
-                    onChange={(e) => setQuestionForm({ ...questionForm, option_a: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Option A"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Option B *
-                  </label>
-                  <input
-                    type="text"
-                    value={questionForm.option_b}
-                    onChange={(e) => setQuestionForm({ ...questionForm, option_b: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Option B"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Option C *
-                  </label>
-                  <input
-                    type="text"
-                    value={questionForm.option_c}
-                    onChange={(e) => setQuestionForm({ ...questionForm, option_c: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Option C"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Option D *
-                  </label>
-                  <input
-                    type="text"
-                    value={questionForm.option_d}
-                    onChange={(e) => setQuestionForm({ ...questionForm, option_d: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Option D"
-                  />
-                </div>
+            {/* Free in Paid Series Configuration */}
+            <div className="border-t pt-4">
+              <h4 className="text-md font-medium text-gray-800 mb-3">💰 Free in Paid Series (For Question-Holder Categories)</h4>
+              <div className="space-y-4">
+                {shouldShowNegativeMarking() && (
+                  <div className="flex items-start">
+                    <input
+                      type="checkbox"
+                      id="is_free_in_paid_series"
+                      checked={categoryForm.is_free_in_paid_series}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, is_free_in_paid_series: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                    />
+                    <div className="ml-3">
+                      <label htmlFor="is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
+                        Mark as Free in Paid Series
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        When enabled, this quiz category will be accessible for free even if the parent test series is paid.
+                        Use this to offer sample/demo quizzes within paid test series.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {!shouldShowNegativeMarking() && (
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-blue-700">
+                          <strong>Free access option is not available for this category.</strong><br />
+                          This setting only applies to categories that directly contain questions.
+                          This category contains subcategories or is empty, so this option is not applicable.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Correct Answer *
-                  </label>
-                  <select
-                    value={questionForm.correct_answer}
-                    onChange={(e) => setQuestionForm({ ...questionForm, correct_answer: e.target.value as 'A' | 'B' | 'C' | 'D' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="A">Option A</option>
-                    <option value="B">Option B</option>
-                    <option value="C">Option C</option>
-                    <option value="D">Option D</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Marks
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={questionForm.marks}
-                    onChange={(e) => setQuestionForm({ ...questionForm, marks: parseInt(e.target.value) || 1 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="1"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Explanation
-                </label>
-                <RichTextEditor
-                  value={questionForm.explanation}
-                  onChange={(content) => setQuestionForm({ ...questionForm, explanation: content })}
-                  placeholder="Enter explanation (optional)"
-                  height={200}
-                />
-              </div>
-
-              {/* Gujarati Fields */}
-              <div className="pt-6 border-t border-gray-200">
-                <h4 className="text-lg font-medium text-gray-800 mb-4">🌐 Gujarati Translation</h4>
-
+            {/* Is Active Configuration */}
+            {shouldShowNegativeMarking() && (
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-800 mb-3">Active</h4>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Question Text (Gujarati)
-                    </label>
-                    <RichTextEditor
-                      value={questionForm.question_text_gujarati}
-                      onChange={(content) => setQuestionForm({ ...questionForm, question_text_gujarati: content })}
-                      placeholder="પ્રશ્ન ટેક્સ્ટ દાખલ કરો"
-                      height={250}
+                  <div className="flex items-start">
+                    <input
+                      type="checkbox"
+                      id="is_active"
+                      checked={categoryForm.is_active}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, is_active: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
                     />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Option A (Gujarati)
+                    <div className="ml-3">
+                      <label htmlFor="is_active" className="block text-sm font-medium text-gray-700">
+                        Active (test is available for use)
                       </label>
-                      <input
-                        type="text"
-                        value={questionForm.option_a_gujarati}
-                        onChange={(e) => setQuestionForm({ ...questionForm, option_a_gujarati: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="વિકલ્પ A"
-                      />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Option B (Gujarati)
-                      </label>
-                      <input
-                        type="text"
-                        value={questionForm.option_b_gujarati}
-                        onChange={(e) => setQuestionForm({ ...questionForm, option_b_gujarati: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="વિકલ્પ B"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Option C (Gujarati)
-                      </label>
-                      <input
-                        type="text"
-                        value={questionForm.option_c_gujarati}
-                        onChange={(e) => setQuestionForm({ ...questionForm, option_c_gujarati: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="વિકલ્પ C"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Option D (Gujarati)
-                      </label>
-                      <input
-                        type="text"
-                        value={questionForm.option_d_gujarati}
-                        onChange={(e) => setQuestionForm({ ...questionForm, option_d_gujarati: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="વિકલ્પ D"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Explanation (Gujarati)
-                    </label>
-                    <RichTextEditor
-                      value={questionForm.explanation_gujarati}
-                      onChange={(content) => setQuestionForm({ ...questionForm, explanation_gujarati: content })}
-                      placeholder="ગુજરાતીમાં સમજુતી દાખલ કરો (વૈકલ્પિક)..."
-                      height={200}
-                    />
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+          </div>
 
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setShowQuestionModal(false)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={createQuestion}
-                disabled={questionLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                {questionLoading && (
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {questionLoading ? 'Creating...' : 'Create Question'}
-              </button>
-            </div>
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={() => setShowCategoryModal(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={createCategory}
+              disabled={categoryLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {categoryLoading && (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {categoryLoading ? 'Creating...' : 'Create'}
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    )
+  }
 
-      {/* Edit Category Modal */}
-      {showEditCategoryModal && editingCategory && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Edit Category</h2>
+  {/* Create Question Modal */ }
+  {
+    showQuestionModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+          <h3 className="text-lg font-semibold mb-4">Create Question</h3>
 
-            <div className="space-y-4">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Question Text *
+              </label>
+              <RichTextEditor
+                value={questionForm.question_text}
+                onChange={(content) => setQuestionForm({ ...questionForm, question_text: content })}
+                placeholder="Enter question text"
+                height={250}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Category Name *
+                  Option A *
                 </label>
                 <input
                   type="text"
-                  value={categoryForm.name}
-                  onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                  value={questionForm.option_a}
+                  onChange={(e) => setQuestionForm({ ...questionForm, option_a: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter category name"
+                  placeholder="Option A"
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  Option B *
                 </label>
-                {/* <textarea
+                <input
+                  type="text"
+                  value={questionForm.option_b}
+                  onChange={(e) => setQuestionForm({ ...questionForm, option_b: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Option B"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Option C *
+                </label>
+                <input
+                  type="text"
+                  value={questionForm.option_c}
+                  onChange={(e) => setQuestionForm({ ...questionForm, option_c: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Option C"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Option D *
+                </label>
+                <input
+                  type="text"
+                  value={questionForm.option_d}
+                  onChange={(e) => setQuestionForm({ ...questionForm, option_d: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Option D"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Correct Answer *
+                </label>
+                <select
+                  value={questionForm.correct_answer}
+                  onChange={(e) => setQuestionForm({ ...questionForm, correct_answer: e.target.value as 'A' | 'B' | 'C' | 'D' })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="A">Option A</option>
+                  <option value="B">Option B</option>
+                  <option value="C">Option C</option>
+                  <option value="D">Option D</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Marks
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={questionForm.marks}
+                  onChange={(e) => setQuestionForm({ ...questionForm, marks: parseInt(e.target.value) || 1 })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Explanation
+              </label>
+              <RichTextEditor
+                value={questionForm.explanation}
+                onChange={(content) => setQuestionForm({ ...questionForm, explanation: content })}
+                placeholder="Enter explanation (optional)"
+                height={200}
+              />
+            </div>
+
+            {/* Gujarati Fields */}
+            <div className="pt-6 border-t border-gray-200">
+              <h4 className="text-lg font-medium text-gray-800 mb-4">🌐 Gujarati Translation</h4>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Question Text (Gujarati)
+                  </label>
+                  <RichTextEditor
+                    value={questionForm.question_text_gujarati}
+                    onChange={(content) => setQuestionForm({ ...questionForm, question_text_gujarati: content })}
+                    placeholder="પ્રશ્ન ટેક્સ્ટ દાખલ કરો"
+                    height={250}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Option A (Gujarati)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.option_a_gujarati}
+                      onChange={(e) => setQuestionForm({ ...questionForm, option_a_gujarati: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="વિકલ્પ A"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Option B (Gujarati)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.option_b_gujarati}
+                      onChange={(e) => setQuestionForm({ ...questionForm, option_b_gujarati: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="વિકલ્પ B"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Option C (Gujarati)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.option_c_gujarati}
+                      onChange={(e) => setQuestionForm({ ...questionForm, option_c_gujarati: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="વિકલ્પ C"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Option D (Gujarati)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.option_d_gujarati}
+                      onChange={(e) => setQuestionForm({ ...questionForm, option_d_gujarati: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="વિકલ્પ D"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Explanation (Gujarati)
+                  </label>
+                  <RichTextEditor
+                    value={questionForm.explanation_gujarati}
+                    onChange={(content) => setQuestionForm({ ...questionForm, explanation_gujarati: content })}
+                    placeholder="ગુજરાતીમાં સમજુતી દાખલ કરો (વૈકલ્પિક)..."
+                    height={200}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={() => setShowQuestionModal(false)}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={createQuestion}
+              disabled={questionLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {questionLoading && (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {questionLoading ? 'Creating...' : 'Create Question'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {/* Edit Category Modal */ }
+  {
+    showEditCategoryModal && editingCategory && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Edit Category</h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Category Name *
+              </label>
+              <input
+                type="text"
+                value={categoryForm.name}
+                onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter category name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              {/* <textarea
                   value={categoryForm.description}
                   onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter description"
                   rows={3}
                 /> */}
-                <RichTextEditor
-                  value={categoryForm.description}
-                  onChange={(content) => setCategoryForm({ ...categoryForm, description: content })}
-                />
-              </div>
+              <RichTextEditor
+                value={categoryForm.description}
+                onChange={(content) => setCategoryForm({ ...categoryForm, description: content })}
+              />
+            </div>
 
-              {/* Gujarati Fields */}
-              <div className="pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-medium text-gray-800 mb-3">🌐 Gujarati Translation</h4>
+            {/* Gujarati Fields */}
+            <div className="pt-4 border-t border-gray-200">
+              <h4 className="text-sm font-medium text-gray-800 mb-3">🌐 Gujarati Translation</h4>
 
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Category Name (Gujarati)
-                    </label>
-                    <input
-                      type="text"
-                      value={categoryForm.name_gujarati}
-                      onChange={(e) => setCategoryForm({ ...categoryForm, name_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="કેટેગરી નામ દાખલ કરો"
-                    />
-                  </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category Name (Gujarati)
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryForm.name_gujarati}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, name_gujarati: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="કેટેગરી નામ દાખલ કરો"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description (Gujarati)
-                    </label>
-                    {/* <textarea
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description (Gujarati)
+                  </label>
+                  {/* <textarea
                       value={categoryForm.description_gujarati}
                       onChange={(e) => setCategoryForm({ ...categoryForm, description_gujarati: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="વર્ણન દાખલ કરો"
                       rows={3}
                     /> */}
-                    <RichTextEditor
-                      value={categoryForm.description_gujarati}
-                      onChange={(content) => setCategoryForm({ ...categoryForm, description_gujarati: content })}
-                    />
-                  </div>
+                  <RichTextEditor
+                    value={categoryForm.description_gujarati}
+                    onChange={(content) => setCategoryForm({ ...categoryForm, description_gujarati: content })}
+                  />
                 </div>
               </div>
+            </div>
 
-              {/* Negative Marking Configuration */}
-              <div className="border-t pt-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">⚖️ Negative Marking (For Question-Holder Categories)</h4>
-                <div className="space-y-4">
-                  {shouldShowNegativeMarking() && (
-                    <>
-                      <div className="flex items-start">
-                        <input
-                          type="checkbox"
-                          id="edit_negative_marking_enabled"
-                          checked={categoryForm.negative_marking_enabled}
-                          onChange={(e) => setCategoryForm({ ...categoryForm, negative_marking_enabled: e.target.checked })}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                        />
-                        <div className="ml-3">
-                          <label htmlFor="edit_negative_marking_enabled" className="block text-sm font-medium text-gray-700">
-                            Enable Negative Marking
-                          </label>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Deduct marks for incorrect answers in this category. Only applies to categories with questions.
-                          </p>
-                        </div>
-                      </div>
-
-                      {categoryForm.negative_marking_enabled && (
-                        <div className="ml-7">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Negative Marks per Wrong Answer
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="number"
-                              step="0.25"
-                              min="0"
-                              max="1"
-                              value={categoryForm.negative_marks_per_wrong}
-                              onChange={(e) => setCategoryForm({ ...categoryForm, negative_marks_per_wrong: parseFloat(e.target.value) || 0.25 })}
-                              className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              required={categoryForm.negative_marking_enabled}
-                            />
-                            <span className="text-sm text-gray-600">marks</span>
-                          </div>
-                          <p className="text-xs text-gray-500 mt-1">
-                            Common values: 0.25 (for 4-option MCQs), 0.33 (for 3-option MCQs)
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {!shouldShowNegativeMarking() && (
-                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-blue-700">
-                            <strong>Negative marking is not available for this category.</strong><br />
-                            Negative marking only applies to categories that directly contain questions.
-                            This category contains subcategories or is empty, so negative marking is not applicable.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Test Timing Configuration */}
-              <div className="border-t pt-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">⏱️ Test Timing (For Question-Holder Categories)</h4>
-                <div className="space-y-4">
-                  {shouldShowTestTiming() && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Test Duration (Minutes)
-                      </label>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="number"
-                          min="1"
-                          max="600"
-                          step="1"
-                          value={categoryForm.test_duration_minutes}
-                          onChange={(e) => setCategoryForm({ ...categoryForm, test_duration_minutes: parseInt(e.target.value) || 60 })}
-                          className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          required
-                        />
-                        <span className="text-sm text-gray-600">minutes</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Set the test duration for questions in this category (default: 60 minutes)
-                      </p>
-                    </div>
-                  )}
-
-                  {!shouldShowTestTiming() && (
-                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-blue-700">
-                            <strong>Test timing is not available for this category.</strong><br />
-                            Test timing only applies to categories that directly contain questions.
-                            This category contains subcategories or is empty, so test timing is not applicable.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Free in Paid Series Configuration */}
-              <div className="border-t pt-4">
-                <h4 className="text-md font-medium text-gray-800 mb-3">💰 Free in Paid Series (For Question-Holder Categories)</h4>
-                <div className="space-y-4">
-                  {shouldShowNegativeMarking() && (
+            {/* Negative Marking Configuration */}
+            <div className="border-t pt-4">
+              <h4 className="text-md font-medium text-gray-800 mb-3">⚖️ Negative Marking (For Question-Holder Categories)</h4>
+              <div className="space-y-4">
+                {shouldShowNegativeMarking() && (
+                  <>
                     <div className="flex items-start">
                       <input
                         type="checkbox"
-                        id="edit_is_free_in_paid_series"
-                        checked={categoryForm.is_free_in_paid_series}
-                        onChange={(e) => setCategoryForm({ ...categoryForm, is_free_in_paid_series: e.target.checked })}
+                        id="edit_negative_marking_enabled"
+                        checked={categoryForm.negative_marking_enabled}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, negative_marking_enabled: e.target.checked })}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
                       />
                       <div className="ml-3">
-                        <label htmlFor="edit_is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
-                          Mark as Free in Paid Series
+                        <label htmlFor="edit_negative_marking_enabled" className="block text-sm font-medium text-gray-700">
+                          Enable Negative Marking
                         </label>
                         <p className="text-xs text-gray-500 mt-1">
-                          When enabled, this quiz category will be accessible for free even if the parent test series is paid.
-                          Use this to offer sample/demo quizzes within paid test series.
+                          Deduct marks for incorrect answers in this category. Only applies to categories with questions.
                         </p>
                       </div>
                     </div>
-                  )}
 
-                  {!shouldShowNegativeMarking() && (
-                    <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
-                      <div className="flex">
-                        <div className="flex-shrink-0">
-                          <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm text-blue-700">
-                            <strong>Free access option is not available for this category.</strong><br />
-                            This setting only applies to categories that directly contain questions.
-                            This category contains subcategories or is empty, so this option is not applicable.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Is Active Configuration */}
-              {shouldShowNegativeMarking() && (
-                <div className="border-t pt-4">
-                  <h4 className="text-md font-medium text-gray-800 mb-3">Active</h4>
-                  <div className="space-y-4">
-                    <div className="flex items-start">
-                      <input
-                        type="checkbox"
-                        id="is_active"
-                        checked={categoryForm.is_active}
-                        onChange={(e) => setCategoryForm({ ...categoryForm, is_active: e.target.checked })}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
-                      />
-                      <div className="ml-3">
-                        <label htmlFor="is_active" className="block text-sm font-medium text-gray-700">
-                          Active (test is available for use)
+                    {categoryForm.negative_marking_enabled && (
+                      <div className="ml-7">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Negative Marks per Wrong Answer
                         </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            step="0.25"
+                            min="0"
+                            max="1"
+                            value={categoryForm.negative_marks_per_wrong}
+                            onChange={(e) => setCategoryForm({ ...categoryForm, negative_marks_per_wrong: parseFloat(e.target.value) || 0.25 })}
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            required={categoryForm.negative_marking_enabled}
+                          />
+                          <span className="text-sm text-gray-600">marks</span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Common values: 0.25 (for 4-option MCQs), 0.33 (for 3-option MCQs)
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {!shouldShowNegativeMarking() && (
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-blue-700">
+                          <strong>Negative marking is not available for this category.</strong><br />
+                          Negative marking only applies to categories that directly contain questions.
+                          This category contains subcategories or is empty, so negative marking is not applicable.
+                        </p>
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowEditCategoryModal(false);
-                  setEditingCategory(null);
-                  setCategoryForm({
-                    name: '',
-                    description: '',
-                    name_gujarati: '',
-                    description_gujarati: '',
-                    negative_marking_enabled: false,
-                    negative_marks_per_wrong: 0.25,
-                    test_duration_minutes: 60,
-                    is_free_in_paid_series: false,
-                    is_active: false,
-                  });
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={updateCategory}
-                disabled={editCategoryLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                {editCategoryLoading && (
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
                 )}
-                {editCategoryLoading ? 'Updating...' : 'Update Category'}
-              </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Edit Question Modal */}
-      {showEditQuestionModal && editingQuestion && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[95vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Edit Question</h2>
+            {/* Test Timing Configuration */}
+            <div className="border-t pt-4">
+              <h4 className="text-md font-medium text-gray-800 mb-3">⏱️ Test Timing (For Question-Holder Categories)</h4>
+              <div className="space-y-4">
+                {shouldShowTestTiming() && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Test Duration (Minutes)
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="600"
+                        step="1"
+                        value={categoryForm.test_duration_minutes}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, test_duration_minutes: parseInt(e.target.value) || 60 })}
+                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                      />
+                      <span className="text-sm text-gray-600">minutes</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Set the test duration for questions in this category (default: 60 minutes)
+                    </p>
+                  </div>
+                )}
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Question Text *
-                </label>
-                <RichTextEditor
-                  value={questionForm.question_text}
-                  onChange={(content) => setQuestionForm({ ...questionForm, question_text: content })}
-                  placeholder="Enter question text"
-                  height={250}
-                />
+                {!shouldShowTestTiming() && (
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-blue-700">
+                          <strong>Test timing is not available for this category.</strong><br />
+                          Test timing only applies to categories that directly contain questions.
+                          This category contains subcategories or is empty, so test timing is not applicable.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Option A *
-                  </label>
-                  <input
-                    type="text"
-                    value={questionForm.option_a}
-                    onChange={(e) => setQuestionForm({ ...questionForm, option_a: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter option A"
-                  />
-                </div>
+            {/* Free in Paid Series Configuration */}
+            <div className="border-t pt-4">
+              <h4 className="text-md font-medium text-gray-800 mb-3">💰 Free in Paid Series (For Question-Holder Categories)</h4>
+              <div className="space-y-4">
+                {shouldShowNegativeMarking() && (
+                  <div className="flex items-start">
+                    <input
+                      type="checkbox"
+                      id="edit_is_free_in_paid_series"
+                      checked={categoryForm.is_free_in_paid_series}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, is_free_in_paid_series: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                    />
+                    <div className="ml-3">
+                      <label htmlFor="edit_is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
+                        Mark as Free in Paid Series
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">
+                        When enabled, this quiz category will be accessible for free even if the parent test series is paid.
+                        Use this to offer sample/demo quizzes within paid test series.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Option B *
-                  </label>
-                  <input
-                    type="text"
-                    value={questionForm.option_b}
-                    onChange={(e) => setQuestionForm({ ...questionForm, option_b: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter option B"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Option C *
-                  </label>
-                  <input
-                    type="text"
-                    value={questionForm.option_c}
-                    onChange={(e) => setQuestionForm({ ...questionForm, option_c: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter option C"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Option D *
-                  </label>
-                  <input
-                    type="text"
-                    value={questionForm.option_d}
-                    onChange={(e) => setQuestionForm({ ...questionForm, option_d: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter option D"
-                  />
-                </div>
+                {!shouldShowNegativeMarking() && (
+                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-blue-700">
+                          <strong>Free access option is not available for this category.</strong><br />
+                          This setting only applies to categories that directly contain questions.
+                          This category contains subcategories or is empty, so this option is not applicable.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Correct Answer *
-                  </label>
-                  <select
-                    value={questionForm.correct_answer}
-                    onChange={(e) => setQuestionForm({ ...questionForm, correct_answer: e.target.value as 'A' | 'B' | 'C' | 'D' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Marks *
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={questionForm.marks}
-                    onChange={(e) => setQuestionForm({ ...questionForm, marks: parseInt(e.target.value) || 1 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter marks"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Explanation (Rich Text Editor)
-                </label>
-                <RichTextEditor
-                  value={questionForm.explanation}
-                  onChange={(content) => setQuestionForm({ ...questionForm, explanation: content })}
-                  placeholder="Enter explanation (optional)..."
-                  height={200}
-                />
-              </div>
-
-              {/* Gujarati Fields */}
-              <div className="pt-6 border-t border-gray-200">
-                <h4 className="text-lg font-medium text-gray-800 mb-4">🌐 Gujarati Translation</h4>
-
+            {/* Is Active Configuration */}
+            {shouldShowNegativeMarking() && (
+              <div className="border-t pt-4">
+                <h4 className="text-md font-medium text-gray-800 mb-3">Active</h4>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Question Text (Gujarati)
-                    </label>
-                    <RichTextEditor
-                      value={questionForm.question_text_gujarati}
-                      onChange={(content) => setQuestionForm({ ...questionForm, question_text_gujarati: content })}
-                      placeholder="પ્રશ્ન ટેક્સ્ટ દાખલ કરો"
-                      height={250}
+                  <div className="flex items-start">
+                    <input
+                      type="checkbox"
+                      id="is_active"
+                      checked={categoryForm.is_active}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, is_active: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
                     />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Option A (Gujarati)
+                    <div className="ml-3">
+                      <label htmlFor="is_active" className="block text-sm font-medium text-gray-700">
+                        Active (test is available for use)
                       </label>
-                      <input
-                        type="text"
-                        value={questionForm.option_a_gujarati}
-                        onChange={(e) => setQuestionForm({ ...questionForm, option_a_gujarati: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="વિકલ્પ A"
-                      />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Option B (Gujarati)
-                      </label>
-                      <input
-                        type="text"
-                        value={questionForm.option_b_gujarati}
-                        onChange={(e) => setQuestionForm({ ...questionForm, option_b_gujarati: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="વિકલ્પ B"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Option C (Gujarati)
-                      </label>
-                      <input
-                        type="text"
-                        value={questionForm.option_c_gujarati}
-                        onChange={(e) => setQuestionForm({ ...questionForm, option_c_gujarati: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="વિકલ્પ C"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Option D (Gujarati)
-                      </label>
-                      <input
-                        type="text"
-                        value={questionForm.option_d_gujarati}
-                        onChange={(e) => setQuestionForm({ ...questionForm, option_d_gujarati: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="વિકલ્પ D"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Explanation (Gujarati)
-                    </label>
-                    <RichTextEditor
-                      value={questionForm.explanation_gujarati}
-                      onChange={(content) => setQuestionForm({ ...questionForm, explanation_gujarati: content })}
-                      placeholder="ગુજરાતીમાં સમજુતી દાખલ કરો (વૈકલ્પિક)..."
-                      height={200}
-                    />
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowEditQuestionModal(false);
-                  setEditingQuestion(null);
-                  setQuestionForm({
-                    question_text: '',
-                    option_a: '',
-                    option_b: '',
-                    option_c: '',
-                    option_d: '',
-                    correct_answer: 'A',
-                    explanation: '',
-                    marks: 1
-                  });
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={updateQuestion}
-                disabled={editQuestionLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
-              >
-                {editQuestionLoading && (
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {editQuestionLoading ? 'Updating...' : 'Update Question'}
-              </button>
-            </div>
+            )}
           </div>
-        </div>
-      )}
 
-      {/* Bulk Category Actions Modal */}
-      {showBulkCategoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Bulk Actions for Categories ({selectedCategories.length})
-            </h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Action:
-                </label>
-                <select
-                  value={bulkAction}
-                  onChange={(e) => setBulkAction(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Choose action...</option>
-                  <option value="delete">Delete Categories</option>
-                  <option value="activate">Activate Categories</option>
-                  <option value="deactivate">Deactivate Categories</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowBulkCategoryModal(false);
-                  setBulkAction('');
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={performBulkCategoryAction}
-                disabled={!bulkAction}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Execute Action
-              </button>
-            </div>
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={() => {
+                setShowEditCategoryModal(false);
+                setEditingCategory(null);
+                setCategoryForm({
+                  name: '',
+                  description: '',
+                  name_gujarati: '',
+                  description_gujarati: '',
+                  negative_marking_enabled: false,
+                  negative_marks_per_wrong: 0.25,
+                  test_duration_minutes: 60,
+                  is_free_in_paid_series: false,
+                  is_active: false,
+                });
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={updateCategory}
+              disabled={editCategoryLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {editCategoryLoading && (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {editCategoryLoading ? 'Updating...' : 'Update Category'}
+            </button>
           </div>
-        </div>
-      )}
-
-      {/* Bulk Question Actions Modal */}
-      {showBulkQuestionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Bulk Actions for Questions ({selectedQuestions.length})
-            </h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Action:
-                </label>
-                <select
-                  value={bulkAction}
-                  onChange={(e) => setBulkAction(e.target.value as any)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">Choose action...</option>
-                  <option value="delete">Delete Questions</option>
-                  <option value="activate">Activate Questions</option>
-                  <option value="deactivate">Deactivate Questions</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowBulkQuestionModal(false);
-                  setBulkAction('');
-                }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={performBulkQuestionAction}
-                disabled={!bulkAction}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Execute Action
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirmation Modal */}
-      <ConfirmModal
-        isOpen={confirmModal.isOpen}
-        onClose={closeConfirmModal}
-        onConfirm={handleConfirmAction}
-        title={getConfirmModalContent().title}
-        message={getConfirmModalContent().message}
-        confirmText="Delete"
-        cancelText="Cancel"
-        type="danger"
-        loading={confirmModal.loading}
-      />
-
-      {/* Question Import Modal */}
-      <QuestionImportModal
-        isOpen={showImportModal}
-        onClose={() => setShowImportModal(false)}
-        categoryId={currentCategory?.id || 0}
-        categoryName={currentCategory?.name || data?.test_series?.name || 'Root Level'}
-        onImportComplete={async () => {
-          setShowImportModal(false);
-          await fetchData();
-        }}
-      />
-
-      {/* Constraint Rules Info */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-amber-800 mb-2">Hierarchy Rules:</h3>
-          <ul className="text-xs text-amber-700 space-y-1">
-            <li>• <strong>Course Level:</strong> Questions cannot be added directly - create categories first</li>
-            <li>• <strong>Category Levels:</strong> Each level can contain EITHER categories OR questions, never both</li>
-            <li>• Once you add a category, the "Add Question" button gets disabled</li>
-            <li>• Once you add a question, the "Add Category" button gets disabled</li>
-            <li>• Navigate into categories to create deeper hierarchies</li>
-          </ul>
         </div>
       </div>
+    )
+  }
+
+  {/* Edit Question Modal */ }
+  {
+    showEditQuestionModal && editingQuestion && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[95vh] overflow-y-auto">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Edit Question</h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Question Text *
+              </label>
+              <RichTextEditor
+                value={questionForm.question_text}
+                onChange={(content) => setQuestionForm({ ...questionForm, question_text: content })}
+                placeholder="Enter question text"
+                height={250}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Option A *
+                </label>
+                <input
+                  type="text"
+                  value={questionForm.option_a}
+                  onChange={(e) => setQuestionForm({ ...questionForm, option_a: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter option A"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Option B *
+                </label>
+                <input
+                  type="text"
+                  value={questionForm.option_b}
+                  onChange={(e) => setQuestionForm({ ...questionForm, option_b: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter option B"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Option C *
+                </label>
+                <input
+                  type="text"
+                  value={questionForm.option_c}
+                  onChange={(e) => setQuestionForm({ ...questionForm, option_c: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter option C"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Option D *
+                </label>
+                <input
+                  type="text"
+                  value={questionForm.option_d}
+                  onChange={(e) => setQuestionForm({ ...questionForm, option_d: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter option D"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Correct Answer *
+                </label>
+                <select
+                  value={questionForm.correct_answer}
+                  onChange={(e) => setQuestionForm({ ...questionForm, correct_answer: e.target.value as 'A' | 'B' | 'C' | 'D' })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Marks *
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={questionForm.marks}
+                  onChange={(e) => setQuestionForm({ ...questionForm, marks: parseInt(e.target.value) || 1 })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter marks"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Explanation (Rich Text Editor)
+              </label>
+              <RichTextEditor
+                value={questionForm.explanation}
+                onChange={(content) => setQuestionForm({ ...questionForm, explanation: content })}
+                placeholder="Enter explanation (optional)..."
+                height={200}
+              />
+            </div>
+
+            {/* Gujarati Fields */}
+            <div className="pt-6 border-t border-gray-200">
+              <h4 className="text-lg font-medium text-gray-800 mb-4">🌐 Gujarati Translation</h4>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Question Text (Gujarati)
+                  </label>
+                  <RichTextEditor
+                    value={questionForm.question_text_gujarati}
+                    onChange={(content) => setQuestionForm({ ...questionForm, question_text_gujarati: content })}
+                    placeholder="પ્રશ્ન ટેક્સ્ટ દાખલ કરો"
+                    height={250}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Option A (Gujarati)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.option_a_gujarati}
+                      onChange={(e) => setQuestionForm({ ...questionForm, option_a_gujarati: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="વિકલ્પ A"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Option B (Gujarati)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.option_b_gujarati}
+                      onChange={(e) => setQuestionForm({ ...questionForm, option_b_gujarati: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="વિકલ્પ B"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Option C (Gujarati)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.option_c_gujarati}
+                      onChange={(e) => setQuestionForm({ ...questionForm, option_c_gujarati: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="વિકલ્પ C"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Option D (Gujarati)
+                    </label>
+                    <input
+                      type="text"
+                      value={questionForm.option_d_gujarati}
+                      onChange={(e) => setQuestionForm({ ...questionForm, option_d_gujarati: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="વિકલ્પ D"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Explanation (Gujarati)
+                  </label>
+                  <RichTextEditor
+                    value={questionForm.explanation_gujarati}
+                    onChange={(content) => setQuestionForm({ ...questionForm, explanation_gujarati: content })}
+                    placeholder="ગુજરાતીમાં સમજુતી દાખલ કરો (વૈકલ્પિક)..."
+                    height={200}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={() => {
+                setShowEditQuestionModal(false);
+                setEditingQuestion(null);
+                setQuestionForm({
+                  question_text: '',
+                  option_a: '',
+                  option_b: '',
+                  option_c: '',
+                  option_d: '',
+                  correct_answer: 'A',
+                  explanation: '',
+                  marks: 1
+                });
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={updateQuestion}
+              disabled={editQuestionLoading}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            >
+              {editQuestionLoading && (
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              )}
+              {editQuestionLoading ? 'Updating...' : 'Update Question'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {/* Bulk Category Actions Modal */ }
+  {
+    showBulkCategoryModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Bulk Actions for Categories ({selectedCategories.length})
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Action:
+              </label>
+              <select
+                value={bulkAction}
+                onChange={(e) => setBulkAction(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Choose action...</option>
+                <option value="delete">Delete Categories</option>
+                <option value="activate">Activate Categories</option>
+                <option value="deactivate">Deactivate Categories</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={() => {
+                setShowBulkCategoryModal(false);
+                setBulkAction('');
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={performBulkCategoryAction}
+              disabled={!bulkAction}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Execute Action
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {/* Bulk Question Actions Modal */ }
+  {
+    showBulkQuestionModal && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Bulk Actions for Questions ({selectedQuestions.length})
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Action:
+              </label>
+              <select
+                value={bulkAction}
+                onChange={(e) => setBulkAction(e.target.value as any)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Choose action...</option>
+                <option value="delete">Delete Questions</option>
+                <option value="activate">Activate Questions</option>
+                <option value="deactivate">Deactivate Questions</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={() => {
+                setShowBulkQuestionModal(false);
+                setBulkAction('');
+              }}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={performBulkQuestionAction}
+              disabled={!bulkAction}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Execute Action
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {/* Confirmation Modal */ }
+  <ConfirmModal
+    isOpen={confirmModal.isOpen}
+    onClose={closeConfirmModal}
+    onConfirm={handleConfirmAction}
+    title={getConfirmModalContent().title}
+    message={getConfirmModalContent().message}
+    confirmText="Delete"
+    cancelText="Cancel"
+    type="danger"
+    loading={confirmModal.loading}
+  />
+
+  {/* Question Import Modal */ }
+  <QuestionImportModal
+    isOpen={showImportModal}
+    onClose={() => setShowImportModal(false)}
+    categoryId={currentCategory?.id || 0}
+    categoryName={currentCategory?.name || data?.test_series?.name || 'Root Level'}
+    onImportComplete={async () => {
+      setShowImportModal(false);
+      await fetchData();
+    }}
+  />
+
+  {/* Constraint Rules Info */ }
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+      <h3 className="text-sm font-medium text-amber-800 mb-2">Hierarchy Rules:</h3>
+      <ul className="text-xs text-amber-700 space-y-1">
+        <li>• <strong>Course Level:</strong> Questions cannot be added directly - create categories first</li>
+        <li>• <strong>Category Levels:</strong> Each level can contain EITHER categories OR questions, never both</li>
+        <li>• Once you add a category, the "Add Question" button gets disabled</li>
+        <li>• Once you add a question, the "Add Category" button gets disabled</li>
+        <li>• Navigate into categories to create deeper hierarchies</li>
+      </ul>
     </div>
+  </div>
+    </div >
   );
 };
 

@@ -163,8 +163,8 @@ const TestManagementPageNew: React.FC = () => {
     discount_percentage: 0,
     is_featured: false,
     features: null,
-    validity_days: 365, // Default 1 year
-    // Negative marking removed from test series level
+    validity_days: 365,
+    is_course_closed: false,
   });
 
   // Data fetching using simple API
@@ -363,7 +363,9 @@ const TestManagementPageNew: React.FC = () => {
       is_featured: false,
       features: null,
       has_negative_marking: false,
-      negative_marks: 0.25
+      negative_marks: 0.25,
+      validity_days: 365,
+      is_course_closed: false
     });
   };
 
@@ -389,7 +391,8 @@ const TestManagementPageNew: React.FC = () => {
       features: testSeries.features || null,
       has_negative_marking: (testSeries as any).has_negative_marking || false,
       negative_marks: (testSeries as any).negative_marks || 0.25,
-      validity_days: testSeries.validity_days || 365
+      validity_days: testSeries.validity_days || 365,
+      is_course_closed: testSeries.is_course_closed || false,
     });
     setShowModal(true);
   };
@@ -428,82 +431,6 @@ const TestManagementPageNew: React.FC = () => {
     }
   };
 
-  // Table configuration
-  const columns: Column<TestSeries>[] = [
-    {
-      key: 'title',
-      label: 'Title',
-      sortable: true,
-      render: (item) => (
-        <div>
-          <div className="font-semibold text-gray-900">{item.title}</div>
-          {item.title_gujarati && (
-            <div className="text-sm text-gray-500">{item.title_gujarati}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'description',
-      label: 'Description',
-      render: (item) => (
-        <div className="max-w-xs truncate">
-          <div className="text-sm text-gray-600">{item.description}</div>
-          {item.description_gujarati && (
-            <div className="text-xs text-gray-500 truncate">{item.description_gujarati}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'is_active',
-      label: 'Status',
-      sortable: true,
-      render: (item) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${item.is_active
-            ? 'bg-green-100 text-green-800'
-            : 'bg-red-100 text-red-800'
-            }`}
-        >
-          {item.is_active ? 'Active' : 'Inactive'}
-        </span>
-      ),
-    },
-    {
-      key: 'categories_count',
-      label: 'Categories',
-      sortable: true,
-      render: (item) => (
-        <span className="text-gray-900 font-medium">{item.categories_count}</span>
-      ),
-    },
-    {
-      key: 'created_at',
-      label: 'Created',
-      sortable: true,
-      render: (item) => (
-        <span className="text-sm text-gray-500">
-          {new Date(item.created_at).toLocaleDateString()}
-        </span>
-      ),
-    },
-  ];
-
-  // Filter configuration
-  const searchFilters = [
-    {
-      key: 'status',
-      label: 'Status',
-      type: 'select' as const,
-      value: filters.status || 'all',
-      options: [
-        { label: 'Active', value: 'active' },
-        { label: 'Inactive', value: 'inactive' },
-      ],
-    },
-  ];
-
   // Bulk actions configuration
   const bulkActions = [
     {
@@ -526,32 +453,7 @@ const TestManagementPageNew: React.FC = () => {
     },
   ];
 
-  // Render actions for each row
-  const renderActions = (item: TestSeries) => (
-    <div className="flex gap-2">
-      <button
-        onClick={() => navigate(`/test-series/${item.uuid}`)}
-        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg"
-        title="View Categories"
-      >
-        <EyeIcon className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => handleEdit(item)}
-        className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg"
-        title="Edit"
-      >
-        <PencilIcon className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => handleDelete(item)}
-        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg"
-        title="Delete"
-      >
-        <TrashIcon className="h-4 w-4" />
-      </button>
-    </div>
-  );
+  
 
   // Get confirm modal content
   const getConfirmModalContent = () => {
@@ -982,11 +884,13 @@ const TestManagementPageNew: React.FC = () => {
                       value={formData.pricing_type}
                       onChange={(e) => {
                         const newPricingType = e.target.value as 'free' | 'paid' | 'previous_years_question_papers';
+                        const isNonPaid = newPricingType === 'free' || newPricingType === 'previous_years_question_papers';
                         setFormData({
                           ...formData,
                           pricing_type: newPricingType,
-                          // Reset price if switching to free or PYQ
-                          price: (newPricingType === 'free' || newPricingType === 'previous_years_question_papers') ? 0 : formData.price
+                          // Reset price and is_course_closed if switching to free or PYQ
+                          price: isNonPaid ? 0 : formData.price,
+                          is_course_closed: isNonPaid ? false : formData.is_course_closed
                         });
                       }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1102,6 +1006,23 @@ const TestManagementPageNew: React.FC = () => {
                   </label>
                 </div>
               </div>
+              {/* is_course_closed Toggle - Only visible for paid pricing type */}
+              {formData.pricing_type === 'paid' && (
+                <div className="border-t pt-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="is_course_closed"
+                      checked={formData.is_course_closed}
+                      onChange={(e) => setFormData({ ...formData, is_course_closed: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="is_course_closed" className="ml-2 block text-sm text-gray-700">
+                      Course Closed (prevents new enrollments)
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
