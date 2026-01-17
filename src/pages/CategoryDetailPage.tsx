@@ -62,7 +62,7 @@ const subCategoriesApi = {
     sortBy?: string;
     sortOrder?: string;
   }): Promise<ApiResponse> => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
     
     Object.entries(params).forEach(([key, value]) => {
@@ -79,7 +79,7 @@ const subCategoriesApi = {
   },
 
   createSubCategory: async (categoryUuid: string, subCategory: { name: string; description: string; name_gujarati?: string; description_gujarati?: string; is_active?: boolean }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/categories/${categoryUuid}/sub-categories`, {
       method: 'POST',
       headers: {
@@ -94,7 +94,7 @@ const subCategoriesApi = {
   },
 
   updateSubCategory: async (uuid: string, subCategory: { name: string; description: string; name_gujarati?: string; description_gujarati?: string; is_active?: boolean }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/sub-categories/${uuid}`, {
       method: 'PUT',
       headers: {
@@ -109,7 +109,7 @@ const subCategoriesApi = {
   },
 
   deleteSubCategory: async (uuid: string) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/sub-categories/${uuid}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -119,7 +119,7 @@ const subCategoriesApi = {
   },
 
   bulkOperations: async (data: { action: string; uuids: string[] }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     
     // Convert uuids to the correct field name expected by backend
     const payload = {

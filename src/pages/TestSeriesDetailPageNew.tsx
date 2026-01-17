@@ -30,7 +30,7 @@ const TestSeriesDetailPageNew: React.FC = () => {
           <div className="text-red-600 mb-4">
             Error loading test series: {(error as any).message}
           </div>
-          <button 
+          <button
             onClick={() => navigate('/test-management')}
             className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
           >
@@ -62,10 +62,9 @@ const TestSeriesDetailPageNew: React.FC = () => {
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {testSeries?.name}
+            <h1 className="text-2xl font-bold text-gray-900" dangerouslySetInnerHTML={{ __html: testSeries?.name }}>
             </h1>
-            <p className="text-gray-600 mt-1">{testSeries?.description}</p>
+            <p className="text-gray-600 mt-1" dangerouslySetInnerHTML={{ __html: testSeries?.description }}></p>
           </div>
         </div>
         <button
@@ -84,15 +83,14 @@ const TestSeriesDetailPageNew: React.FC = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <span className="text-sm text-gray-500">Name:</span>
-              <p className="font-medium">{testSeries?.name}</p>
+              <p className="font-medium" dangerouslySetInnerHTML={{ __html: testSeries?.name }}></p>
             </div>
             <div>
               <span className="text-sm text-gray-500">Status:</span>
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                testSeries?.is_active 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
+              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${testSeries?.is_active
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
+                }`}>
                 {testSeries?.is_active ? 'Active' : 'Inactive'}
               </span>
             </div>
@@ -107,7 +105,7 @@ const TestSeriesDetailPageNew: React.FC = () => {
             {testSeries?.description && (
               <div className="col-span-2">
                 <span className="text-sm text-gray-500">Description:</span>
-                <p className="font-medium">{testSeries.description}</p>
+                <p className="font-medium" dangerouslySetInnerHTML={{ __html: testSeries?.description }}></p>
               </div>
             )}
           </div>

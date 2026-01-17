@@ -506,32 +506,49 @@ export const QuestionsPage: React.FC = () => {
                           </span>
                         </div>
                         
-                        <h4 className="text-lg font-medium text-gray-900 mb-3">
-                          {question.question_text}
-                        </h4>
-                        
+                        <div className="flex items-center space-x-2 mb-3">
+                          <h4 className="text-lg font-medium text-gray-900">
+                            {question.question_text || question.question_text_gujarati || 'No question text'}
+                          </h4>
+                          {/* Language indicator */}
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            question.question_text && question.question_text_gujarati ? 'bg-purple-100 text-purple-800' :
+                            question.question_text ? 'bg-blue-100 text-blue-800' :
+                            question.question_text_gujarati ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {question.question_text && question.question_text_gujarati ? 'Both' :
+                             question.question_text ? 'English' :
+                             question.question_text_gujarati ? 'Gujarati' : 'Unknown'}
+                          </span>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div className="flex items-center">
                             <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">A</span>
-                            <span className="text-gray-700">{question.option_a}</span>
+                            <span className="text-gray-700">{question.option_a || question.option_a_gujarati || 'No option A'}</span>
                           </div>
                           <div className="flex items-center">
                             <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">B</span>
-                            <span className="text-gray-700">{question.option_b}</span>
+                            <span className="text-gray-700">{question.option_b || question.option_b_gujarati || 'No option B'}</span>
                           </div>
                           <div className="flex items-center">
                             <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">C</span>
-                            <span className="text-gray-700">{question.option_c}</span>
+                            <span className="text-gray-700">{question.option_c || question.option_c_gujarati || 'No option C'}</span>
                           </div>
                           <div className="flex items-center">
                             <span className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-xs font-medium mr-2">D</span>
-                            <span className="text-gray-700">{question.option_d}</span>
+                            <span className="text-gray-700">{question.option_d || question.option_d_gujarati || 'No option D'}</span>
                           </div>
                         </div>
 
-                        {question.topic && (
-                          <p className="text-sm text-gray-500 mt-2">Topic: {question.topic}</p>
-                        )}
+                        <div className="flex justify-between items-center mt-3">
+                          {question.topic && (
+                            <p className="text-sm text-gray-500">Topic: {question.topic}</p>
+                          )}
+                          <p className="text-sm text-green-600 font-medium">
+                            <strong>Marks:</strong> {question.marks || 1}
+                          </p>
+                        </div>
                       </div>
                     </div>
 

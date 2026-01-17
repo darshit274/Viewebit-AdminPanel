@@ -25,7 +25,13 @@ export const PdfModal: React.FC<PdfModalProps> = ({
     subject: '',
     is_free: true,
     file_url: '',
-    file_size: 0
+    file_size: 0,
+    // Pricing fields
+    price: 0,
+    currency: 'INR',
+    discount_percentage: 0,
+    subscription_required: false,
+    preview_pages: 0
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -39,7 +45,13 @@ export const PdfModal: React.FC<PdfModalProps> = ({
         subject: pdf.subject || '',
         is_free: pdf.is_free !== undefined ? pdf.is_free : true,
         file_url: pdf.file_url || '',
-        file_size: pdf.file_size || 0
+        file_size: pdf.file_size || 0,
+        // Pricing fields
+        price: pdf.price || 0,
+        currency: pdf.currency || 'INR',
+        discount_percentage: pdf.discount_percentage || 0,
+        subscription_required: pdf.subscription_required || false,
+        preview_pages: pdf.preview_pages || 0
       });
     } else {
       setFormData({
@@ -49,7 +61,13 @@ export const PdfModal: React.FC<PdfModalProps> = ({
         subject: '',
         is_free: true,
         file_url: '',
-        file_size: 0
+        file_size: 0,
+        // Pricing fields
+        price: 0,
+        currency: 'INR',
+        discount_percentage: 0,
+        subscription_required: false,
+        preview_pages: 0
       });
     }
     setErrors({});
@@ -277,19 +295,117 @@ export const PdfModal: React.FC<PdfModalProps> = ({
             </p>
           </div>
 
-          {/* Free/Premium */}
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              name="is_free"
-              id="is_free"
-              checked={formData.is_free}
-              onChange={handleChange}
-              className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-            />
-            <label htmlFor="is_free" className="ml-2 block text-sm text-gray-700">
-              This is a free PDF (unchecked = premium/paid)
-            </label>
+          {/* Pricing Section */}
+          <div className="border-t pt-4">
+            <h4 className="text-md font-medium text-gray-900 mb-4">Pricing Settings</h4>
+
+            <div className="space-y-4">
+              {/* Free/Paid Toggle */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="is_free"
+                  id="is_free"
+                  checked={formData.is_free}
+                  onChange={handleChange}
+                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                />
+                <label htmlFor="is_free" className="ml-2 block text-sm text-gray-700">
+                  This PDF is free to access
+                </label>
+              </div>
+
+              {/* Price and Currency (show only if not free) */}
+              {!formData.is_free && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Price
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      value={formData.price}
+                      onChange={handleChange}
+                      step="0.01"
+                      min="0"
+                      className="input-field"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Currency
+                    </label>
+                    <select
+                      name="currency"
+                      value={formData.currency}
+                      onChange={handleChange}
+                      className="input-field"
+                    >
+                      <option value="INR">INR (₹)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Discount Percentage (show only if not free) */}
+              {!formData.is_free && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Discount Percentage
+                  </label>
+                  <input
+                    type="number"
+                    name="discount_percentage"
+                    value={formData.discount_percentage}
+                    onChange={handleChange}
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    className="input-field"
+                    placeholder="0.00"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Optional discount percentage (0-100)</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Subscription Required */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="subscription_required"
+                    id="subscription_required"
+                    checked={formData.subscription_required}
+                    onChange={handleChange}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="subscription_required" className="ml-2 block text-sm text-gray-700">
+                    Requires subscription
+                  </label>
+                </div>
+
+                {/* Preview Pages */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preview Pages
+                  </label>
+                  <input
+                    type="number"
+                    name="preview_pages"
+                    value={formData.preview_pages}
+                    onChange={handleChange}
+                    min="0"
+                    className="input-field"
+                    placeholder="0"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">Number of free preview pages</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">

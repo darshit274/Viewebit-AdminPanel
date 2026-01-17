@@ -56,14 +56,13 @@ export interface TestSeries extends BaseEntity {
   title_gujarati?: string;
   description_gujarati?: string;
   categories_count: number;
-  pricing_type: 'free' | 'paid';
+  pricing_type: 'free' | 'paid' | 'previous_years_question_papers';
   price: number;
   currency: string;
-  demo_tests_count: number;
-  subscription_duration_days: number;
   features?: any;
   discount_percentage: number;
   is_featured: boolean;
+  validity_days?: number;
 }
 
 export interface TestSeriesFormData {
@@ -72,14 +71,13 @@ export interface TestSeriesFormData {
   title_gujarati?: string;
   description_gujarati?: string;
   is_active?: boolean;
-  pricing_type?: 'free' | 'paid';
+  pricing_type?: 'free' | 'paid' | 'previous_years_question_papers';
   price?: number;
   currency?: string;
-  demo_tests_count?: number;
-  subscription_duration_days?: number;
   features?: any;
   discount_percentage?: number;
   is_featured?: boolean;
+  validity_days?: number;
 }
 
 // Category Entity & Form Data

@@ -38,7 +38,13 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
     access_level: 'free',
     test_series_id: '',
     exam_type_id: '',
-    tags: ''
+    tags: '',
+    // Pricing fields
+    price: '',
+    currency: 'INR',
+    discount_percentage: '',
+    subscription_required: false,
+    preview_pages: ''
   });
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -135,6 +141,13 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
         uploadData.append('tags', JSON.stringify(tagsArray));
       }
 
+      // Add pricing fields
+      uploadData.append('price', formData.price || '0');
+      uploadData.append('currency', formData.currency);
+      uploadData.append('discount_percentage', formData.discount_percentage || '0');
+      uploadData.append('subscription_required', formData.subscription_required.toString());
+      uploadData.append('preview_pages', formData.preview_pages || '0');
+
       const response = await api.post('/admin/pdf/upload', uploadData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -158,7 +171,13 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
         access_level: 'free',
         test_series_id: '',
         exam_type_id: '',
-        tags: ''
+        tags: '',
+        // Pricing fields
+        price: '',
+        currency: 'INR',
+        discount_percentage: '',
+        subscription_required: false,
+        preview_pages: ''
       });
       setUploadProgress(0);
 
@@ -389,6 +408,99 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
               placeholder="Enter tags separated by commas (e.g., study, notes, important)"
             />
             <p className="text-xs text-gray-500 mt-1">Separate multiple tags with commas</p>
+          </div>
+
+          {/* Pricing Section */}
+          <div className="border-t pt-4">
+            <h4 className="text-md font-medium text-gray-900 mb-4">Pricing Settings</h4>
+
+            <div className="space-y-4">
+              {/* Price and Currency (show only if Premium) */}
+              {formData.access_level === 'premium' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Price
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.price}
+                      onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Currency
+                    </label>
+                    <select
+                      value={formData.currency}
+                      onChange={(e) => setFormData(prev => ({ ...prev, currency: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="INR">INR (₹)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Discount Percentage (show only if Premium) */}
+              {formData.access_level === 'premium' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Discount Percentage
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={formData.discount_percentage}
+                    onChange={(e) => setFormData(prev => ({ ...prev, discount_percentage: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0.00"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Optional discount percentage (0-100)</p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Subscription Required */}
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="subscription_required"
+                    checked={formData.subscription_required}
+                    onChange={(e) => setFormData(prev => ({ ...prev, subscription_required: e.target.checked }))}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="subscription_required" className="ml-2 block text-sm text-gray-700">
+                    Requires subscription
+                  </label>
+                </div>
+
+                {/* Preview Pages */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Preview Pages
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.preview_pages}
+                    onChange={(e) => setFormData(prev => ({ ...prev, preview_pages: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Number of free preview pages</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Upload Progress */}

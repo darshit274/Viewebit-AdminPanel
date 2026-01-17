@@ -13,6 +13,7 @@ interface TestSeries {
   id: number;
   title: string;
   price: number;
+  validity_days: number;
 }
 
 interface GrantSubscriptionModalProps {
@@ -36,7 +37,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
     payment_method: 'admin_grant',
     amount_paid: 0,
     currency: 'INR',
-    expiry_months: 3
+    expiry_days: 0
   });
 
   useEffect(() => {
@@ -63,10 +64,10 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
       const response = await api.get('/admin/test-management', {
         params: { limit: 100 }
       });
-      
+
       // Safely extract the testSeries array with fallback
       const testSeriesData = response.data?.data || [];
-      
+
       // Ensure it's an array before setting state
       if (Array.isArray(testSeriesData)) {
         setTestSeries(testSeriesData);
@@ -91,7 +92,8 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
       // Calculate expiry date
       const expiryDate = new Date();
-      expiryDate.setMonth(expiryDate.getMonth() + formData.expiry_months);
+      expiryDate.setDate(expiryDate.getDate() + formData.expiry_days);
+
 
       await api.post('/admin/subscriptions/manual', {
         user_id: formData.user_id,
@@ -107,7 +109,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
       toast.success('Subscription granted successfully!');
       onSuccess();
       onClose();
-      
+
       // Reset form
       setFormData({
         user_id: '',
@@ -115,7 +117,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
         payment_method: 'admin_grant',
         amount_paid: 0,
         currency: 'INR',
-        expiry_months: 3
+        expiry_days: 0
       });
     } catch (error: any) {
       console.error('Error granting subscription:', error);
@@ -130,7 +132,8 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
     setFormData({
       ...formData,
       test_series_id: testSeriesId,
-      amount_paid: selectedTestSeries?.price || 0
+      amount_paid: selectedTestSeries?.price || 0,
+      expiry_days: selectedTestSeries?.validity_days || 0 // Assuming 30 days for paid, 0 for free
     });
   };
 
@@ -232,18 +235,12 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Duration (Months)
                 </label>
-                <select
-                  value={formData.expiry_months}
-                  onChange={(e) => setFormData({ ...formData, expiry_months: parseInt(e.target.value) })}
+                <input
+                  value={`${formData.expiry_days} Days`}
+                  disabled
+                  // onChange={(e) => setFormData({ ...formData, expiry_days: parseInt(e.target.value) })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value={1}>1 Month</option>
-                  <option value={3}>3 Months</option>
-                  <option value={6}>6 Months</option>
-                  <option value={12}>12 Months</option>
-                  <option value={24}>24 Months</option>
-                  <option value={0}>Lifetime</option>
-                </select>
+                />
               </div>
             </div>
 
@@ -271,7 +268,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                   <p><span className="font-medium">User:</span> {users.find(u => u.uuid === formData.user_id)?.username}</p>
                   <p><span className="font-medium">Test Series:</span> {testSeries.find(ts => ts.id.toString() === formData.test_series_id)?.title}</p>
                   <p><span className="font-medium">Amount:</span> ₹{formData.amount_paid} {formData.amount_paid === 0 ? '(Free)' : ''}</p>
-                  <p><span className="font-medium">Duration:</span> {formData.expiry_months === 0 ? 'Lifetime' : `${formData.expiry_months} months`}</p>
+                  <p><span className="font-medium">Duration:</span> {formData.expiry_days === 0 ? 'Lifetime' : `${formData.expiry_days} Days`}</p>
                   <p><span className="font-medium">Type:</span> {formData.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
                 </div>
               </div>

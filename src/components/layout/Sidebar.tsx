@@ -1,21 +1,20 @@
 import { clsx } from 'clsx';
 import {
-  BarChart3,
   BookOpen,
   CreditCard,
   FileText,
-  FolderOpen,
-  GraduationCap,
+  Flag,
   Home,
   LogOut,
+  MessageSquare,
   Settings,
-  TrendingUp,
   Users
 } from 'lucide-react';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import logo from '../../assets/MockTale.jpg'; // Adjust the path as necessary
 import { useAuth } from '../../hooks/useAuth';
+import { reportsService } from '../../services/reports';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -23,13 +22,36 @@ const navigation = [
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
   { name: 'Course Management', href: '/test-management', icon: BookOpen },
   { name: 'PDFs', href: '/pdfs', icon: FileText },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'User Queries', href: '/queries', icon: MessageSquare },
+  { name: 'Reports', href: '/reports', icon: Flag },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export const Sidebar: React.FC = () => {
   const { admin, logout } = useAuth();
   const location = useLocation();
+  const [pendingReportsCount, setPendingReportsCount] = useState<number>(0);
+
+  useEffect(() => {
+    // Fetch pending reports count
+    const fetchPendingCount = async () => {
+      try {
+        const response = await reportsService.getPendingCount();
+        if (response.success) {
+          setPendingReportsCount(response.data.count);
+        }
+      } catch (error) {
+        console.error('Error fetching pending reports count:', error);
+      }
+    };
+
+    fetchPendingCount();
+
+    // Refresh count every 5 minutes
+    const interval = setInterval(fetchPendingCount, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -76,7 +98,9 @@ export const Sidebar: React.FC = () => {
       {/* Navigation */}
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
-          const isActive = location.pathname === item.href;
+          const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
+          const showBadge = item.name === 'Reports' && pendingReportsCount > 0;
+
           return (
             <NavLink
               key={item.name}
@@ -94,7 +118,12 @@ export const Sidebar: React.FC = () => {
                   isActive ? 'text-primary-500' : 'text-gray-400 group-hover:text-gray-500'
                 )}
               />
-              {item.name}
+              <span className="flex-1">{item.name}</span>
+              {showBadge && (
+                <span className="ml-auto px-2 py-0.5 text-xs font-bold bg-red-500 text-white rounded-full">
+                  {pendingReportsCount > 99 ? '99+' : pendingReportsCount}
+                </span>
+              )}
             </NavLink>
           );
         })}

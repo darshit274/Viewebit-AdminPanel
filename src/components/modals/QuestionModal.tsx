@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, HelpCircle, BookOpen, Target, FileText } from 'lucide-react';
+import { X, HelpCircle, BookOpen, Target, FileText, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import RichTextEditor from '../common/RichTextEditor';
 
 interface QuestionModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface QuestionModalProps {
   onSuccess: () => void;
   question?: any; // For edit mode
   mode: 'create' | 'edit';
+  simplified?: boolean; // For report editing - hides difficulty, marks, subject, topic
 }
 
 export const QuestionModal: React.FC<QuestionModalProps> = ({
@@ -16,16 +18,23 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   onClose,
   onSuccess,
   question,
-  mode
+  mode,
+  simplified = false
 }) => {
   const [formData, setFormData] = useState({
     question_text: '',
+    question_text_gujarati: '',
     option_a: '',
+    option_a_gujarati: '',
     option_b: '',
+    option_b_gujarati: '',
     option_c: '',
+    option_c_gujarati: '',
     option_d: '',
+    option_d_gujarati: '',
     correct_answer: 'A',
     explanation: '',
+    explanation_gujarati: '',
     difficulty: 'medium',
     subject: '',
     topic: '',
@@ -34,17 +43,24 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [activeLanguageTab, setActiveLanguageTab] = useState<'english' | 'gujarati'>('english');
 
   useEffect(() => {
     if (mode === 'edit' && question) {
       setFormData({
         question_text: question.question_text || '',
+        question_text_gujarati: question.question_text_gujarati || '',
         option_a: question.option_a || '',
+        option_a_gujarati: question.option_a_gujarati || '',
         option_b: question.option_b || '',
+        option_b_gujarati: question.option_b_gujarati || '',
         option_c: question.option_c || '',
+        option_c_gujarati: question.option_c_gujarati || '',
         option_d: question.option_d || '',
+        option_d_gujarati: question.option_d_gujarati || '',
         correct_answer: question.correct_answer || 'A',
         explanation: question.explanation || '',
+        explanation_gujarati: question.explanation_gujarati || '',
         difficulty: question.difficulty || 'medium',
         subject: question.subject || '',
         topic: question.topic || '',
@@ -54,12 +70,18 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
     } else {
       setFormData({
         question_text: '',
+        question_text_gujarati: '',
         option_a: '',
+        option_a_gujarati: '',
         option_b: '',
+        option_b_gujarati: '',
         option_c: '',
+        option_c_gujarati: '',
         option_d: '',
+        option_d_gujarati: '',
         correct_answer: 'A',
         explanation: '',
+        explanation_gujarati: '',
         difficulty: 'medium',
         subject: '',
         topic: '',
@@ -73,36 +95,40 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.question_text.trim()) {
-      newErrors.question_text = 'Question text is required';
+    // Smart validation: Check if we have content in at least one language
+    const hasEnglishQuestion = formData.question_text && formData.question_text?.trim() !== '';
+    const hasGujaratiQuestion = formData.question_text_gujarati && formData.question_text_gujarati?.trim() !== '';
+
+    if (!hasEnglishQuestion && !hasGujaratiQuestion) {
+      newErrors.question_text = 'Question text is required (in English or Gujarati or both)';
     }
 
-    if (!formData.option_a.trim()) {
-      newErrors.option_a = 'Option A is required';
-    }
+    // Validate options - at least one language required for each option
+    ['a', 'b', 'c', 'd'].forEach(option => {
+      const englishKey = `option_${option}` as keyof typeof formData;
+      const gujaratiKey = `option_${option}_gujarati` as keyof typeof formData;
 
-    if (!formData.option_b.trim()) {
-      newErrors.option_b = 'Option B is required';
-    }
+      const hasEnglish = formData[englishKey] && (formData[englishKey] as string)?.trim() !== '';
+      const hasGujarati = formData[gujaratiKey] && (formData[gujaratiKey] as string)?.trim() !== '';
 
-    if (!formData.option_c.trim()) {
-      newErrors.option_c = 'Option C is required';
-    }
+      if (!hasEnglish && !hasGujarati) {
+        newErrors[englishKey] = `Option ${option.toUpperCase()} is required (in English or Gujarati or both)`;
+      }
+    });
 
-    if (!formData.option_d.trim()) {
-      newErrors.option_d = 'Option D is required';
-    }
+    // Only validate subject, marks, and negative_marks if not in simplified mode
+    if (!simplified) {
+      if (!formData.subject?.trim()) {
+        newErrors.subject = 'Subject is required';
+      }
 
-    if (!formData.subject.trim()) {
-      newErrors.subject = 'Subject is required';
-    }
+      if (formData.marks <= 0) {
+        newErrors.marks = 'Marks must be greater than 0';
+      }
 
-    if (formData.marks <= 0) {
-      newErrors.marks = 'Marks must be greater than 0';
-    }
-
-    if (formData.negative_marks < 0) {
-      newErrors.negative_marks = 'Negative marks cannot be negative';
+      if (formData.negative_marks < 0) {
+        newErrors.negative_marks = 'Negative marks cannot be negative';
+      }
     }
 
     setErrors(newErrors);
@@ -169,100 +195,108 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Language Tabs */}
+          <div className="border-b border-gray-200">
+            <nav className="flex space-x-8" aria-label="Tabs">
+              <button
+                type="button"
+                onClick={() => setActiveLanguageTab('english')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeLanguageTab === 'english'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Globe className="h-4 w-4" />
+                  <span>English</span>
+                  {(formData.question_text || formData.option_a || formData.option_b || formData.option_c || formData.option_d || formData.explanation) && (
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">
+                      ✓
+                    </span>
+                  )}
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveLanguageTab('gujarati')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeLanguageTab === 'gujarati'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center space-x-2">
+                  <Globe className="h-4 w-4" />
+                  <span>ગુજરાતી</span>
+                  {(formData.question_text_gujarati || formData.option_a_gujarati || formData.option_b_gujarati || formData.option_c_gujarati || formData.option_d_gujarati || formData.explanation_gujarati) && (
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">
+                      ✓
+                    </span>
+                  )}
+                </div>
+              </button>
+            </nav>
+          </div>
+
           {/* Question Text */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Question Text *
+              <div className="flex items-center space-x-2">
+                <HelpCircle className="h-4 w-4" />
+                <span>Question Text * ({activeLanguageTab === 'english' ? 'English' : 'ગુજરાતી'})</span>
+              </div>
             </label>
-            <div className="relative">
-              <HelpCircle className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <textarea
-                name="question_text"
-                value={formData.question_text}
-                onChange={handleChange}
-                rows={3}
-                className={`input-field pl-10 ${errors.question_text ? 'border-red-500' : ''}`}
-                placeholder="Enter the question text..."
-              />
-            </div>
-            {errors.question_text && (
-              <p className="text-red-500 text-sm mt-1">{errors.question_text}</p>
-            )}
+            <RichTextEditor
+              value={activeLanguageTab === 'english' ? formData.question_text : formData.question_text_gujarati}
+              onChange={(content) => {
+                const fieldName = activeLanguageTab === 'english' ? 'question_text' : 'question_text_gujarati';
+                setFormData(prev => ({
+                  ...prev,
+                  [fieldName]: content
+                }));
+                // Clear error when user starts typing
+                if (errors.question_text) {
+                  setErrors(prev => ({ ...prev, question_text: '' }));
+                }
+              }}
+              placeholder={activeLanguageTab === 'english' ? 'Enter the question text...' : 'પ્રશ્ન લખો...'}
+              height={250}
+              error={errors.question_text}
+            />
           </div>
 
           {/* Options */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Option A *
-              </label>
-              <input
-                type="text"
-                name="option_a"
-                value={formData.option_a}
-                onChange={handleChange}
-                className={`input-field ${errors.option_a ? 'border-red-500' : ''}`}
-                placeholder="Enter option A"
-              />
-              {errors.option_a && (
-                <p className="text-red-500 text-sm mt-1">{errors.option_a}</p>
-              )}
-            </div>
+            {['A', 'B', 'C', 'D'].map((option) => {
+              const optionKey = `option_${option.toLowerCase()}`;
+              const gujaratiKey = `option_${option.toLowerCase()}_gujarati`;
+              const fieldName = activeLanguageTab === 'english' ? optionKey : gujaratiKey;
+              const fieldValue = activeLanguageTab === 'english' ? formData[optionKey as keyof typeof formData] : formData[gujaratiKey as keyof typeof formData];
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Option B *
-              </label>
-              <input
-                type="text"
-                name="option_b"
-                value={formData.option_b}
-                onChange={handleChange}
-                className={`input-field ${errors.option_b ? 'border-red-500' : ''}`}
-                placeholder="Enter option B"
-              />
-              {errors.option_b && (
-                <p className="text-red-500 text-sm mt-1">{errors.option_b}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Option C *
-              </label>
-              <input
-                type="text"
-                name="option_c"
-                value={formData.option_c}
-                onChange={handleChange}
-                className={`input-field ${errors.option_c ? 'border-red-500' : ''}`}
-                placeholder="Enter option C"
-              />
-              {errors.option_c && (
-                <p className="text-red-500 text-sm mt-1">{errors.option_c}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Option D *
-              </label>
-              <input
-                type="text"
-                name="option_d"
-                value={formData.option_d}
-                onChange={handleChange}
-                className={`input-field ${errors.option_d ? 'border-red-500' : ''}`}
-                placeholder="Enter option D"
-              />
-              {errors.option_d && (
-                <p className="text-red-500 text-sm mt-1">{errors.option_d}</p>
-              )}
-            </div>
+              return (
+                <div key={option}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Option {option} * ({activeLanguageTab === 'english' ? 'English' : 'ગુજરાતી'})
+                  </label>
+                  <input
+                    type="text"
+                    name={fieldName}
+                    value={fieldValue as string}
+                    onChange={handleChange}
+                    className={`input-field ${errors[optionKey] ? 'border-red-500' : ''}`}
+                    placeholder={activeLanguageTab === 'english' ? `Enter option ${option}` : `વિકલ્પ ${option} લખો`}
+                  />
+                  {errors[optionKey] && (
+                    <p className="text-red-500 text-sm mt-1">{errors[optionKey]}</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {/* Correct Answer and Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className={`grid grid-cols-1 ${simplified ? 'md:grid-cols-1' : 'md:grid-cols-4'} gap-4`}>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Correct Answer *
@@ -283,122 +317,132 @@ export const QuestionModal: React.FC<QuestionModalProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Difficulty *
-              </label>
-              <select
-                name="difficulty"
-                value={formData.difficulty}
-                onChange={handleChange}
-                className="input-field"
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
+            {!simplified && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Difficulty *
+                  </label>
+                  <select
+                    name="difficulty"
+                    value={formData.difficulty}
+                    onChange={handleChange}
+                    className="input-field"
+                  >
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                  </select>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Marks
-              </label>
-              <input
-                type="number"
-                name="marks"
-                value={formData.marks}
-                onChange={handleChange}
-                min="0.1"
-                step="0.1"
-                className={`input-field ${errors.marks ? 'border-red-500' : ''}`}
-              />
-              {errors.marks && (
-                <p className="text-red-500 text-sm mt-1">{errors.marks}</p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Marks
+                  </label>
+                  <input
+                    type="number"
+                    name="marks"
+                    value={formData.marks}
+                    onChange={handleChange}
+                    min="0.1"
+                    step="0.1"
+                    className={`input-field ${errors.marks ? 'border-red-500' : ''}`}
+                  />
+                  {errors.marks && (
+                    <p className="text-red-500 text-sm mt-1">{errors.marks}</p>
+                  )}
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Negative Marks
-              </label>
-              <input
-                type="number"
-                name="negative_marks"
-                value={formData.negative_marks}
-                onChange={handleChange}
-                min="0"
-                step="0.1"
-                className={`input-field ${errors.negative_marks ? 'border-red-500' : ''}`}
-              />
-              {errors.negative_marks && (
-                <p className="text-red-500 text-sm mt-1">{errors.negative_marks}</p>
-              )}
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Negative Marks
+                  </label>
+                  <input
+                    type="number"
+                    name="negative_marks"
+                    value={formData.negative_marks}
+                    onChange={handleChange}
+                    min="0"
+                    step="0.1"
+                    className={`input-field ${errors.negative_marks ? 'border-red-500' : ''}`}
+                  />
+                  {errors.negative_marks && (
+                    <p className="text-red-500 text-sm mt-1">{errors.negative_marks}</p>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Subject and Topic */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subject *
-              </label>
-              <div className="relative">
-                <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <select
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className={`input-field pl-10 ${errors.subject ? 'border-red-500' : ''}`}
-                >
-                  <option value="">Select Subject</option>
-                  <option value="Mathematics">Mathematics</option>
-                  <option value="Science">Science</option>
-                  <option value="English">English</option>
-                  <option value="History">History</option>
-                  <option value="Geography">Geography</option>
-                  <option value="Physics">Physics</option>
-                  <option value="Chemistry">Chemistry</option>
-                  <option value="Biology">Biology</option>
-                  <option value="General Knowledge">General Knowledge</option>
-                  <option value="Current Affairs">Current Affairs</option>
-                </select>
+          {/* Subject and Topic - Only show if not simplified */}
+          {!simplified && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Subject *
+                </label>
+                <div className="relative">
+                  <BookOpen className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <select
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    className={`input-field pl-10 ${errors.subject ? 'border-red-500' : ''}`}
+                  >
+                    <option value="">Select Subject</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Science">Science</option>
+                    <option value="English">English</option>
+                    <option value="History">History</option>
+                    <option value="Geography">Geography</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Biology">Biology</option>
+                    <option value="General Knowledge">General Knowledge</option>
+                    <option value="Current Affairs">Current Affairs</option>
+                  </select>
+                </div>
+                {errors.subject && (
+                  <p className="text-red-500 text-sm mt-1">{errors.subject}</p>
+                )}
               </div>
-              {errors.subject && (
-                <p className="text-red-500 text-sm mt-1">{errors.subject}</p>
-              )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Topic
-              </label>
-              <input
-                type="text"
-                name="topic"
-                value={formData.topic}
-                onChange={handleChange}
-                className="input-field"
-                placeholder="Enter topic (optional)"
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Topic
+                </label>
+                <input
+                  type="text"
+                  name="topic"
+                  value={formData.topic}
+                  onChange={handleChange}
+                  className="input-field"
+                  placeholder="Enter topic (optional)"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Explanation */}
+          {/* Explanation with Rich Text Editor */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Explanation
+              <div className="flex items-center space-x-2">
+                <FileText className="h-4 w-4" />
+                <span>Explanation ({activeLanguageTab === 'english' ? 'English' : 'ગુજરાતી'})</span>
+              </div>
             </label>
-            <div className="relative">
-              <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <textarea
-                name="explanation"
-                value={formData.explanation}
-                onChange={handleChange}
-                rows={3}
-                className="input-field pl-10"
-                placeholder="Enter explanation for the correct answer (optional)..."
-              />
-            </div>
+            <RichTextEditor
+              value={activeLanguageTab === 'english' ? formData.explanation : formData.explanation_gujarati}
+              onChange={(content) => {
+                const fieldName = activeLanguageTab === 'english' ? 'explanation' : 'explanation_gujarati';
+                setFormData(prev => ({
+                  ...prev,
+                  [fieldName]: content
+                }));
+              }}
+              placeholder={activeLanguageTab === 'english' ? 'Enter explanation for the correct answer (optional)...' : 'સાચા જવાબનું સ્પષ્ટીકરણ લખો (વૈકલ્પિક)...'}
+              height={200}
+            />
           </div>
 
           <div className="flex space-x-3 pt-4">

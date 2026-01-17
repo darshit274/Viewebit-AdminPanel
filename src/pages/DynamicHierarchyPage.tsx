@@ -76,9 +76,9 @@ const DynamicHierarchyPage: React.FC = () => {
   // Get admin token
   const getAuthToken = () => {
     // Try different possible token keys
-    return localStorage.getItem('token') || 
-           localStorage.getItem('admin_token') || 
-           localStorage.getItem('authToken') ||
+    return sessionStorage.getItem('token') || 
+           sessionStorage.getItem('admin_token') || 
+           sessionStorage.getItem('authToken') ||
            sessionStorage.getItem('token');
   };
 

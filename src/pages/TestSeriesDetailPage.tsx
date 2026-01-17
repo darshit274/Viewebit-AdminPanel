@@ -4,6 +4,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { PlusIcon, EyeIcon, PencilIcon, TrashIcon, ArrowLeftIcon, MagnifyingGlassIcon, ChartBarIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import { ConfirmModal } from '../components/modals/ConfirmModal';
+import RichTextEditor from '../components/common/RichTextEditor';
 
 interface TestSeries {
   id: number;
@@ -60,9 +61,9 @@ const categoriesApi = {
     sortBy?: string;
     sortOrder?: string;
   }): Promise<ApiResponse> => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== '') {
         queryParams.append(key, value.toString());
@@ -77,7 +78,7 @@ const categoriesApi = {
   },
 
   createCategory: async (testSeriesUuid: string, category: { name: string; description: string }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/test-series/${testSeriesUuid}/categories`, {
       method: 'POST',
       headers: {
@@ -92,7 +93,7 @@ const categoriesApi = {
   },
 
   updateCategory: async (uuid: string, category: { name: string; description: string }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/categories/${uuid}`, {
       method: 'PUT',
       headers: {
@@ -107,7 +108,7 @@ const categoriesApi = {
   },
 
   deleteCategory: async (uuid: string) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/categories/${uuid}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -117,14 +118,14 @@ const categoriesApi = {
   },
 
   bulkOperations: async (data: { action: string; uuids: string[] }) => {
-    const token = localStorage.getItem('admin_token');
-    
+    const token = sessionStorage.getItem('admin_token');
+
     // Convert uuids to the correct field name expected by backend
     const payload = {
       action: data.action,
       categoryIds: data.uuids  // Backend expects categoryIds, not uuids
     };
-    
+
     const response = await fetch(`${apiBaseUrl}/test-management/categories/bulk`, {
       method: 'POST',
       headers: {
@@ -143,27 +144,27 @@ const TestSeriesDetailPage: React.FC = () => {
   const { testSeriesUuid } = useParams<{ testSeriesUuid: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   // State management
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({ 
-    name: '', 
-    description: '', 
-    name_gujarati: '', 
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    name_gujarati: '',
     description_gujarati: '',
     is_active: true
   });
-  
+
   // Selection state for bulk operations
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  
+
   // Confirm modal state
-  const [confirmModal, setConfirmModal] = useState({ 
-    isOpen: false, 
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
     category: null as Category | null,
     action: 'delete' as 'delete' | 'bulk_activate' | 'bulk_deactivate' | 'bulk_delete',
-    loading: false 
+    loading: false
   });
 
   // Filter and pagination state
@@ -229,7 +230,7 @@ const TestSeriesDetailPage: React.FC = () => {
     onSuccess: (data) => {
       const action = data.action;
       const count = data.processedCount || selectedCategories.length;
-      
+
       switch (action) {
         case 'activate':
           toast.success(`${count} categories activated successfully`);
@@ -241,7 +242,7 @@ const TestSeriesDetailPage: React.FC = () => {
           toast.success(`${count} categories deleted successfully`);
           break;
       }
-      
+
       queryClient.invalidateQueries({ queryKey: ['testSeriesCategories', testSeriesUuid] });
       setSelectedCategories([]);
     },
@@ -262,8 +263,8 @@ const TestSeriesDetailPage: React.FC = () => {
 
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
-    setFormData({ 
-      name: category.name, 
+    setFormData({
+      name: category.name,
       description: category.description,
       name_gujarati: category.name_gujarati || '',
       description_gujarati: category.description_gujarati || '',
@@ -278,7 +279,7 @@ const TestSeriesDetailPage: React.FC = () => {
 
   const handleConfirmDelete = async () => {
     setConfirmModal(prev => ({ ...prev, loading: true }));
-    
+
     if (confirmModal.action === 'delete' && confirmModal.category) {
       // Individual delete
       deleteMutation.mutate(confirmModal.category.uuid, {
@@ -330,15 +331,15 @@ const TestSeriesDetailPage: React.FC = () => {
       toast.error('Please select at least one category');
       return;
     }
-    
-    const modalAction = action === 'activate' ? 'bulk_activate' : 
-                      action === 'deactivate' ? 'bulk_deactivate' : 'bulk_delete';
-    
-    setConfirmModal({ 
-      isOpen: true, 
-      category: null, 
+
+    const modalAction = action === 'activate' ? 'bulk_activate' :
+      action === 'deactivate' ? 'bulk_deactivate' : 'bulk_delete';
+
+    setConfirmModal({
+      isOpen: true,
+      category: null,
       action: modalAction,
-      loading: false 
+      loading: false
     });
   };
 
@@ -631,7 +632,7 @@ const TestSeriesDetailPage: React.FC = () => {
                   </span>
                 </div>
               )}
-              
+
               {categories.map((category) => (
                 <div key={category.uuid} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start">
@@ -643,22 +644,21 @@ const TestSeriesDetailPage: React.FC = () => {
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
                       />
                       <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          category.is_active 
-                            ? 'bg-green-100 text-green-800' 
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">{category.name}</h3>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${category.is_active
+                            ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                        }`}>
-                          {category.is_active ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                      <p className="text-gray-600 text-sm mb-3">{category.description}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <span>Sub-categories: {category.subCategories_count}</span>
-                        <span>Created: {formatDate(category.created_at)}</span>
-                        <span>Updated: {formatDate(category.updated_at)}</span>
-                      </div>
+                            }`}>
+                            {category.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-sm mb-3">{category.description}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span>Sub-categories: {category.subCategories_count}</span>
+                          <span>Created: {formatDate(category.created_at)}</span>
+                          <span>Updated: {formatDate(category.updated_at)}</span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex gap-2 ml-4">
@@ -710,11 +710,10 @@ const TestSeriesDetailPage: React.FC = () => {
                   <button
                     key={page}
                     onClick={() => handlePageChange(page)}
-                    className={`px-3 py-1 border rounded-md ${
-                      page === pagination.page
-                        ? 'bg-blue-600 text-white border-blue-600'
-                        : 'border-gray-300 hover:bg-gray-50'
-                    }`}
+                    className={`px-3 py-1 border rounded-md ${page === pagination.page
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
                     {page}
                   </button>
@@ -739,7 +738,7 @@ const TestSeriesDetailPage: React.FC = () => {
             <h2 className="text-xl font-semibold mb-4">
               {editingCategory ? 'Edit Category' : 'Add Category'}
             </h2>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -758,18 +757,22 @@ const TestSeriesDetailPage: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
-                <textarea
+                {/* <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                /> */}
+                <RichTextEditor
+                  value={formData.description}
+                  onChange={(content) => setFormData({ ...formData, description: content })}
                 />
               </div>
 
               {/* Gujarati Fields */}
               <div className="border-t pt-4">
                 <h3 className="text-md font-medium text-gray-800 mb-3">Gujarati Translation</h3>
-                
+
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Name (Gujarati)
@@ -787,12 +790,16 @@ const TestSeriesDetailPage: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description (Gujarati)
                   </label>
-                  <textarea
+                  {/* <textarea
                     value={formData.description_gujarati}
                     onChange={(e) => setFormData({ ...formData, description_gujarati: e.target.value })}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="ગુજરાતીમાં વર્ણન"
+                  /> */}
+                  <RichTextEditor
+                    value={formData.description_gujarati}
+                    onChange={(content) => setFormData({ ...formData, description_gujarati: content })}
                   />
                 </div>
               </div>

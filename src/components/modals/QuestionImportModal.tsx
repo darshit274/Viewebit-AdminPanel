@@ -36,7 +36,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
   const downloadTemplate = async (format: 'excel' | 'csv') => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/stats?download=template&format=${format}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -93,7 +93,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
         formData.append('test_series_id', testSeriesId.toString());
       }
 
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/stats?action=import`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
@@ -137,7 +137,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
   const pollImportStatus = async (importId: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/import/status/${importId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -164,7 +164,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
   const loadPreviewData = async (importId: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/import/preview/${importId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -194,7 +194,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
     setCurrentStep('importing');
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/import/confirm/${importStatus.import_id}`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -217,7 +217,7 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
 
   const pollFinalImportStatus = async (importId: string) => {
     try {
-      const token = localStorage.getItem('admin_token');
+      const token = sessionStorage.getItem('admin_token');
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/questions/import/status/${importId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -391,7 +391,13 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
                   <div className="space-y-2 max-h-60 overflow-y-auto">
                     {previewData.validation_errors.slice(0, 10).map((error: any, index: number) => (
                       <div key={index} className="text-sm bg-white p-2 rounded border">
-                        <strong>Row {error.row}:</strong> {error.field} - {error.error}
+                        {typeof error === 'string' ? (
+                          // Handle string errors directly from API
+                          <span>{error}</span>
+                        ) : (
+                          // Handle structured errors
+                          <span><strong>Row {error.row}:</strong> {error.field} - {error.error}</span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -402,20 +408,33 @@ export const QuestionImportModal: React.FC<QuestionImportModalProps> = ({
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <h4 className="font-semibold text-green-800 mb-3">Preview Questions</h4>
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {previewData.preview_questions.map((question: any, index: number) => (
-                    <div key={index} className="bg-white p-4 rounded border">
-                      <div className="font-medium text-gray-800">{question.question_text}</div>
-                      <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-                        <div>A: {question.option_a}</div>
-                        <div>B: {question.option_b}</div>
-                        <div>C: {question.option_c}</div>
-                        <div>D: {question.option_d}</div>
+                  {previewData.preview_questions.map((question: any, index: number) => {
+                    // Smart display: show available language content
+                    const questionText = question.question_text || question.question_text_gujarati || 'No question text';
+                    const optionA = question.option_a || question.option_a_gujarati || 'No option A';
+                    const optionB = question.option_b || question.option_b_gujarati || 'No option B';
+                    const optionC = question.option_c || question.option_c_gujarati || 'No option C';
+                    const optionD = question.option_d || question.option_d_gujarati || 'No option D';
+                    const language = question.question_text ? 'English' : question.question_text_gujarati ? 'Gujarati' : 'Unknown';
+
+                    return (
+                      <div key={index} className="bg-white p-4 rounded border">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="font-medium text-gray-800 flex-1">{questionText}</div>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded ml-2">{language}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+                          <div>A: {optionA}</div>
+                          <div>B: {optionB}</div>
+                          <div>C: {optionC}</div>
+                          <div>D: {optionD}</div>
+                        </div>
+                        <div className="text-sm text-green-600 mt-2">
+                          <strong>Correct Answer:</strong> {question.correct_answer} | <strong>Marks:</strong> {question.marks}
+                        </div>
                       </div>
-                      <div className="text-sm text-green-600 mt-2">
-                        <strong>Correct Answer:</strong> {question.correct_answer} | <strong>Marks:</strong> {question.marks}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

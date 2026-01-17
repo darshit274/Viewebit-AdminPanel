@@ -11,9 +11,9 @@ const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5004/api')
 // Simple API service that works
 const testSeriesApi = {
   fetchTestSeries: async (params: any = {}) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
-    
+
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== '') {
         queryParams.append(key, value.toString());
@@ -28,7 +28,7 @@ const testSeriesApi = {
   },
 
   createTestSeries: async (testSeries: any) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management`, {
       method: 'POST',
       headers: {
@@ -43,7 +43,7 @@ const testSeriesApi = {
   },
 
   updateTestSeries: async (uuid: string, testSeries: any) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/${uuid}`, {
       method: 'PUT',
       headers: {
@@ -58,7 +58,7 @@ const testSeriesApi = {
   },
 
   deleteTestSeries: async (uuid: string) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/${uuid}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -69,7 +69,7 @@ const testSeriesApi = {
   },
 
   bulkOperations: async (action: string, uuids: string[]) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/bulk`, {
       method: 'POST',
       headers: {
@@ -93,14 +93,15 @@ interface TestSeries {
   title_gujarati?: string;
   description_gujarati?: string;
   is_active: boolean;
-  pricing_type?: 'free' | 'paid';
+  pricing_type?: 'free' | 'paid' | 'previous_years_question_papers';
   price?: number;
   currency?: string;
-  demo_tests_count?: number;  
-  subscription_duration_days?: number;
   discount_percentage?: number;
   is_featured?: boolean;
   features?: any;
+  // Negative marking moved to category level
+  // has_negative_marking?: boolean;
+  // negative_marks?: number;
   created_at: string;
   updated_at: string;
   categories_count: number;
@@ -112,18 +113,20 @@ interface TestSeriesFormData {
   title_gujarati?: string;
   description_gujarati?: string;
   is_active?: boolean;
-  pricing_type?: 'free' | 'paid';
+  pricing_type?: 'free' | 'paid' | 'previous_years_question_papers';
   price?: number;
   currency?: string;
-  demo_tests_count?: number;
-  subscription_duration_days?: number;
   discount_percentage?: number;
   is_featured?: boolean;
   features?: any;
+  // Negative marking moved to category level
+  // has_negative_marking?: boolean;
+  // negative_marks?: number;
 }
 
 // Import existing components
 import { ConfirmModal } from '../components/modals/ConfirmModal';
+import RichTextEditor from '../components/common/RichTextEditor';
 
 const TestManagementPageNew: React.FC = () => {
   const navigate = useNavigate();
@@ -136,7 +139,8 @@ const TestManagementPageNew: React.FC = () => {
     search: '',
     status: 'all'
   });
-  
+  const [pricingTypeFilter, setPricingTypeFilter] = useState<'all' | 'free' | 'paid' | 'previous_years_question_papers'>('all');
+
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     loading: false,
@@ -156,11 +160,11 @@ const TestManagementPageNew: React.FC = () => {
     pricing_type: 'free',
     price: 0,
     currency: 'INR',
-    demo_tests_count: 0,
-    subscription_duration_days: 365,
     discount_percentage: 0,
     is_featured: false,
-    features: null
+    features: null,
+    validity_days: 365,
+    is_course_closed: false,
   });
 
   // Data fetching using simple API
@@ -173,23 +177,29 @@ const TestManagementPageNew: React.FC = () => {
 
   // Bulk selection management
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  
-  const testSeries = data?.data || [];
+
+  const allTestSeries = data?.data || [];
+
+  // Apply pricing type filter
+  const testSeries = pricingTypeFilter === 'all'
+    ? allTestSeries
+    : allTestSeries.filter((item: TestSeries) => item.pricing_type === pricingTypeFilter);
+
   const selectedCount = selectedIds.length;
   const isAllSelected = testSeries.length > 0 && selectedIds.length === testSeries.length;
-  
+
   const toggleSelection = (uuid: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(uuid) ? prev.filter(id => id !== uuid) : [...prev, uuid]
     );
   };
-  
+
   const toggleSelectAll = () => {
     setSelectedIds(isAllSelected ? [] : testSeries.map(item => item.uuid));
   };
-  
+
   const clearSelection = () => setSelectedIds([]);
-  
+
   const isSelected = (uuid: string) => selectedIds.includes(uuid);
 
   // Mutations using simple API
@@ -197,25 +207,25 @@ const TestManagementPageNew: React.FC = () => {
     mutationFn: testSeriesApi.createTestSeries,
     onSuccess: async () => {
       toast.success('Course created successfully');
-      
+
       // Multiple strategies to ensure refresh
       try {
         // 1. Invalidate all related queries
         await queryClient.invalidateQueries({ queryKey: ['testSeries'] });
-        
+
         // 2. Force refetch with exact query key
-        await queryClient.refetchQueries({ 
-          queryKey: ['testSeries', filters], 
-          type: 'active' 
+        await queryClient.refetchQueries({
+          queryKey: ['testSeries', filters],
+          type: 'active'
         });
-        
+
         // 3. Direct refetch of current query
         await refetch();
-        
+
         // 4. Clear query cache and refetch
         queryClient.removeQueries({ queryKey: ['testSeries'] });
         await refetch();
-        
+
         // 5. Force refresh after delay to ensure backend consistency
         setTimeout(async () => {
           console.log('🔄 Delayed refresh - invalidating queries...');
@@ -223,11 +233,11 @@ const TestManagementPageNew: React.FC = () => {
           await refetch();
           console.log('🔄 Delayed refresh completed');
         }, 1500);
-        
+
       } catch (error) {
         console.log('Refresh error:', error);
       }
-      
+
       setShowModal(false);
       resetForm();
     },
@@ -241,25 +251,25 @@ const TestManagementPageNew: React.FC = () => {
       testSeriesApi.updateTestSeries(uuid, data),
     onSuccess: async () => {
       toast.success('Course updated successfully');
-      
+
       // Multiple strategies to ensure refresh
       try {
         // 1. Invalidate all related queries
         await queryClient.invalidateQueries({ queryKey: ['testSeries'] });
-        
+
         // 2. Force refetch with exact query key
-        await queryClient.refetchQueries({ 
-          queryKey: ['testSeries', filters], 
-          type: 'active' 
+        await queryClient.refetchQueries({
+          queryKey: ['testSeries', filters],
+          type: 'active'
         });
-        
+
         // 3. Direct refetch of current query
         await refetch();
-        
+
         // 4. Clear query cache and refetch
         queryClient.removeQueries({ queryKey: ['testSeries'] });
         await refetch();
-        
+
         // 5. Force refresh after delay to ensure backend consistency  
         setTimeout(async () => {
           console.log('🔄 Update: Delayed refresh - invalidating queries...');
@@ -267,11 +277,11 @@ const TestManagementPageNew: React.FC = () => {
           await refetch();
           console.log('🔄 Update: Delayed refresh completed');
         }, 1500);
-        
+
       } catch (error) {
         console.log('Refresh error:', error);
       }
-      
+
       setShowModal(false);
       setEditingTestSeries(null);
       resetForm();
@@ -313,11 +323,11 @@ const TestManagementPageNew: React.FC = () => {
   const openConfirmModal = (item: TestSeries | null, action: string) => {
     setConfirmModal({ isOpen: true, loading: false, item, action });
   };
-  
+
   const closeConfirmModal = () => {
     setConfirmModal({ isOpen: false, loading: false, item: null, action: '' });
   };
-  
+
   const setConfirmModalLoading = (loading: boolean) => {
     setConfirmModal(prev => ({ ...prev, loading }));
   };
@@ -349,11 +359,13 @@ const TestManagementPageNew: React.FC = () => {
       pricing_type: 'free',
       price: 0,
       currency: 'INR',
-      demo_tests_count: 0,
-      subscription_duration_days: 365,
       discount_percentage: 0,
       is_featured: false,
-      features: null
+      features: null,
+      has_negative_marking: false,
+      negative_marks: 0.25,
+      validity_days: 365,
+      is_course_closed: false
     });
   };
 
@@ -374,11 +386,13 @@ const TestManagementPageNew: React.FC = () => {
       pricing_type: testSeries.pricing_type || 'free',
       price: testSeries.price || 0,
       currency: testSeries.currency || 'INR',
-      demo_tests_count: testSeries.demo_tests_count || 0,
-      subscription_duration_days: testSeries.subscription_duration_days || 365,
       discount_percentage: testSeries.discount_percentage || 0,
       is_featured: testSeries.is_featured || false,
-      features: testSeries.features || null
+      features: testSeries.features || null,
+      has_negative_marking: (testSeries as any).has_negative_marking || false,
+      negative_marks: (testSeries as any).negative_marks || 0.25,
+      validity_days: testSeries.validity_days || 365,
+      is_course_closed: testSeries.is_course_closed || false,
     });
     setShowModal(true);
   };
@@ -417,83 +431,6 @@ const TestManagementPageNew: React.FC = () => {
     }
   };
 
-  // Table configuration
-  const columns: Column<TestSeries>[] = [
-    {
-      key: 'title',
-      label: 'Title',
-      sortable: true,
-      render: (item) => (
-        <div>
-          <div className="font-semibold text-gray-900">{item.title}</div>
-          {item.title_gujarati && (
-            <div className="text-sm text-gray-500">{item.title_gujarati}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'description',
-      label: 'Description',
-      render: (item) => (
-        <div className="max-w-xs truncate">
-          <div className="text-sm text-gray-600">{item.description}</div>
-          {item.description_gujarati && (
-            <div className="text-xs text-gray-500 truncate">{item.description_gujarati}</div>
-          )}
-        </div>
-      ),
-    },
-    {
-      key: 'is_active',
-      label: 'Status',
-      sortable: true,
-      render: (item) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            item.is_active
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-          }`}
-        >
-          {item.is_active ? 'Active' : 'Inactive'}
-        </span>
-      ),
-    },
-    {
-      key: 'categories_count',
-      label: 'Categories',
-      sortable: true,
-      render: (item) => (
-        <span className="text-gray-900 font-medium">{item.categories_count}</span>
-      ),
-    },
-    {
-      key: 'created_at',
-      label: 'Created',
-      sortable: true,
-      render: (item) => (
-        <span className="text-sm text-gray-500">
-          {new Date(item.created_at).toLocaleDateString()}
-        </span>
-      ),
-    },
-  ];
-
-  // Filter configuration
-  const searchFilters = [
-    {
-      key: 'status',
-      label: 'Status',
-      type: 'select' as const,
-      value: filters.status || 'all',
-      options: [
-        { label: 'Active', value: 'active' },
-        { label: 'Inactive', value: 'inactive' },
-      ],
-    },
-  ];
-
   // Bulk actions configuration
   const bulkActions = [
     {
@@ -516,32 +453,7 @@ const TestManagementPageNew: React.FC = () => {
     },
   ];
 
-  // Render actions for each row
-  const renderActions = (item: TestSeries) => (
-    <div className="flex gap-2">
-      <button
-        onClick={() => navigate(`/test-series/${item.uuid}`)}
-        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg"
-        title="View Categories"
-      >
-        <EyeIcon className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => handleEdit(item)}
-        className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg"
-        title="Edit"
-      >
-        <PencilIcon className="h-4 w-4" />
-      </button>
-      <button
-        onClick={() => handleDelete(item)}
-        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg"
-        title="Delete"
-      >
-        <TrashIcon className="h-4 w-4" />
-      </button>
-    </div>
-  );
+  
 
   // Get confirm modal content
   const getConfirmModalContent = () => {
@@ -673,6 +585,16 @@ const TestManagementPageNew: React.FC = () => {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
+            <select
+              value={pricingTypeFilter}
+              onChange={(e) => setPricingTypeFilter(e.target.value as any)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Types</option>
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+              <option value="previous_years_question_papers">Previous Years Papers</option>
+            </select>
           </div>
         </div>
 
@@ -769,12 +691,18 @@ const TestManagementPageNew: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          item.pricing_type === 'paid'
-                            ? 'bg-yellow-100 text-yellow-800'
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.pricing_type === 'paid'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : item.pricing_type === 'previous_years_question_papers'
+                            ? 'bg-purple-100 text-purple-800'
                             : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {item.pricing_type === 'paid' ? 'Paid' : 'Free'}
+                          }`}>
+                          {item.pricing_type === 'paid'
+                            ? 'Paid'
+                            : item.pricing_type === 'previous_years_question_papers'
+                              ? 'PYQ'
+                              : 'Free'
+                          }
                         </span>
                         {item.pricing_type === 'paid' && item.price && (
                           <span className="text-sm font-medium text-gray-900">
@@ -787,11 +715,10 @@ const TestManagementPageNew: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.is_active
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.is_active
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                        }`}>
                         {item.is_active ? 'Active' : 'Inactive'}
                       </span>
                     </td>
@@ -892,11 +819,17 @@ const TestManagementPageNew: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Description
                 </label>
-                <textarea
+                {/* <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                /> */}
+                <RichTextEditor
+                  value={formData.description}
+                  onChange={(content) => setFormData({ ...formData, description: content })}
+                  placeholder="Enter explanation (optional)"
+                  height={200}
                 />
               </div>
 
@@ -921,12 +854,18 @@ const TestManagementPageNew: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description (Gujarati)
                   </label>
-                  <textarea
+                  {/* <textarea
                     value={formData.description_gujarati}
                     onChange={(e) => setFormData({ ...formData, description_gujarati: e.target.value })}
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="ગુજરાતીમાં વર્ણન"
+                  /> */}
+                  <RichTextEditor
+                    value={formData?.description_gujarati}
+                    onChange={(content) => setFormData({ ...formData, description_gujarati: content })}
+                    placeholder="Enter explanation (optional)"
+                    height={200}
                   />
                 </div>
               </div>
@@ -934,20 +873,31 @@ const TestManagementPageNew: React.FC = () => {
               {/* Pricing Configuration */}
               <div className="border-t pt-4">
                 <h3 className="text-md font-medium text-gray-800 mb-3">💰 Pricing & Subscription Settings</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Pricing Type * 
-                      <span className="text-xs text-gray-500 ml-1">(Choose Free or Paid access)</span>
+                      Pricing Type *
+                      <span className="text-xs text-gray-500 ml-1">(Choose test series type)</span>
                     </label>
                     <select
                       value={formData.pricing_type}
-                      onChange={(e) => setFormData({ ...formData, pricing_type: e.target.value as 'free' | 'paid' })}
+                      onChange={(e) => {
+                        const newPricingType = e.target.value as 'free' | 'paid' | 'previous_years_question_papers';
+                        const isNonPaid = newPricingType === 'free' || newPricingType === 'previous_years_question_papers';
+                        setFormData({
+                          ...formData,
+                          pricing_type: newPricingType,
+                          // Reset price and is_course_closed if switching to free or PYQ
+                          price: isNonPaid ? 0 : formData.price,
+                          is_course_closed: isNonPaid ? false : formData.is_course_closed
+                        });
+                      }}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="free">Free - Open access for all students</option>
                       <option value="paid">Paid - Requires subscription to access</option>
+                      <option value="previous_years_question_papers">Previous Years Question Papers</option>
                     </select>
                   </div>
 
@@ -979,40 +929,6 @@ const TestManagementPageNew: React.FC = () => {
                   )}
                 </div>
 
-                {formData.pricing_type === 'paid' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Demo Tests Count
-                      </label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={formData.demo_tests_count}
-                        onChange={(e) => setFormData({ ...formData, demo_tests_count: parseInt(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Number of free demo tests"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Subscription Duration (Days)
-                      </label>
-                      <select
-                        value={formData.subscription_duration_days}
-                        onChange={(e) => setFormData({ ...formData, subscription_duration_days: parseInt(e.target.value) })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value={30}>30 Days (1 Month)</option>
-                        <option value={90}>90 Days (3 Months)</option>
-                        <option value={180}>180 Days (6 Months)</option>
-                        <option value={365}>365 Days (1 Year)</option>
-                        <option value={730}>730 Days (2 Years)</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
 
                 {formData.pricing_type === 'paid' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -1032,7 +948,26 @@ const TestManagementPageNew: React.FC = () => {
                       />
                     </div>
 
-                    <div className="flex items-center pt-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Course Validity (Days)
+                        <span className="text-xs text-gray-500 ml-1">(Default: 365 days)</span>
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.validity_days || 365}
+                        onChange={(e) => setFormData({ ...formData, validity_days: parseInt(e.target.value) || 365 })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="365"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {formData.pricing_type === 'paid' && (
+                  <div className="mt-4">
+                    <div className="flex items-center">
                       <input
                         type="checkbox"
                         id="is_featured"
@@ -1046,6 +981,14 @@ const TestManagementPageNew: React.FC = () => {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Test Configuration - Negative marking moved to category level */}
+              <div className="border-t pt-4">
+                <h3 className="text-md font-medium text-gray-800 mb-3">⚙️ Test Configuration</h3>
+                <p className="text-sm text-gray-600">
+                  ℹ️ Negative marking is now configured at the category level for more granular control.
+                </p>
               </div>
 
               {/* Status Toggle */}
@@ -1063,6 +1006,23 @@ const TestManagementPageNew: React.FC = () => {
                   </label>
                 </div>
               </div>
+              {/* is_course_closed Toggle - Only visible for paid pricing type */}
+              {formData.pricing_type === 'paid' && (
+                <div className="border-t pt-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="is_course_closed"
+                      checked={formData.is_course_closed}
+                      onChange={(e) => setFormData({ ...formData, is_course_closed: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="is_course_closed" className="ml-2 block text-sm text-gray-700">
+                      Course Closed (prevents new enrollments)
+                    </label>
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 mt-6">
                 <button

@@ -34,7 +34,7 @@ const apiClient: AxiosInstance = axios.create({
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -69,8 +69,8 @@ apiClient.interceptors.response.use(
       switch (status) {
         case 401:
           // Unauthorized - clear auth and redirect
-          localStorage.removeItem('admin_token');
-          localStorage.removeItem('admin_user');
+          sessionStorage.removeItem('admin_token');
+          sessionStorage.removeItem('admin_user');
           window.location.href = '/login';
           toast.error('Session expired. Please login again.');
           break;

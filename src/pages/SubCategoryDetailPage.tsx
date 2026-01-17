@@ -64,7 +64,7 @@ const testsApi = {
     sortBy?: string;
     sortOrder?: string;
   }): Promise<ApiResponse> => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const queryParams = new URLSearchParams();
     
     Object.entries(params).forEach(([key, value]) => {
@@ -81,7 +81,7 @@ const testsApi = {
   },
 
   createTest: async (subCategoryUuid: string, test: { title: string; description: string; title_gujarati?: string; description_gujarati?: string; duration_minutes: number; total_marks: number; is_active?: boolean }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/sub-categories/${subCategoryUuid}/tests`, {
       method: 'POST',
       headers: {
@@ -96,7 +96,7 @@ const testsApi = {
   },
 
   updateTest: async (uuid: string, test: { title: string; description: string; title_gujarati?: string; description_gujarati?: string; duration_minutes: number; total_marks: number; is_active?: boolean }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/tests/${uuid}`, {
       method: 'PUT',
       headers: {
@@ -111,7 +111,7 @@ const testsApi = {
   },
 
   deleteTest: async (uuid: string) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/tests/${uuid}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -121,7 +121,7 @@ const testsApi = {
   },
 
   bulkOperations: async (data: { action: string; uuids: string[] }) => {
-    const token = localStorage.getItem('admin_token');
+    const token = sessionStorage.getItem('admin_token');
     
     // Convert uuids to the correct field name expected by backend
     const payload = {
