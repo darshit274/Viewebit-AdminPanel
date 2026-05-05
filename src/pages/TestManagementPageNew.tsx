@@ -1,9 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon, EyeIcon, PencilIcon, TrashIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { GripVertical } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { formatDate } from '../lib/utils';
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { PositionInput } from '../components/common/SortableList';
 
 // API Base URL - Note: VITE_API_URL already includes /api, we just need to add /admin
 const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5004/api') + '/admin';
@@ -81,6 +92,21 @@ const testSeriesApi = {
     const data = await response.json();
     if (!data.success) throw new Error(data.message);
     return data;
+  },
+
+  reorderTestSeries: async (items: { uuid: string; display_order: number }[]) => {
+    const token = sessionStorage.getItem('admin_token');
+    const response = await fetch(`${apiBaseUrl}/test-management/reorder`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ items })
+    });
+    const data = await response.json();
+    if (!data.success) throw new Error(data.message);
+    return data;
   }
 };
 
@@ -102,6 +128,7 @@ interface TestSeries {
   // Negative marking moved to category level
   // has_negative_marking?: boolean;
   // negative_marks?: number;
+  display_order: number;
   created_at: string;
   updated_at: string;
   categories_count: number;
@@ -127,6 +154,34 @@ interface TestSeriesFormData {
 // Import existing components
 import { ConfirmModal } from '../components/modals/ConfirmModal';
 import RichTextEditor from '../components/common/RichTextEditor';
+
+// Drag-and-drop table row
+function SortableTableRow({ id, children }: { id: string; children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: isDragging ? 'relative' : undefined,
+    zIndex: isDragging ? 10 : undefined,
+  };
+  return (
+    <tr ref={setNodeRef} style={style} className="hover:bg-gray-50">
+      <td className="px-3 py-4 w-8">
+        <button
+          {...attributes}
+          {...listeners}
+          className="p-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
+          type="button"
+          title="Drag to reorder"
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+      </td>
+      {children}
+    </tr>
+  );
+}
 
 const TestManagementPageNew: React.FC = () => {
   const navigate = useNavigate();
@@ -185,8 +240,50 @@ const TestManagementPageNew: React.FC = () => {
     ? allTestSeries
     : allTestSeries.filter((item: TestSeries) => item.pricing_type === pricingTypeFilter);
 
+  // Local optimistic list for drag-and-drop
+  const [localItems, setLocalItems] = useState<TestSeries[]>([]);
+  useEffect(() => { setLocalItems(testSeries); }, [data, pricingTypeFilter]);
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  // Reorder mutation
+  const reorderMutation = useMutation({
+    mutationFn: (items: { uuid: string; display_order: number }[]) =>
+      testSeriesApi.reorderTestSeries(items),
+    onSuccess: () => { toast.success('Order saved'); queryClient.invalidateQueries({ queryKey: ['testSeries'] }); },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to save order');
+      setLocalItems(testSeries); // revert on failure
+    },
+  });
+
+  const applyReorder = (reordered: TestSeries[]) => {
+    // Preserve the sorted display_order slots of the current page
+    const slots = [...localItems].map(i => i.display_order).sort((a, b) => a - b);
+    const withOrders = reordered.map((item, idx) => ({ ...item, display_order: slots[idx] ?? idx + 1 }));
+    setLocalItems(withOrders as TestSeries[]);
+    reorderMutation.mutate(withOrders.map(i => ({ uuid: i.uuid, display_order: i.display_order })));
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = localItems.findIndex(i => i.uuid === active.id);
+    const newIdx = localItems.findIndex(i => i.uuid === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    applyReorder(arrayMove(localItems, oldIdx, newIdx));
+  };
+
+  const handlePositionMove = (fromIndex: number, toPosition: number) => {
+    applyReorder(arrayMove(localItems, fromIndex, toPosition - 1));
+  };
+
   const selectedCount = selectedIds.length;
-  const isAllSelected = testSeries.length > 0 && selectedIds.length === testSeries.length;
+  const isAllSelected = localItems.length > 0 && selectedIds.length === localItems.length;
 
   const toggleSelection = (uuid: string) => {
     setSelectedIds(prev =>
@@ -195,7 +292,7 @@ const TestManagementPageNew: React.FC = () => {
   };
 
   const toggleSelectAll = () => {
-    setSelectedIds(isAllSelected ? [] : testSeries.map(item => item.uuid));
+    setSelectedIds(isAllSelected ? [] : localItems.map(item => item.uuid));
   };
 
   const clearSelection = () => setSelectedIds([]);
@@ -595,6 +692,16 @@ const TestManagementPageNew: React.FC = () => {
               <option value="paid">Paid</option>
               <option value="previous_years_question_papers">Previous Years Papers</option>
             </select>
+            <select
+              value={filters.limit}
+              onChange={(e) => handleLimitChange(Number(e.target.value))}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={10}>10 / page</option>
+              <option value={20}>20 / page</option>
+              <option value={50}>50 / page</option>
+              <option value={100}>100 / page</option>
+            </select>
           </div>
         </div>
 
@@ -607,9 +714,13 @@ const TestManagementPageNew: React.FC = () => {
             <div className="flex gap-2">
               {bulkActions.map((action) => (
                 <button
-                  key={action.key}
+                  key={action.label}
                   onClick={action.onClick}
-                  className={`px-3 py-1 rounded text-sm font-medium ${action.className}`}
+                  className={`px-3 py-1 rounded text-sm font-medium ${
+                    action.variant === 'success' ? 'bg-green-100 text-green-700 hover:bg-green-200' :
+                    action.variant === 'warning' ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200' :
+                    'bg-red-100 text-red-700 hover:bg-red-200'
+                  }`}
                 >
                   {action.label}
                 </button>
@@ -626,138 +737,153 @@ const TestManagementPageNew: React.FC = () => {
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left">
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    onChange={toggleSelectAll}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Title
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type & Price
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categories
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                    Loading...
-                  </td>
-                </tr>
-              ) : testSeries.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                    No test series found
-                  </td>
-                </tr>
-              ) : (
-                testSeries.map((item: TestSeries) => (
-                  <tr key={item.uuid} className={`hover:bg-gray-50 ${isSelected(item.uuid) ? 'bg-blue-50' : ''}`}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={localItems.map(i => i.uuid)} strategy={verticalListSortingStrategy}>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-3 py-3 w-8" title="Drag to reorder" />
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                      Pos.
+                    </th>
+                    <th className="px-6 py-3 text-left">
                       <input
                         type="checkbox"
-                        checked={isSelected(item.uuid)}
-                        onChange={() => toggleSelection(item.uuid)}
+                        checked={isAllSelected}
+                        onChange={toggleSelectAll}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="font-semibold text-gray-900">{item.title}</div>
-                        {item.title_gujarati && (
-                          <div className="text-sm text-gray-500">{item.title_gujarati}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.pricing_type === 'paid'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : item.pricing_type === 'previous_years_question_papers'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-blue-100 text-blue-800'
-                          }`}>
-                          {item.pricing_type === 'paid'
-                            ? 'Paid'
-                            : item.pricing_type === 'previous_years_question_papers'
-                              ? 'PYQ'
-                              : 'Free'
-                          }
-                        </span>
-                        {item.pricing_type === 'paid' && item.price && (
-                          <span className="text-sm font-medium text-gray-900">
-                            ₹{item.price}
-                          </span>
-                        )}
-                        {item.is_featured && (
-                          <span className="px-1 py-0.5 bg-purple-100 text-purple-800 text-xs rounded">⭐</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                        }`}>
-                        {item.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-900 font-medium">
-                      {item.categories_count}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(item.created_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => navigate(`/test-series/${item.uuid}`)}
-                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg"
-                          title="View Categories"
-                        >
-                          <EyeIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg"
-                          title="Edit"
-                        >
-                          <PencilIcon className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg"
-                          title="Delete"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Type & Price
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Categories
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                        Loading...
+                      </td>
+                    </tr>
+                  ) : localItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                        No test series found
+                      </td>
+                    </tr>
+                  ) : (
+                    localItems.map((item: TestSeries, index: number) => (
+                      <SortableTableRow key={item.uuid} id={item.uuid}>
+                        <td className="px-3 py-4 whitespace-nowrap w-16">
+                          <PositionInput
+                            currentPosition={index + 1}
+                            total={localItems.length}
+                            onMove={(newPos) => handlePositionMove(index, newPos)}
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={isSelected(item.uuid)}
+                            onChange={() => toggleSelection(item.uuid)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="font-semibold text-gray-900">{item.title}</div>
+                            {item.title_gujarati && (
+                              <div className="text-sm text-gray-500">{item.title_gujarati}</div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.pricing_type === 'paid'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : item.pricing_type === 'previous_years_question_papers'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-blue-100 text-blue-800'
+                              }`}>
+                              {item.pricing_type === 'paid'
+                                ? 'Paid'
+                                : item.pricing_type === 'previous_years_question_papers'
+                                  ? 'PYQ'
+                                  : 'Free'
+                              }
+                            </span>
+                            {item.pricing_type === 'paid' && item.price && (
+                              <span className="text-sm font-medium text-gray-900">
+                                ₹{item.price}
+                              </span>
+                            )}
+                            {item.is_featured && (
+                              <span className="px-1 py-0.5 bg-purple-100 text-purple-800 text-xs rounded">⭐</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.is_active
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
+                            }`}>
+                            {item.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-900 font-medium">
+                          {item.categories_count}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {formatDate(item.created_at)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => navigate(`/test-series/${item.uuid}`)}
+                              className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg"
+                              title="View Categories"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-50 rounded-lg"
+                              title="Edit"
+                            >
+                              <PencilIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item)}
+                              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg"
+                              title="Delete"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </SortableTableRow>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </SortableContext>
+          </DndContext>
         </div>
 
         {/* Simple Pagination */}

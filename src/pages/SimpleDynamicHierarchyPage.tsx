@@ -8,11 +8,21 @@ import {
   PencilIcon,
   TrashIcon
 } from '@heroicons/react/24/outline';
-import { Upload } from 'lucide-react';
+import { Upload, GripVertical } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { ConfirmModal } from '../components/modals/ConfirmModal';
 import QuestionImportModal from '../components/modals/QuestionImportModal';
 import RichTextEditor from '../components/common/RichTextEditor';
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext, verticalListSortingStrategy, useSortable, arrayMove,
+  sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { PositionInput } from '../components/common/SortableList';
 
 // Types
 interface TestSeries {
@@ -33,6 +43,7 @@ interface Category {
   negative_marks_per_wrong?: number;
   test_duration_minutes?: number;
   is_free_in_paid_series?: boolean;
+  display_order: number;
 }
 
 interface Question {
@@ -52,6 +63,7 @@ interface Question {
   option_c_gujarati?: string | null;
   option_d_gujarati?: string | null;
   explanation_gujarati?: string | null;
+  display_order: number;
 }
 
 interface HierarchyData {
@@ -119,6 +131,151 @@ interface QuestionFormData {
   option_c_gujarati: string;
   option_d_gujarati: string;
   explanation_gujarati: string;
+}
+
+// ─── Sortable Category Card ───────────────────────────────────────────────────
+
+interface SortableCategoryCardProps {
+  category: Category;
+  index: number;
+  total: number;
+  selected: boolean;
+  onSelect: (checked: boolean) => void;
+  onNavigate: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onPositionMove: (newPos: number) => void;
+}
+
+function SortableCategoryCard({ category, index, total, selected, onSelect, onNavigate, onEdit, onDelete, onPositionMove }: SortableCategoryCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: category.uuid });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 bg-white">
+      <div className="flex items-center gap-2">
+        <button
+          {...attributes}
+          {...listeners}
+          className="p-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none flex-shrink-0"
+          type="button"
+          title="Drag to reorder"
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+        <PositionInput currentPosition={index + 1} total={total} onMove={onPositionMove} />
+        <input
+          type="checkbox"
+          checked={selected}
+          onChange={(e) => { e.stopPropagation(); onSelect(e.target.checked); }}
+          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        <div className="flex items-center cursor-pointer" onClick={onNavigate}>
+          <FolderIcon className="w-5 h-5 text-blue-500 mr-3" />
+          <div>
+            <h3 className="font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: category.name }} />
+            {category.description && (
+              <p className="text-sm text-gray-500" dangerouslySetInnerHTML={{ __html: category.description }} />
+            )}
+            <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1">
+              <span>Level {category.hierarchy_level}</span>
+              <span className="capitalize">{category.node_type.replace('_', ' ')}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center space-x-2">
+        <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="p-1 text-gray-400 hover:text-blue-600">
+          <PencilIcon className="w-4 h-4" />
+        </button>
+        <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1 text-gray-400 hover:text-red-600">
+          <TrashIcon className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sortable Question Card ───────────────────────────────────────────────────
+
+interface SortableQuestionCardProps {
+  question: Question;
+  index: number;
+  total: number;
+  selected: boolean;
+  onSelect: (checked: boolean) => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onPositionMove: (newPos: number) => void;
+}
+
+function SortableQuestionCard({ question, index, total, selected, onSelect, onEdit, onDelete, onPositionMove }: SortableQuestionCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: question.uuid });
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+  return (
+    <div ref={setNodeRef} style={style} className="border rounded-lg p-4 bg-white">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-2 flex-1 min-w-0">
+          <button
+            {...attributes}
+            {...listeners}
+            className="mt-1 p-1 text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none flex-shrink-0"
+            type="button"
+            title="Drag to reorder"
+          >
+            <GripVertical className="w-4 h-4" />
+          </button>
+          <PositionInput currentPosition={index + 1} total={total} onMove={onPositionMove} />
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={(e) => onSelect(e.target.checked)}
+            className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+          />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2 mb-2">
+              <h3 className="font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: `Q${index + 1}. ${question.question_text || question.question_text_gujarati || 'No question text'}` }} />
+              <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${question.question_text && question.question_text_gujarati ? 'bg-purple-100 text-purple-800' :
+                question.question_text ? 'bg-blue-100 text-blue-800' :
+                  question.question_text_gujarati ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
+                }`}>
+                {question.question_text && question.question_text_gujarati ? 'Both' :
+                  question.question_text ? 'English' :
+                    question.question_text_gujarati ? 'Gujarati' : 'Unknown'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className={`p-2 rounded ${question.correct_answer === 'A' ? 'bg-green-100' : 'bg-gray-100'}`}>A. {question.option_a || question.option_a_gujarati || 'No option A'}</div>
+              <div className={`p-2 rounded ${question.correct_answer === 'B' ? 'bg-green-100' : 'bg-gray-100'}`}>B. {question.option_b || question.option_b_gujarati || 'No option B'}</div>
+              <div className={`p-2 rounded ${question.correct_answer === 'C' ? 'bg-green-100' : 'bg-gray-100'}`}>C. {question.option_c || question.option_c_gujarati || 'No option C'}</div>
+              <div className={`p-2 rounded ${question.correct_answer === 'D' ? 'bg-green-100' : 'bg-gray-100'}`}>D. {question.option_d || question.option_d_gujarati || 'No option D'}</div>
+            </div>
+            {(question.explanation || question.explanation_gujarati) && (
+              <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+                <strong>Explanation:</strong> {question.explanation || question.explanation_gujarati}
+              </div>
+            )}
+            <div className="mt-2 text-xs text-gray-500">Marks: {question.marks}</div>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
+          <button onClick={onEdit} className="p-1 text-gray-400 hover:text-blue-600">
+            <PencilIcon className="w-4 h-4" />
+          </button>
+          <button onClick={onDelete} className="p-1 text-gray-400 hover:text-red-600">
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 const SimpleDynamicHierarchyPage: React.FC = () => {
@@ -191,6 +348,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
     explanation_gujarati: ''
   });
 
+  // Local reordering state
+  const [localCategories, setLocalCategories] = useState<Category[]>([]);
+  const [localQuestions, setLocalQuestions] = useState<Question[]>([]);
+
+  // Pagination + search state
+  const [search, setSearch] = useState('');
+  const [pageSize, setPageSize] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
+
   // API Configuration
   const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/admin/test-management/simple-hierarchy`;
 
@@ -203,6 +369,98 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
   const apiHeaders = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${getAuthToken()}`
+  };
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  // Sync local lists when data changes; reset pagination + search
+  useEffect(() => {
+    if (data?.content_type === 'categories') {
+      setLocalCategories([...(data.content as Category[])]);
+    } else if (data?.content_type === 'questions') {
+      setLocalQuestions([...(data.content as Question[])]);
+    }
+    setSearch('');
+    setCurrentPage(1);
+  }, [data]);
+
+  // Reorder categories API call
+  const saveCategories = async (reordered: Category[]) => {
+    try {
+      const response = await fetch(`${API_BASE}/categories/reorder`, {
+        method: 'PATCH',
+        headers: apiHeaders,
+        body: JSON.stringify({ items: reordered.map(c => ({ uuid: c.uuid, display_order: c.display_order })) })
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message);
+      toast.success('Order saved');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save order');
+      setLocalCategories([...(data?.content as Category[] ?? [])]);
+    }
+  };
+
+  // Reorder questions API call
+  const saveQuestions = async (reordered: Question[]) => {
+    try {
+      const response = await fetch(`${API_BASE}/questions/reorder`, {
+        method: 'PATCH',
+        headers: apiHeaders,
+        body: JSON.stringify({ items: reordered.map(q => ({ uuid: q.uuid, display_order: q.display_order })) })
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message);
+      toast.success('Order saved');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to save order');
+      setLocalQuestions([...(data?.content as Question[] ?? [])]);
+    }
+  };
+
+  const applyReorderHelper = <T extends { uuid: string; display_order: number }>(
+    list: T[], oldIdx: number, newIdx: number
+  ): T[] => {
+    const slots = [...list].map(i => i.display_order).sort((a, b) => a - b);
+    return arrayMove(list, oldIdx, newIdx).map((item, i) => ({ ...item, display_order: slots[i] ?? i + 1 }));
+  };
+
+  const handleCategoryDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = localCategories.findIndex(c => c.uuid === active.id);
+    const newIdx = localCategories.findIndex(c => c.uuid === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    const reordered = applyReorderHelper(localCategories, oldIdx, newIdx);
+    setLocalCategories(reordered);
+    saveCategories(reordered);
+  };
+
+  const handleCategoryPositionMove = (fromIndex: number, toPosition: number) => {
+    const reordered = applyReorderHelper(localCategories, fromIndex, toPosition - 1);
+    setLocalCategories(reordered);
+    saveCategories(reordered);
+  };
+
+  const handleQuestionDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = localQuestions.findIndex(q => q.uuid === active.id);
+    const newIdx = localQuestions.findIndex(q => q.uuid === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    const reordered = applyReorderHelper(localQuestions, oldIdx, newIdx);
+    setLocalQuestions(reordered);
+    saveQuestions(reordered);
+  };
+
+  const handleQuestionPositionMove = (fromIndex: number, toPosition: number) => {
+    const reordered = applyReorderHelper(localQuestions, fromIndex, toPosition - 1);
+    setLocalQuestions(reordered);
+    saveQuestions(reordered);
   };
 
   // Build breadcrumb trail
@@ -849,6 +1107,45 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
   const isRootLevel = !categoryUuid;
   const currentCategory = data?.category;
 
+  // Pagination derived values — computed before JSX so no IIFEs needed inside render
+  const filteredCats = localCategories.filter(c =>
+    !search || c.name.toLowerCase().includes(search.toLowerCase())
+  );
+  const totalCatPages = Math.max(1, Math.ceil(filteredCats.length / pageSize));
+  const safeCatPage = Math.min(currentPage, totalCatPages);
+  const pagedCats = filteredCats.slice((safeCatPage - 1) * pageSize, safeCatPage * pageSize);
+
+  const filteredQs = localQuestions.filter(q =>
+    !search || (q.question_text || q.question_text_gujarati || '').toLowerCase().includes(search.toLowerCase())
+  );
+  const totalQPages = Math.max(1, Math.ceil(filteredQs.length / pageSize));
+  const safeQPage = Math.min(currentPage, totalQPages);
+  const pagedQs = filteredQs.slice((safeQPage - 1) * pageSize, safeQPage * pageSize);
+
+  const renderPagination = (currentPg: number, totalPages: number, onPageChange: (p: number) => void) => {
+    if (totalPages <= 1) return null;
+    const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+      .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPg) <= 1)
+      .reduce<(number | '...')[]>((acc, p, i, arr) => {
+        if (i > 0 && typeof arr[i - 1] === 'number' && (p as number) - (arr[i - 1] as number) > 1) acc.push('...');
+        acc.push(p); return acc;
+      }, []);
+    return (
+      <div className="flex gap-1">
+        <button onClick={() => onPageChange(Math.max(1, currentPg - 1))} disabled={currentPg <= 1}
+          className="px-3 py-1 text-sm border rounded disabled:opacity-40 hover:bg-gray-50">Prev</button>
+        {pages.map((p, i) => p === '...' ? (
+          <span key={`e${i}`} className="px-2 py-1 text-sm text-gray-400">…</span>
+        ) : (
+          <button key={p} onClick={() => onPageChange(p as number)}
+            className={`px-3 py-1 text-sm border rounded ${p === currentPg ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'}`}>{p}</button>
+        ))}
+        <button onClick={() => onPageChange(Math.min(totalPages, currentPg + 1))} disabled={currentPg >= totalPages}
+          className="px-3 py-1 text-sm border rounded disabled:opacity-40 hover:bg-gray-50">Next</button>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -999,177 +1296,150 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
               </div>
             ) : data?.content_type === 'categories' ? (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Categories</h2>
+                {/* Toolbar */}
+                <div className="flex flex-wrap items-center gap-3 mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 mr-auto">
+                    Categories <span className="text-sm font-normal text-gray-500">({filteredCats.length})</span>
+                  </h2>
+                  <input
+                    type="text"
+                    placeholder="Search categories..."
+                    value={search}
+                    onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+                  />
+                  <select
+                    value={pageSize}
+                    onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value={10}>10 / page</option>
+                    <option value={20}>20 / page</option>
+                    <option value={50}>50 / page</option>
+                    <option value={100}>100 / page</option>
+                  </select>
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      checked={selectedCategories.length === (data.content as Category[])?.length && (data.content as Category[])?.length > 0}
+                      checked={selectedCategories.length === localCategories.length && localCategories.length > 0}
                       onChange={(e) => selectAllCategories(e.target.checked)}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-600">Select All</span>
                     {selectedCategories.length > 0 && (
-                      <button
-                        onClick={() => setShowBulkCategoryModal(true)}
-                        className="ml-4 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
-                      >
+                      <button onClick={() => setShowBulkCategoryModal(true)}
+                        className="ml-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
                         Bulk Actions ({selectedCategories.length})
                       </button>
                     )}
                   </div>
                 </div>
-                <div className="grid gap-4">
-                  {(data.content as Category[]).map((category) => (
-                    <div
-                      key={category.uuid}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                    >
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedCategories.includes(category.uuid)}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            handleCategorySelection(category.uuid, e.target.checked);
-                          }}
-                          className="mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        />
-                        <div
-                          className="flex items-center cursor-pointer"
-                          onClick={() => navigateToCategory(category)}
-                        >
-                          <FolderIcon className="w-5 h-5 text-blue-500 mr-3" />
-                          <div>
-                            <h3 className="font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: category.name }}></h3>
-                            {category.description && (
-                              <p className="text-sm text-gray-500" dangerouslySetInnerHTML={{ __html: category.description }}></p>
-                            )}
-                            <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1">
-                              <span>Level {category.hierarchy_level}</span>
-                              <span className="capitalize">{category.node_type.replace('_', ' ')}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            editCategory(category);
-                          }}
-                          className="p-1 text-gray-400 hover:text-blue-600"
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openConfirmModal(category, 'delete_category');
-                          }}
-                          className="p-1 text-gray-400 hover:text-red-600"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
-                      </div>
+
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleCategoryDragEnd}>
+                  <SortableContext items={localCategories.map(c => c.uuid)} strategy={verticalListSortingStrategy}>
+                    <div className="grid gap-4">
+                      {pagedCats.map((category) => {
+                        const globalIndex = localCategories.findIndex(c => c.uuid === category.uuid);
+                        return (
+                          <SortableCategoryCard
+                            key={category.uuid}
+                            category={category}
+                            index={globalIndex}
+                            total={localCategories.length}
+                            selected={selectedCategories.includes(category.uuid)}
+                            onSelect={(checked) => { handleCategorySelection(category.uuid, checked); }}
+                            onNavigate={() => navigateToCategory(category)}
+                            onEdit={() => editCategory(category)}
+                            onDelete={() => openConfirmModal(category, 'delete_category')}
+                            onPositionMove={(newPos) => handleCategoryPositionMove(globalIndex, newPos)}
+                          />
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  </SortableContext>
+                </DndContext>
+
+                {totalCatPages > 1 && (
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                    <span className="text-sm text-gray-600">
+                      Showing {(safeCatPage - 1) * pageSize + 1}–{Math.min(safeCatPage * pageSize, filteredCats.length)} of {filteredCats.length}
+                    </span>
+                    {renderPagination(safeCatPage, totalCatPages, setCurrentPage)}
+                  </div>
+                )}
               </div>
             ) : data?.content_type === 'questions' ? (
               <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Questions</h2>
+                {/* Toolbar */}
+                <div className="flex flex-wrap items-center gap-3 mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900 mr-auto">
+                    Questions <span className="text-sm font-normal text-gray-500">({filteredQs.length})</span>
+                  </h2>
+                  <input
+                    type="text"
+                    placeholder="Search questions..."
+                    value={search}
+                    onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+                  />
+                  <select
+                    value={pageSize}
+                    onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value={10}>10 / page</option>
+                    <option value={20}>20 / page</option>
+                    <option value={50}>50 / page</option>
+                    <option value={100}>100 / page</option>
+                  </select>
                   <div className="flex items-center space-x-2">
                     <input
                       type="checkbox"
-                      checked={selectedQuestions.length === (data.content as Question[])?.length && (data.content as Question[])?.length > 0}
+                      checked={selectedQuestions.length === localQuestions.length && localQuestions.length > 0}
                       onChange={(e) => selectAllQuestions(e.target.checked)}
                       className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="text-sm text-gray-600">Select All</span>
                     {selectedQuestions.length > 0 && (
-                      <button
-                        onClick={() => setShowBulkQuestionModal(true)}
-                        className="ml-4 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
-                      >
+                      <button onClick={() => setShowBulkQuestionModal(true)}
+                        className="ml-2 px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600">
                         Bulk Actions ({selectedQuestions.length})
                       </button>
                     )}
                   </div>
                 </div>
-                <div className="space-y-4">
-                  {(data.content as Question[]).map((question, index) => (
-                    <div key={question.uuid} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start">
-                          <input
-                            type="checkbox"
-                            checked={selectedQuestions.includes(question.uuid)}
-                            onChange={(e) => handleQuestionSelection(question.uuid, e.target.checked)}
-                            className="mt-1 mr-3 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleQuestionDragEnd}>
+                  <SortableContext items={localQuestions.map(q => q.uuid)} strategy={verticalListSortingStrategy}>
+                    <div className="space-y-4">
+                      {pagedQs.map((question) => {
+                        const globalIndex = localQuestions.findIndex(q => q.uuid === question.uuid);
+                        return (
+                          <SortableQuestionCard
+                            key={question.uuid}
+                            question={question}
+                            index={globalIndex}
+                            total={localQuestions.length}
+                            selected={selectedQuestions.includes(question.uuid)}
+                            onSelect={(checked) => handleQuestionSelection(question.uuid, checked)}
+                            onEdit={() => editQuestion(question)}
+                            onDelete={() => openConfirmModal(question, 'delete_question')}
+                            onPositionMove={(newPos) => handleQuestionPositionMove(globalIndex, newPos)}
                           />
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <h3 className="font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: `Q${index + 1}. ${question.question_text || question.question_text_gujarati || 'No question text'}` }}>
-                              {/* Q{index + 1}. {question.question_text || question.question_text_gujarati || 'No question text'} */}
-                            </h3>
-                            {/* Language indicator */}
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${question.question_text && question.question_text_gujarati ? 'bg-purple-100 text-purple-800' :
-                              question.question_text ? 'bg-blue-100 text-blue-800' :
-                                question.question_text_gujarati ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
-                              }`}>
-                              {question.question_text && question.question_text_gujarati ? 'Both' :
-                                question.question_text ? 'English' :
-                                  question.question_text_gujarati ? 'Gujarati' : 'Unknown'}
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <div className={`p-2 rounded ${question.correct_answer === 'A' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                              A. {question.option_a || question.option_a_gujarati || 'No option A'}
-                            </div>
-                            <div className={`p-2 rounded ${question.correct_answer === 'B' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                              B. {question.option_b || question.option_b_gujarati || 'No option B'}
-                            </div>
-                            <div className={`p-2 rounded ${question.correct_answer === 'C' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                              C. {question.option_c || question.option_c_gujarati || 'No option C'}
-                            </div>
-                            <div className={`p-2 rounded ${question.correct_answer === 'D' ? 'bg-green-100' : 'bg-gray-100'}`}>
-                              D. {question.option_d || question.option_d_gujarati || 'No option D'}
-                            </div>
-                          </div>
-                          {(question.explanation || question.explanation_gujarati) && (
-                            <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                              <strong>Explanation:</strong> {question.explanation || question.explanation_gujarati}
-                            </div>
-                          )}
-                          <div className="mt-2 text-xs text-gray-500">
-                            Marks: {question.marks}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2 ml-4">
-                        <button
-                          onClick={() => {
-                            editQuestion(question);
-                          }}
-                          className="p-1 text-gray-400 hover:text-blue-600"
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            openConfirmModal(question, 'delete_question');
-                          }}
-                          className="p-1 text-gray-400 hover:text-red-600"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
-                      </div>
+                        );
+                      })}
                     </div>
-                    </div>
-                  ))}
-              </div>
+                  </SortableContext>
+                </DndContext>
+
+                {totalQPages > 1 && (
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                    <span className="text-sm text-gray-600">
+                      Showing {(safeQPage - 1) * pageSize + 1}–{Math.min(safeQPage * pageSize, filteredQs.length)} of {filteredQs.length}
+                    </span>
+                    {renderPagination(safeQPage, totalQPages, setCurrentPage)}
+                  </div>
+                )}
               </div>
             ) : null}
 
