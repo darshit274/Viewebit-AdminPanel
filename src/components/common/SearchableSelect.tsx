@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { Search, ChevronDown, X, Check } from 'lucide-react';
+import { Search, ChevronDown, X, Check, Loader2 } from 'lucide-react';
 
 export interface SearchableOption {
   value: string;
@@ -21,6 +21,17 @@ interface SearchableSelectProps {
   id?: string;
   /** Optional className for the outer wrapper */
   className?: string;
+  /**
+   * Optional server-side search callback. When provided, the component delegates
+   * filtering to the parent — it will not do client-side filtering, and calls
+   * onSearch(query) (debounced) every time the user types so the parent can
+   * fetch fresh options. Use this to scale beyond a fixed in-memory list.
+   */
+  onSearch?: (query: string) => void;
+  /** Debounce delay for onSearch in ms (default 350) */
+  searchDebounceMs?: number;
+  /** Show a loading spinner inside the dropdown (e.g. while onSearch is in flight) */
+  loading?: boolean;
 }
 
 /**
@@ -39,6 +50,9 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   label,
   id,
   className = '',
+  onSearch,
+  searchDebounceMs = 350,
+  loading = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -47,17 +61,50 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const listRef = useRef<HTMLUListElement | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Skip the very first onSearch call (query is '' on mount; the parent is
+  // expected to load initial data itself, so we avoid duplicating that fetch).
+  const skipFirstSearchRef = useRef(true);
+  // Hold onSearch in a ref so a parent re-render (which creates a new function
+  // reference) doesn't re-fire the debounced search. The effect below depends
+  // only on `query`, the real trigger — preventing an infinite loop where each
+  // fetch causes a re-render which then schedules another fetch.
+  const onSearchRef = useRef(onSearch);
+  useEffect(() => {
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
 
   const selected = useMemo(() => options.find((o) => o.value === value) || null, [options, value]);
 
+  // When onSearch is provided, the parent owns filtering — render options as-is.
+  // Otherwise filter client-side against the local query.
   const filtered = useMemo(() => {
+    if (onSearch) return options;
     const q = query.trim().toLowerCase();
     if (!q) return options;
     return options.filter((o) =>
       o.label.toLowerCase().includes(q) ||
       (o.sublabel ? o.sublabel.toLowerCase().includes(q) : false)
     );
-  }, [options, query]);
+  }, [options, query, onSearch]);
+
+  // Debounced server-side search: call parent's onSearch a bit after the user stops typing.
+  // Depends ONLY on `query` — onSearch is read via ref so unstable parent function
+  // references don't retrigger the effect.
+  useEffect(() => {
+    if (!onSearchRef.current) return;
+    if (skipFirstSearchRef.current) {
+      skipFirstSearchRef.current = false;
+      return;
+    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      onSearchRef.current?.(query.trim());
+    }, searchDebounceMs);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query, searchDebounceMs]);
 
   // Clamp the keyboard-highlight index whenever the filtered list shrinks
   useEffect(() => {
@@ -199,7 +246,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
       {isOpen && (
         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-hidden">
-          {filtered.length === 0 ? (
+          {loading && filtered.length === 0 ? (
+            <div className="px-3 py-4 text-sm text-gray-500 flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Searching…
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="px-3 py-4 text-sm text-gray-500 text-center">{emptyText}</div>
           ) : (
             <ul ref={listRef} role="listbox" className="max-h-60 overflow-y-auto py-1">

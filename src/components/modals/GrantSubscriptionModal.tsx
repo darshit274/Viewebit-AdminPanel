@@ -31,6 +31,12 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [testSeries, setTestSeries] = useState<TestSeries[]>([]);
   const [loading, setLoading] = useState(false);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [seriesLoading, setSeriesLoading] = useState(false);
+  // Remember the picked user/series so the dropdown can show the selection
+  // even after a fresh search has replaced the options list.
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedSeries, setSelectedSeries] = useState<TestSeries | null>(null);
   const [formData, setFormData] = useState({
     user_id: '',
     test_series_id: '',
@@ -42,45 +48,47 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      fetchUsers();
-      fetchTestSeries();
+      fetchUsers('');
+      fetchTestSeries('');
+    } else {
+      // Reset selection state when the modal closes so reopening starts clean
+      setSelectedUser(null);
+      setSelectedSeries(null);
     }
   }, [isOpen]);
 
-  const fetchUsers = async () => {
+  // Server-side user search — the backend supports `search` and caps `limit` at 100.
+  // That cap doesn't matter once we search server-side: typing narrows the result
+  // set so the user you want will be in the first 100 matches.
+  const fetchUsers = async (search: string) => {
     try {
-      // Load enough users so client-side search covers the whole student base.
-      // For 5k+ users, switch to a server-side search variant.
+      setUsersLoading(true);
       const response = await api.get('/admin/students', {
-        params: { limit: 5000 }
+        params: { limit: 100, search },
       });
-      setUsers(response.data.data);
+      setUsers(response.data.data || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to fetch users');
+    } finally {
+      setUsersLoading(false);
     }
   };
 
-  const fetchTestSeries = async () => {
+  const fetchTestSeries = async (search: string) => {
     try {
+      setSeriesLoading(true);
       const response = await api.get('/admin/test-management', {
-        params: { limit: 1000 }
+        params: { limit: 100, search },
       });
-
-      // Safely extract the testSeries array with fallback
       const testSeriesData = response.data?.data || [];
-
-      // Ensure it's an array before setting state
-      if (Array.isArray(testSeriesData)) {
-        setTestSeries(testSeriesData);
-      } else {
-        console.warn('Expected testSeries to be an array, got:', typeof testSeriesData);
-        setTestSeries([]);
-      }
+      setTestSeries(Array.isArray(testSeriesData) ? testSeriesData : []);
     } catch (error) {
       console.error('Error fetching test series:', error);
       toast.error('Failed to fetch test series');
-      setTestSeries([]); // Ensure state remains as empty array on error
+      setTestSeries([]);
+    } finally {
+      setSeriesLoading(false);
     }
   };
 
@@ -121,6 +129,8 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
         currency: 'INR',
         expiry_days: 0
       });
+      setSelectedUser(null);
+      setSelectedSeries(null);
     } catch (error: any) {
       console.error('Error granting subscription:', error);
       toast.error(error.response?.data?.message || 'Failed to grant subscription');
@@ -129,24 +139,50 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
     }
   };
 
-  const handleTestSeriesChange = (testSeriesId: string) => {
-    const selectedTestSeries = testSeries.find(ts => ts.id.toString() === testSeriesId);
-    setFormData({
-      ...formData,
-      test_series_id: testSeriesId,
-      amount_paid: selectedTestSeries?.price || 0,
-      expiry_days: selectedTestSeries?.validity_days || 0 // Assuming 30 days for paid, 0 for free
-    });
+  const handleUserChange = (userId: string) => {
+    setFormData((fd) => ({ ...fd, user_id: userId }));
+    if (!userId) {
+      setSelectedUser(null);
+      return;
+    }
+    const u = users.find((u) => u.uuid === userId);
+    if (u) setSelectedUser(u);
   };
 
-  const userOptions = useMemo(
-    () => users.map((u) => ({ value: u.uuid, label: u.username, sublabel: u.email })),
-    [users]
-  );
-  const testSeriesOptions = useMemo(
-    () => testSeries.map((ts) => ({ value: ts.id.toString(), label: ts.title, sublabel: `₹${ts.price}` })),
-    [testSeries]
-  );
+  const handleTestSeriesChange = (testSeriesId: string) => {
+    if (!testSeriesId) {
+      setSelectedSeries(null);
+      setFormData((fd) => ({ ...fd, test_series_id: '', amount_paid: 0, expiry_days: 0 }));
+      return;
+    }
+    const ts = testSeries.find((ts) => ts.id.toString() === testSeriesId) || selectedSeries;
+    if (ts) setSelectedSeries(ts);
+    setFormData((fd) => ({
+      ...fd,
+      test_series_id: testSeriesId,
+      amount_paid: ts?.price ?? fd.amount_paid,
+      expiry_days: ts?.validity_days ?? fd.expiry_days,
+    }));
+  };
+
+  // Always include the currently-selected option in the list, even if it's not
+  // part of the latest search results — otherwise the input would lose its label
+  // when the user types something that doesn't match the selected entry.
+  const userOptions = useMemo(() => {
+    const opts = users.map((u) => ({ value: u.uuid, label: u.username, sublabel: u.email }));
+    if (selectedUser && !opts.find((o) => o.value === selectedUser.uuid)) {
+      opts.unshift({ value: selectedUser.uuid, label: selectedUser.username, sublabel: selectedUser.email });
+    }
+    return opts;
+  }, [users, selectedUser]);
+
+  const testSeriesOptions = useMemo(() => {
+    const opts = testSeries.map((ts) => ({ value: ts.id.toString(), label: ts.title, sublabel: `₹${ts.price}` }));
+    if (selectedSeries && !opts.find((o) => o.value === selectedSeries.id.toString())) {
+      opts.unshift({ value: selectedSeries.id.toString(), label: selectedSeries.title, sublabel: `₹${selectedSeries.price}` });
+    }
+    return opts;
+  }, [testSeries, selectedSeries]);
 
   if (!isOpen) return null;
 
@@ -168,24 +204,28 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
         <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* User Selection — searchable combobox so admin can find a user without re-opening the dropdown */}
+            {/* User Selection — server-side search so admin can find any user, not just the first 100 */}
             <SearchableSelect
               label="Select User"
               required
               options={userOptions}
               value={formData.user_id}
-              onChange={(value) => setFormData({ ...formData, user_id: value })}
-              placeholder="Search users by name or email…"
+              onChange={handleUserChange}
+              onSearch={fetchUsers}
+              loading={usersLoading}
+              placeholder="Search users by name, email, or phone…"
               emptyText="No users match your search"
             />
 
-            {/* Test Series Selection */}
+            {/* Test Series Selection — also server-side search */}
             <SearchableSelect
               label="Test Series"
               required
               options={testSeriesOptions}
               value={formData.test_series_id}
               onChange={handleTestSeriesChange}
+              onSearch={fetchTestSeries}
+              loading={seriesLoading}
               placeholder="Search test series by title…"
               emptyText="No test series match your search"
             />
