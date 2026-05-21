@@ -1,5 +1,6 @@
 import { clsx } from 'clsx';
 import {
+  Activity,
   BookOpen,
   CreditCard,
   FileText,
@@ -19,6 +20,7 @@ import { reportsService } from '../../services/reports';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Students', href: '/students', icon: Users },
+  { name: 'Test Attempts', href: '/test-attempts', icon: Activity },
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
   { name: 'Course Management', href: '/test-management', icon: BookOpen },
   { name: 'PDFs', href: '/pdfs', icon: FileText },

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { X, Search, CreditCard } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, CreditCard } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { SearchableSelect } from '../common/SearchableSelect';
 
 interface User {
   uuid: string;
@@ -30,7 +31,6 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
   const [users, setUsers] = useState<User[]>([]);
   const [testSeries, setTestSeries] = useState<TestSeries[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     user_id: '',
     test_series_id: '',
@@ -49,8 +49,10 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
   const fetchUsers = async () => {
     try {
+      // Load enough users so client-side search covers the whole student base.
+      // For 5k+ users, switch to a server-side search variant.
       const response = await api.get('/admin/students', {
-        params: { limit: 100 }
+        params: { limit: 5000 }
       });
       setUsers(response.data.data);
     } catch (error) {
@@ -62,7 +64,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
   const fetchTestSeries = async () => {
     try {
       const response = await api.get('/admin/test-management', {
-        params: { limit: 100 }
+        params: { limit: 1000 }
       });
 
       // Safely extract the testSeries array with fallback
@@ -137,9 +139,13 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
     });
   };
 
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const userOptions = useMemo(
+    () => users.map((u) => ({ value: u.uuid, label: u.username, sublabel: u.email })),
+    [users]
+  );
+  const testSeriesOptions = useMemo(
+    () => testSeries.map((ts) => ({ value: ts.id.toString(), label: ts.title, sublabel: `₹${ts.price}` })),
+    [testSeries]
   );
 
   if (!isOpen) return null;
@@ -162,57 +168,27 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
         <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* User Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select User
-              </label>
-              <div className="space-y-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <input
-                    type="text"
-                    placeholder="Search users by name or email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <select
-                  value={formData.user_id}
-                  onChange={(e) => setFormData({ ...formData, user_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                >
-                  <option value="">Select a user</option>
-                  {filteredUsers.map(user => (
-                    <option key={user.uuid} value={user.uuid}>
-                      {user.username} ({user.email})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            {/* User Selection — searchable combobox so admin can find a user without re-opening the dropdown */}
+            <SearchableSelect
+              label="Select User"
+              required
+              options={userOptions}
+              value={formData.user_id}
+              onChange={(value) => setFormData({ ...formData, user_id: value })}
+              placeholder="Search users by name or email…"
+              emptyText="No users match your search"
+            />
 
             {/* Test Series Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Test Series
-              </label>
-              <select
-                value={formData.test_series_id}
-                onChange={(e) => handleTestSeriesChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select test series</option>
-                {Array.isArray(testSeries) && testSeries.map(ts => (
-                  <option key={ts.id} value={ts.id}>
-                    {ts.title} (₹{ts.price})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SearchableSelect
+              label="Test Series"
+              required
+              options={testSeriesOptions}
+              value={formData.test_series_id}
+              onChange={handleTestSeriesChange}
+              placeholder="Search test series by title…"
+              emptyText="No test series match your search"
+            />
 
             {/* Subscription Details */}
             <div className="grid grid-cols-2 gap-4">
