@@ -1,4 +1,5 @@
 import api from './api';
+import { PDF_UPLOAD_TIMEOUT_MS } from '../config/uploadConfig';
 
 export type NodeType = 'unset' | 'container' | 'pdf_holder';
 export type ContentType = 'empty' | 'categories' | 'pdfs';
@@ -155,6 +156,12 @@ export const pdfHierarchyService = {
 
     const res = await api.post(`${BASE}/categories/${categoryUuid}/upload`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      // Per-request timeout override — uploads can take much longer than the
+      // default request timeout. Value comes from VITE_UPLOAD_TIMEOUT_MS so
+      // ops can tune it without a code change.
+      timeout: PDF_UPLOAD_TIMEOUT_MS,
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
       onUploadProgress: (e) => {
         if (onProgress && e.total) onProgress(Math.round((e.loaded * 100) / e.total));
       },

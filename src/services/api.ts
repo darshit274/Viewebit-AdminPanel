@@ -1,9 +1,15 @@
 import axios from "axios";
 
-// Create axios instance with base configuration
+// Default request timeout (ms). Read from VITE_API_TIMEOUT_MS so production can
+// raise it without a code change. Falls back to 2 minutes if unset.
+const DEFAULT_API_TIMEOUT_MS = parseInt(
+  import.meta.env.VITE_API_TIMEOUT_MS as string,
+  10
+) || 120000;
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  timeout: 10000,
+  timeout: DEFAULT_API_TIMEOUT_MS,
   headers: {
     "Content-Type": "application/json",
   },

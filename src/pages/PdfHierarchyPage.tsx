@@ -29,6 +29,7 @@ import {
   pdfHierarchyService, PdfCategoryNode, PdfNode, ContentType, ButtonsState,
 } from '../services/pdfHierarchy';
 import { ConfirmModal } from '../components/modals/ConfirmModal';
+import { PDF_UPLOAD_MAX_SIZE_BYTES, PDF_UPLOAD_MAX_SIZE_MB } from '../config/uploadConfig';
 
 interface CategoryFormData {
   name: string;
@@ -237,8 +238,8 @@ const PdfHierarchyPage: React.FC = () => {
       toast.error('Only PDF files are allowed');
       return;
     }
-    if (f.size > 50 * 1024 * 1024) {
-      toast.error('File size must be less than 50MB');
+    if (f.size > PDF_UPLOAD_MAX_SIZE_BYTES) {
+      toast.error(`File size must be less than ${PDF_UPLOAD_MAX_SIZE_MB}MB`);
       return;
     }
     setUploadFile(f);
@@ -703,7 +704,7 @@ const PdfHierarchyPage: React.FC = () => {
                   ) : (
                     <>
                       <p className="text-sm text-gray-700">Click to choose a PDF, or drag & drop</p>
-                      <p className="text-xs text-gray-500 mt-1">Max 50 MB</p>
+                      <p className="text-xs text-gray-500 mt-1">Max {PDF_UPLOAD_MAX_SIZE_MB} MB</p>
                     </>
                   )}
                   <input
