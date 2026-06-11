@@ -36,6 +36,9 @@ interface CategoryFormData {
   name_gujarati: string;
   description: string;
   description_gujarati: string;
+  pricing_type: 'free' | 'paid' | 'restricted';
+  price: string;
+  discount_percentage: string;
 }
 
 const blankForm: CategoryFormData = {
@@ -43,6 +46,9 @@ const blankForm: CategoryFormData = {
   name_gujarati: '',
   description: '',
   description_gujarati: '',
+  pricing_type: 'free',
+  price: '0',
+  discount_percentage: '0',
 };
 
 const PdfHierarchyPage: React.FC = () => {
@@ -75,12 +81,11 @@ const PdfHierarchyPage: React.FC = () => {
   // Upload modal — admins upload PDFs directly inside a category (no shared library)
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  // No access/price fields here — access is inherited from the main category
   const [uploadForm, setUploadForm] = useState({
     title: '',
     description: '',
-    access_level: 'free' as 'free' | 'premium' | 'restricted',
     tags: '',
-    price: '0',
     currency: 'INR',
     preview_pages: '0',
   });
@@ -93,8 +98,7 @@ const PdfHierarchyPage: React.FC = () => {
     open: false, pdf: null,
   });
   const [editPdfForm, setEditPdfForm] = useState({
-    title: '', description: '', access_level: 'free' as 'free' | 'premium' | 'restricted',
-    price: '0', currency: 'INR', preview_pages: '0',
+    title: '', description: '', currency: 'INR', preview_pages: '0',
   });
   const [savingPdfMeta, setSavingPdfMeta] = useState(false);
 
@@ -165,25 +169,50 @@ const PdfHierarchyPage: React.FC = () => {
       name_gujarati: c.name_gujarati || '',
       description: c.description || '',
       description_gujarati: c.description_gujarati || '',
+      pricing_type: c.pricing_type || 'free',
+      price: String(c.price ?? 0),
+      discount_percentage: String(c.discount_percentage ?? 0),
     });
     setCategoryModal({ open: true, editing: c });
   };
+
+  // Pricing is only set on main (root) categories — sub-categories inherit it
+  const modalIsRootCategory = categoryModal.editing
+    ? categoryModal.editing.parent_category_id === null
+    : isRoot;
+
   const submitCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryForm.name.trim()) {
       toast.error('Category name is required');
       return;
     }
+    if (modalIsRootCategory && categoryForm.pricing_type === 'paid'
+        && (!categoryForm.price || parseFloat(categoryForm.price) <= 0)) {
+      toast.error('Please enter a price for a paid category');
+      return;
+    }
+    const payload = {
+      name: categoryForm.name,
+      name_gujarati: categoryForm.name_gujarati,
+      description: categoryForm.description,
+      description_gujarati: categoryForm.description_gujarati,
+      ...(modalIsRootCategory && {
+        pricing_type: categoryForm.pricing_type,
+        price: categoryForm.price,
+        discount_percentage: categoryForm.discount_percentage,
+      }),
+    };
     setSavingCategory(true);
     try {
       if (categoryModal.editing) {
-        await pdfHierarchyService.updateCategory(categoryModal.editing.uuid, categoryForm);
+        await pdfHierarchyService.updateCategory(categoryModal.editing.uuid, payload);
         toast.success('Category updated');
       } else if (isRoot) {
-        await pdfHierarchyService.createRootCategory(categoryForm);
+        await pdfHierarchyService.createRootCategory(payload);
         toast.success('Root category created');
       } else {
-        await pdfHierarchyService.createSubCategory(categoryUuid!, categoryForm);
+        await pdfHierarchyService.createSubCategory(categoryUuid!, payload);
         toast.success('Sub-category created');
       }
       setCategoryModal({ open: false, editing: null });
@@ -220,8 +249,7 @@ const PdfHierarchyPage: React.FC = () => {
   const resetUploadForm = () => {
     setUploadFile(null);
     setUploadForm({
-      title: '', description: '', access_level: 'free',
-      tags: '', price: '0', currency: 'INR', preview_pages: '0',
+      title: '', description: '', tags: '', currency: 'INR', preview_pages: '0',
     });
     setUploadProgress(0);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -267,9 +295,7 @@ const PdfHierarchyPage: React.FC = () => {
         {
           title: uploadForm.title.trim(),
           description: uploadForm.description.trim() || undefined,
-          access_level: uploadForm.access_level,
           tags: uploadForm.tags.trim() || undefined,
-          price: uploadForm.price,
           currency: uploadForm.currency,
           preview_pages: uploadForm.preview_pages,
         },
@@ -292,8 +318,6 @@ const PdfHierarchyPage: React.FC = () => {
     setEditPdfForm({
       title: pdf.title || '',
       description: pdf.description || '',
-      access_level: pdf.access_level,
-      price: String(pdf.price ?? 0),
       currency: pdf.currency || 'INR',
       preview_pages: '0',
     });
@@ -311,8 +335,6 @@ const PdfHierarchyPage: React.FC = () => {
       await pdfHierarchyService.updatePdf(editPdfModal.pdf.id, {
         title: editPdfForm.title.trim(),
         description: editPdfForm.description.trim(),
-        access_level: editPdfForm.access_level,
-        price: parseFloat(editPdfForm.price) || 0,
         currency: editPdfForm.currency,
         preview_pages: parseInt(editPdfForm.preview_pages) || 0,
       });
@@ -641,6 +663,52 @@ const PdfHierarchyPage: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
+                {modalIsRootCategory && (
+                  <div className="border-t border-gray-200 pt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Access <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Applies to every sub-category and PDF inside this category.
+                    </p>
+                    <div className="grid grid-cols-2 gap-4">
+                      <select
+                        value={categoryForm.pricing_type}
+                        onChange={(e) => setCategoryForm((f) => ({ ...f, pricing_type: e.target.value as any }))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      >
+                        <option value="free">Free</option>
+                        <option value="paid">Paid</option>
+                        <option value="restricted">Restricted</option>
+                      </select>
+                      {categoryForm.pricing_type === 'paid' && (
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={categoryForm.price}
+                          onChange={(e) => setCategoryForm((f) => ({ ...f, price: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          placeholder="Price (INR)"
+                        />
+                      )}
+                    </div>
+                    {categoryForm.pricing_type === 'paid' && (
+                      <div className="mt-3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Discount %</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="0.01"
+                          value={categoryForm.discount_percentage}
+                          onChange={(e) => setCategoryForm((f) => ({ ...f, discount_percentage: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-2 bg-gray-50">
                 <button
@@ -742,33 +810,10 @@ const PdfHierarchyPage: React.FC = () => {
                 />
               </div>
 
-              {/* Access + price row */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Access Level</label>
-                  <select
-                    value={uploadForm.access_level}
-                    onChange={(e) => setUploadForm((s) => ({ ...s, access_level: e.target.value as any }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="free">Free</option>
-                    <option value="premium">Premium (paid)</option>
-                    <option value="restricted">Restricted</option>
-                  </select>
-                </div>
-                {uploadForm.access_level === 'premium' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={uploadForm.price}
-                      onChange={(e) => setUploadForm((s) => ({ ...s, price: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-                )}
+              {/* Access is inherited from the main category — no per-PDF choice */}
+              <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-800">
+                Free / paid access is set on the main category, so this PDF will
+                automatically use the main category's access settings.
               </div>
 
               {/* Tags */}
@@ -843,32 +888,9 @@ const PdfHierarchyPage: React.FC = () => {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Access Level</label>
-                  <select
-                    value={editPdfForm.access_level}
-                    onChange={(e) => setEditPdfForm((s) => ({ ...s, access_level: e.target.value as any }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  >
-                    <option value="free">Free</option>
-                    <option value="premium">Premium</option>
-                    <option value="restricted">Restricted</option>
-                  </select>
-                </div>
-                {editPdfForm.access_level === 'premium' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Price (INR)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={editPdfForm.price}
-                      onChange={(e) => setEditPdfForm((s) => ({ ...s, price: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    />
-                  </div>
-                )}
+              <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-800">
+                Free / paid access is set on the main category, so this PDF
+                automatically uses the main category's access settings.
               </div>
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-2 bg-gray-50">
@@ -941,6 +963,19 @@ const SortableCategoryRow: React.FC<SortableCategoryRowProps> = ({
           {category.node_type === 'unset' && 'Empty'}
         </div>
       </button>
+      {category.parent_category_id === null && (
+        <span className={`text-xs px-2 py-0.5 rounded font-medium ${
+          category.pricing_type === 'paid'
+            ? 'bg-amber-100 text-amber-700'
+            : category.pricing_type === 'restricted'
+            ? 'bg-red-100 text-red-700'
+            : 'bg-green-100 text-green-700'
+        }`}>
+          {category.pricing_type === 'paid'
+            ? `₹${Number(category.price || 0)}`
+            : category.pricing_type === 'restricted' ? 'Restricted' : 'Free'}
+        </span>
+      )}
       <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-100 rounded">
         #{index + 1} / {total}
       </span>

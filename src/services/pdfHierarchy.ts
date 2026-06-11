@@ -3,6 +3,7 @@ import { PDF_UPLOAD_TIMEOUT_MS } from '../config/uploadConfig';
 
 export type NodeType = 'unset' | 'container' | 'pdf_holder';
 export type ContentType = 'empty' | 'categories' | 'pdfs';
+export type CategoryPricingType = 'free' | 'paid' | 'restricted';
 
 export interface PdfCategoryNode {
   id: number;
@@ -18,6 +19,10 @@ export interface PdfCategoryNode {
   hierarchy_level: number;
   display_order: number;
   is_active: boolean;
+  // Pricing — meaningful on root categories only; the whole tree inherits it
+  pricing_type?: CategoryPricingType;
+  price?: number | string;
+  discount_percentage?: number | string;
 }
 
 export interface PdfNode {
@@ -80,6 +85,10 @@ export interface CategoryPayload {
   icon?: string;
   color?: string;
   is_active?: boolean;
+  // Root categories only — ignored by the backend for sub-categories
+  pricing_type?: CategoryPricingType;
+  price?: number | string;
+  discount_percentage?: number | string;
 }
 
 const BASE = '/admin/pdf-hierarchy';
@@ -125,17 +134,17 @@ export const pdfHierarchyService = {
     return res.data;
   },
 
-  /** Upload a brand-new PDF directly into a leaf category. */
+  /**
+   * Upload a brand-new PDF directly into a leaf category. Access/pricing is
+   * not sent — the backend derives it from the root category.
+   */
   uploadPdf: async (
     categoryUuid: string,
     fields: {
       title: string;
       description?: string;
-      access_level?: 'free' | 'premium' | 'restricted';
       tags?: string;
-      price?: string | number;
       currency?: string;
-      discount_percentage?: string | number;
       subscription_required?: boolean;
       preview_pages?: string | number;
     },
@@ -146,11 +155,8 @@ export const pdfHierarchyService = {
     formData.append('pdf', file);
     formData.append('title', fields.title);
     if (fields.description) formData.append('description', fields.description);
-    if (fields.access_level) formData.append('access_level', fields.access_level);
     if (fields.tags) formData.append('tags', fields.tags);
-    if (fields.price !== undefined) formData.append('price', String(fields.price));
     if (fields.currency) formData.append('currency', fields.currency);
-    if (fields.discount_percentage !== undefined) formData.append('discount_percentage', String(fields.discount_percentage));
     if (fields.subscription_required !== undefined) formData.append('subscription_required', String(fields.subscription_required));
     if (fields.preview_pages !== undefined) formData.append('preview_pages', String(fields.preview_pages));
 
