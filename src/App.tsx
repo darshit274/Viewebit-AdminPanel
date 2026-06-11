@@ -7,8 +7,10 @@ import { LoginForm } from './components/auth/LoginForm';
 import { Layout } from './components/layout/Layout';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { StudentsPage } from './pages/users/StudentsPage';
+import { TestAttemptsPage } from './pages/users/TestAttemptsPage';
 import { QuestionsPage } from './pages/questions/QuestionsPage';
-import { PDFManagement } from './pages/PDFManagement';
+// PDFManagement (flat library) removed — PDFs now live inside the hierarchy only.
+import PdfHierarchyPage from './pages/PdfHierarchyPage';
 import { ExamManagement } from './pages/ExamManagement';
 import PYQManagement from './pages/PYQManagement';
 import SubscriptionsPage from './pages/subscriptions/SubscriptionsPage';
@@ -68,6 +70,11 @@ const navigate = useNavigate();
             <StudentsPage />
           </ProtectedRoute>
         } />
+        <Route path="test-attempts" element={
+          <ProtectedRoute>
+            <TestAttemptsPage />
+          </ProtectedRoute>
+        } />
         <Route path="test-management" element={
           <ProtectedRoute>
             <TestManagementPageNew />
@@ -113,9 +120,16 @@ const navigate = useNavigate();
             <QuestionsPage />
           </ProtectedRoute>
         } />
-        <Route path="pdfs" element={
+        {/* The standalone /pdfs (flat library) route is removed — PDFs only live inside the hierarchy now. */}
+        <Route path="pdfs" element={<Navigate to="/pdf-hierarchy" replace />} />
+        <Route path="pdf-hierarchy" element={
           <ProtectedRoute>
-            <PDFManagement />
+            <PdfHierarchyPage />
+          </ProtectedRoute>
+        } />
+        <Route path="pdf-hierarchy/categories/:categoryUuid" element={
+          <ProtectedRoute>
+            <PdfHierarchyPage />
           </ProtectedRoute>
         } />
         <Route path="queries" element={

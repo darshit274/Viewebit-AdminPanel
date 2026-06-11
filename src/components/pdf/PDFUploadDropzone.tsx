@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Upload, FileText, X, AlertCircle, CheckCircle } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { PDF_UPLOAD_MAX_SIZE_BYTES, PDF_UPLOAD_MAX_SIZE_MB } from '../../config/uploadConfig';
 
 interface PDFUploadDropzoneProps {
   onUploadSuccess?: (pdf: any) => void;
@@ -63,10 +64,9 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
       return 'Only PDF files are allowed';
     }
 
-    // Check file size (50MB limit)
-    const maxSize = 50 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return 'File size must be less than 50MB';
+    // Check file size — env-driven cap
+    if (file.size > PDF_UPLOAD_MAX_SIZE_BYTES) {
+      return `File size must be less than ${PDF_UPLOAD_MAX_SIZE_MB}MB`;
     }
 
     return null;
@@ -257,7 +257,7 @@ export const PDFUploadDropzone: React.FC<PDFUploadDropzoneProps> = ({
                 Drag and drop your PDF file here, or click to browse
               </p>
               <p className="text-xs text-gray-400 mt-2">
-                Maximum file size: 50MB • Only PDF files allowed
+                Maximum file size: {PDF_UPLOAD_MAX_SIZE_MB}MB • Only PDF files allowed
               </p>
             </div>
             <div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Eye, Edit, Trash2, UserPlus, X, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, Download, Eye, Edit, Trash2, UserPlus, X, CheckCircle, XCircle, Smartphone, SmartphoneNfc } from 'lucide-react';
 import { LoadingSpinner, CardSkeleton } from '../../components/common/LoadingSpinner';
 import { ApiError, ErrorBoundary } from '../../components/common/ErrorBoundary';
 import { studentsService } from '../../services/students';
@@ -10,47 +10,59 @@ import { formatDate } from '../../lib/utils';
 
 export const StudentsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  
+
   // Advanced filter states
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [verificationFilter, setVerificationFilter] = useState<'all' | 'verified' | 'unverified'>('all');
-  const [premiumFilter, setPremiumFilter] = useState<'all' | 'premium' | 'free'>('all');
   const [dateFilter, setDateFilter] = useState({
     from: '',
     to: ''
   });
-  
+
   // Simple state management instead of useApi hook
   const [students, setStudents] = useState<any[]>([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 10, totalPages: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [exportLoading, setExportLoading] = useState(false);
-  
+
   // Modal states
   const [studentModal, setStudentModal] = useState({ isOpen: false, mode: 'create' as 'create' | 'edit', student: null as any });
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, student: null as any, loading: false });
+  const [deviceResetModal, setDeviceResetModal] = useState({ isOpen: false, student: null as any, loading: false });
+
+  // Debounce search input — wait 400ms after user stops typing before hitting the API
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1); // reset to page 1 on new search
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const fetchStudents = async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await studentsService.getStudents({
         page: currentPage,
         limit: pageSize,
-        search: searchTerm,
+        search: debouncedSearch,
         sortBy,
-        sortOrder
+        sortOrder,
+        is_active: statusFilter === 'all' ? undefined : statusFilter === 'active',
+        is_verified: verificationFilter === 'all' ? undefined : verificationFilter === 'verified',
       });
-      
+
       const backendData = response.data;
-      
+
       if (backendData && backendData.success) {
         setStudents(backendData.data || []);
         setPagination(backendData.pagination || { total: 0, page: 1, limit: 10, totalPages: 0 });
@@ -66,10 +78,17 @@ export const StudentsPage: React.FC = () => {
 
   useEffect(() => {
     fetchStudents();
-  }, [currentPage, pageSize, searchTerm, sortBy, sortOrder]);
+  }, [currentPage, pageSize, debouncedSearch, sortBy, sortOrder, statusFilter, verificationFilter]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setDebouncedSearch(searchTerm);
+    setCurrentPage(1);
+  };
+
+  const handleSearchClear = () => {
+    setSearchTerm('');
+    setDebouncedSearch('');
     setCurrentPage(1);
   };
 
@@ -84,9 +103,9 @@ export const StudentsPage: React.FC = () => {
 
   const clearFilters = () => {
     setSearchTerm('');
+    setDebouncedSearch('');
     setStatusFilter('all');
     setVerificationFilter('all');
-    setPremiumFilter('all');
     setDateFilter({ from: '', to: '' });
     setCurrentPage(1);
     setShowAdvancedFilters(false);
@@ -94,28 +113,22 @@ export const StudentsPage: React.FC = () => {
 
   const applyAdvancedFilters = () => {
     setCurrentPage(1);
-    // The loadStudents function will automatically use the current filter states
-    loadStudents();
+    setShowAdvancedFilters(false);
+    // useEffect will trigger fetchStudents automatically since filter states changed
   };
 
-  const hasActiveFilters = statusFilter !== 'all' || 
-                          verificationFilter !== 'all' || 
-                          premiumFilter !== 'all' || 
-                          dateFilter.from || 
-                          dateFilter.to ||
-                          searchTerm;
+  const hasActiveFilters = statusFilter !== 'all' ||
+                          verificationFilter !== 'all' ||
+                          !!debouncedSearch;
 
   const handleExport = async () => {
     setExportLoading(true);
     try {
       // Prepare filters for export
       const exportFilters = {
-        search: searchTerm,
+        search: debouncedSearch,
         is_active: statusFilter === 'all' ? undefined : statusFilter === 'active',
         is_verified: verificationFilter === 'all' ? undefined : verificationFilter === 'verified',
-        is_premium: premiumFilter === 'all' ? undefined : premiumFilter === 'premium',
-        date_from: dateFilter.from,
-        date_to: dateFilter.to
       };
 
       const blob = await studentsService.exportStudents(exportFilters);
@@ -180,6 +193,23 @@ export const StudentsPage: React.FC = () => {
     fetchStudents();
   };
 
+  const handleResetDevice = (student: any) => {
+    setDeviceResetModal({ isOpen: true, student, loading: false });
+  };
+
+  const handleConfirmResetDevice = async () => {
+    try {
+      setDeviceResetModal(prev => ({ ...prev, loading: true }));
+      await studentsService.resetUserDevice(deviceResetModal.student.uuid);
+      toast.success(`Device lock removed for ${deviceResetModal.student.username}`);
+      fetchStudents();
+      setDeviceResetModal({ isOpen: false, student: null, loading: false });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || 'Failed to reset device lock');
+      setDeviceResetModal(prev => ({ ...prev, loading: false }));
+    }
+  };
+
   const handleVerifyStudent = async (student: any) => {
     try {
       await studentsService.verifyStudent(student.uuid);
@@ -213,68 +243,113 @@ export const StudentsPage: React.FC = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="card p-6">
-          <form onSubmit={handleSearch} className="flex gap-4 items-end">
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Search Students
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by name or email..."
-                  className="input-field pl-10"
-                />
+        <div className="card p-4 sm:p-6">
+          <form onSubmit={handleSearch}>
+            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end">
+              {/* Search input */}
+              <div className="flex-1 min-w-0">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Search Students
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search by name, email or phone..."
+                    className="input-field pl-10 pr-10 w-full"
+                    autoComplete="off"
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={handleSearchClear}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      title="Clear search"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+                {loading && debouncedSearch && (
+                  <p className="text-xs text-gray-400 mt-1">Searching…</p>
+                )}
+              </div>
+
+              {/* Page size */}
+              <div className="w-full sm:w-36">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Per page
+                </label>
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                  className="input-field w-full"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-2 sm:pb-0">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                  className={`btn-secondary flex-1 sm:flex-none ${hasActiveFilters ? 'border-blue-500 bg-blue-50 text-blue-700' : ''}`}
+                >
+                  <Filter className="h-4 w-4 mr-1.5" />
+                  Filters
+                  {hasActiveFilters && (
+                    <span className="ml-1.5 bg-blue-600 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                      {[statusFilter !== 'all', verificationFilter !== 'all'].filter(Boolean).length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  disabled={exportLoading}
+                  className="btn-secondary flex-1 sm:flex-none"
+                >
+                  <Download className="h-4 w-4 mr-1.5" />
+                  {exportLoading ? 'Exporting…' : 'Export'}
+                </button>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Page Size
-              </label>
-              <select
-                value={pageSize}
-                onChange={(e) => setPageSize(Number(e.target.value))}
-                className="input-field"
-              >
-                <option value={10}>10 per page</option>
-                <option value={25}>25 per page</option>
-                <option value={50}>50 per page</option>
-                <option value={100}>100 per page</option>
-              </select>
-            </div>
+            {/* Active filter tags */}
+            {hasActiveFilters && (
+              <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+                <span className="text-xs text-gray-500 self-center">Active filters:</span>
+                {debouncedSearch && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                    Search: "{debouncedSearch}"
+                    <button type="button" onClick={handleSearchClear} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                  </span>
+                )}
+                {statusFilter !== 'all' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                    Status: {statusFilter}
+                    <button type="button" onClick={() => setStatusFilter('all')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                  </span>
+                )}
+                {verificationFilter !== 'all' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                    {verificationFilter === 'verified' ? 'Verified' : 'Unverified'}
+                    <button type="button" onClick={() => setVerificationFilter('all')} className="hover:text-blue-900"><X className="h-3 w-3" /></button>
+                  </span>
+                )}
 
-            <button type="submit" className="btn-primary">
-              <Search className="h-4 w-4 mr-2" />
-              Search
-            </button>
-
-            <button 
-              type="button" 
-              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`btn-secondary ${hasActiveFilters ? 'border-blue-500 bg-blue-50 text-blue-700' : ''}`}
-            >
-              <Filter className="h-4 w-4 mr-2" />
-              Filters
-              {hasActiveFilters && (
-                <span className="ml-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {[statusFilter !== 'all', verificationFilter !== 'all', premiumFilter !== 'all', dateFilter.from, dateFilter.to, searchTerm].filter(Boolean).length}
-                </span>
-              )}
-            </button>
-
-            <button 
-              type="button" 
-              onClick={handleExport}
-              disabled={exportLoading}
-              className="btn-secondary"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              {exportLoading ? 'Exporting...' : 'Export'}
-            </button>
+                <button type="button" onClick={clearFilters} className="text-xs text-gray-500 hover:text-red-600 underline">
+                  Clear all
+                </button>
+              </div>
+            )}
           </form>
         </div>
 
@@ -322,22 +397,6 @@ export const StudentsPage: React.FC = () => {
                   <option value="all">All Verification</option>
                   <option value="verified">Verified</option>
                   <option value="unverified">Unverified</option>
-                </select>
-              </div>
-
-              {/* Premium Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Subscription Type
-                </label>
-                <select
-                  value={premiumFilter}
-                  onChange={(e) => setPremiumFilter(e.target.value as any)}
-                  className="input-field"
-                >
-                  <option value="all">All Types</option>
-                  <option value="premium">Premium</option>
-                  <option value="free">Free</option>
                 </select>
               </div>
 
@@ -510,6 +569,9 @@ export const StudentsPage: React.FC = () => {
                       )}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Device
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -551,9 +613,22 @@ export const StudentsPage: React.FC = () => {
                           {formatDate(student.created_at)}
                         </p>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {student.device_id ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-orange-100 text-orange-700 rounded-full">
+                            <Smartphone className="h-3 w-3" />
+                            Locked
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
+                            <SmartphoneNfc className="h-3 w-3" />
+                            Free
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <button 
+                          <button
                             onClick={() => handleEditStudent(student)}
                             className="text-blue-600 hover:text-blue-900"
                             title="View Details"
@@ -574,7 +649,15 @@ export const StudentsPage: React.FC = () => {
                           >
                             {student.isEmailVerified ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
                           </button>
-                          <button 
+                          <button
+                            onClick={() => handleResetDevice(student)}
+                            className={student.device_id ? 'text-orange-600 hover:text-orange-900' : 'text-gray-300 cursor-not-allowed'}
+                            title={student.device_id ? 'Reset Device Lock' : 'No device linked'}
+                            disabled={!student.device_id}
+                          >
+                            <Smartphone className="h-4 w-4" />
+                          </button>
+                          <button
                             onClick={() => handleDeleteStudent(student)}
                             className="text-red-600 hover:text-red-900"
                             title="Delete Student"
@@ -591,44 +674,73 @@ export const StudentsPage: React.FC = () => {
           )}
 
           {/* Pagination */}
-          {pagination.totalPages > 1 && (
+          {pagination.total > 0 && (
             <div className="px-6 py-4 border-t border-gray-200">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-700">
-                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, pagination.total)} of {pagination.total} results
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p className="text-sm text-gray-600">
+                  Showing{' '}
+                  <span className="font-medium">{((currentPage - 1) * pageSize) + 1}</span>
+                  {' '}–{' '}
+                  <span className="font-medium">{Math.min(currentPage * pageSize, pagination.total)}</span>
+                  {' '}of{' '}
+                  <span className="font-medium">{pagination.total}</span> students
                 </p>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                    const page = i + 1;
-                    return (
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center gap-1">
+                    {/* First page */}
+                    {currentPage > 3 && (
+                      <>
+                        <button onClick={() => setCurrentPage(1)} className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">1</button>
+                        {currentPage > 4 && <span className="px-1 text-gray-400">…</span>}
+                      </>
+                    )}
+
+                    {/* Window of pages around current */}
+                    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                      .filter(p => p >= currentPage - 2 && p <= currentPage + 2)
+                      .map(p => (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(p)}
+                          className={`px-3 py-1.5 text-sm border rounded transition-colors ${
+                            currentPage === p
+                              ? 'bg-primary-600 text-white border-primary-600 font-medium'
+                              : 'border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      ))
+                    }
+
+                    {/* Last page */}
+                    {currentPage < pagination.totalPages - 2 && (
+                      <>
+                        {currentPage < pagination.totalPages - 3 && <span className="px-1 text-gray-400">…</span>}
+                        <button onClick={() => setCurrentPage(pagination.totalPages)} className="px-3 py-1.5 text-sm border border-gray-300 rounded hover:bg-gray-50">
+                          {pagination.totalPages}
+                        </button>
+                      </>
+                    )}
+
+                    <div className="ml-2 flex gap-1">
                       <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`px-3 py-1 text-sm border rounded ${
-                          currentPage === page 
-                            ? 'bg-primary-600 text-white border-primary-600' 
-                            : 'hover:bg-gray-50'
-                        }`}
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 text-sm border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50 disabled:cursor-not-allowed"
                       >
-                        {page}
+                        ‹ Prev
                       </button>
-                    );
-                  })}
-                  <button
-                    onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
-                    disabled={currentPage === pagination.totalPages}
-                    className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                  >
-                    Next
-                  </button>
-                </div>
+                      <button
+                        onClick={() => setCurrentPage(Math.min(pagination.totalPages, currentPage + 1))}
+                        disabled={currentPage === pagination.totalPages}
+                        className="px-3 py-1.5 text-sm border border-gray-300 rounded disabled:opacity-40 hover:bg-gray-50 disabled:cursor-not-allowed"
+                      >
+                        Next ›
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -652,6 +764,17 @@ export const StudentsPage: React.FC = () => {
           confirmText="Delete"
           type="danger"
           loading={confirmModal.loading}
+        />
+
+        <ConfirmModal
+          isOpen={deviceResetModal.isOpen}
+          onClose={() => setDeviceResetModal({ isOpen: false, student: null, loading: false })}
+          onConfirm={handleConfirmResetDevice}
+          title="Reset Device Lock"
+          message={`Remove the device lock for "${deviceResetModal.student?.username}"? They will be able to login from any device on their next login attempt.`}
+          confirmText="Reset Device"
+          type="warning"
+          loading={deviceResetModal.loading}
         />
       </div>
     </ErrorBoundary>

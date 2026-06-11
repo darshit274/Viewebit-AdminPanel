@@ -131,6 +131,12 @@ export const studentsService = {
     return { data: response.data };
   },
 
+  // Reset device lock — clears the stored device_id so user can login from a new device
+  resetUserDevice: async (id: string) => {
+    const response = await api.patch(`/admin/users/${id}/reset-device`);
+    return { data: response.data };
+  },
+
   // Export students data
   exportStudents: async (filters?: StudentFilters): Promise<Blob> => {
     const params = new URLSearchParams();
