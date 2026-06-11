@@ -84,6 +84,7 @@ export const OTPVerificationForm: React.FC<OTPVerificationFormProps> = ({ email,
     try {
       await authService.verifyOTP({ email, otp: data.otp });
       toast.success('Login successful!');
+      window.location.reload()
       onSuccess();
     } catch (error: any) {
       const message = error.response?.data?.message || 'Invalid verification code. Please try again.';
