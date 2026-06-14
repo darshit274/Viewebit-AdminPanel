@@ -112,9 +112,9 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
     try {
       setCatLoading(true);
       const response = await api.get('/admin/pdf-hierarchy/roots');
-      const all: PdfCategory[] = response.data?.data || [];
-      // Only purchasable root categories are grantable
-      setPdfCategories(all.filter((c) => c.pricing_type === 'paid'));
+      // Response shape: { data: { content: [...], content_type, ... } }
+      const all: PdfCategory[] = response.data?.data?.content || [];
+      setPdfCategories(Array.isArray(all) ? all.filter((c) => c.pricing_type === 'paid') : []);
     } catch (error) {
       console.error('Error fetching PDF categories:', error);
       toast.error('Failed to fetch PDF categories');
