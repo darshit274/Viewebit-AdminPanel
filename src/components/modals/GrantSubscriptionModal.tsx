@@ -17,6 +17,16 @@ interface TestSeries {
   validity_days: number;
 }
 
+interface PdfCategory {
+  id: number;
+  uuid: string;
+  name: string;
+  pricing_type: 'free' | 'paid' | 'restricted';
+  price: number | string;
+}
+
+type SubscriptionType = 'test_series' | 'pdf_category';
+
 interface GrantSubscriptionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,38 +38,44 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
   onClose,
   onSuccess
 }) => {
+  const [subscriptionType, setSubscriptionType] = useState<SubscriptionType>('test_series');
+
   const [users, setUsers] = useState<User[]>([]);
   const [testSeries, setTestSeries] = useState<TestSeries[]>([]);
+  const [pdfCategories, setPdfCategories] = useState<PdfCategory[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [seriesLoading, setSeriesLoading] = useState(false);
-  // Remember the picked user/series so the dropdown can show the selection
-  // even after a fresh search has replaced the options list.
+  const [catLoading, setCatLoading] = useState(false);
+
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedSeries, setSelectedSeries] = useState<TestSeries | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<PdfCategory | null>(null);
+
   const [formData, setFormData] = useState({
     user_id: '',
     test_series_id: '',
+    pdf_category_uuid: '',
     payment_method: 'admin_grant',
     amount_paid: 0,
     currency: 'INR',
-    expiry_days: 0
+    expiry_days: 365,
   });
 
   useEffect(() => {
     if (isOpen) {
       fetchUsers('');
       fetchTestSeries('');
+      fetchPdfCategories();
     } else {
-      // Reset selection state when the modal closes so reopening starts clean
       setSelectedUser(null);
       setSelectedSeries(null);
+      setSelectedCategory(null);
+      setSubscriptionType('test_series');
     }
   }, [isOpen]);
 
-  // Server-side user search — the backend supports `search` and caps `limit` at 100.
-  // That cap doesn't matter once we search server-side: typing narrows the result
-  // set so the user you want will be in the first 100 matches.
   const fetchUsers = async (search: string) => {
     try {
       setUsersLoading(true);
@@ -81,8 +97,8 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
       const response = await api.get('/admin/test-management', {
         params: { limit: 100, search },
       });
-      const testSeriesData = response.data?.data || [];
-      setTestSeries(Array.isArray(testSeriesData) ? testSeriesData : []);
+      const data = response.data?.data || [];
+      setTestSeries(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching test series:', error);
       toast.error('Failed to fetch test series');
@@ -92,45 +108,66 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
     }
   };
 
+  const fetchPdfCategories = async () => {
+    try {
+      setCatLoading(true);
+      const response = await api.get('/admin/pdf-hierarchy/roots');
+      const all: PdfCategory[] = response.data?.data || [];
+      // Only purchasable root categories are grantable
+      setPdfCategories(all.filter((c) => c.pricing_type === 'paid'));
+    } catch (error) {
+      console.error('Error fetching PDF categories:', error);
+      toast.error('Failed to fetch PDF categories');
+      setPdfCategories([]);
+    } finally {
+      setCatLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // Generate unique transaction ID for admin grants
       const transactionId = `ADMIN_GRANT_${Date.now()}_${formData.user_id.slice(0, 8)}`;
 
-      // Calculate expiry date
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + formData.expiry_days);
 
-
-      await api.post('/admin/subscriptions/manual', {
+      const payload: Record<string, any> = {
         user_id: formData.user_id,
-        test_series_id: formData.test_series_id,
         transaction_id: transactionId,
         payment_method: formData.payment_method,
         amount_paid: formData.amount_paid,
         currency: formData.currency,
         status: 'completed',
-        expiry_date: expiryDate.toISOString()
-      });
+        expiry_date: expiryDate.toISOString(),
+      };
+
+      if (subscriptionType === 'test_series') {
+        payload.test_series_id = formData.test_series_id;
+      } else {
+        payload.pdf_category_uuid = formData.pdf_category_uuid;
+      }
+
+      await api.post('/admin/subscriptions/manual', payload);
 
       toast.success('Subscription granted successfully!');
       onSuccess();
       onClose();
 
-      // Reset form
       setFormData({
         user_id: '',
         test_series_id: '',
+        pdf_category_uuid: '',
         payment_method: 'admin_grant',
         amount_paid: 0,
         currency: 'INR',
-        expiry_days: 0
+        expiry_days: 365,
       });
       setSelectedUser(null);
       setSelectedSeries(null);
+      setSelectedCategory(null);
     } catch (error: any) {
       console.error('Error granting subscription:', error);
       toast.error(error.response?.data?.message || 'Failed to grant subscription');
@@ -141,10 +178,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
   const handleUserChange = (userId: string) => {
     setFormData((fd) => ({ ...fd, user_id: userId }));
-    if (!userId) {
-      setSelectedUser(null);
-      return;
-    }
+    if (!userId) { setSelectedUser(null); return; }
     const u = users.find((u) => u.uuid === userId);
     if (u) setSelectedUser(u);
   };
@@ -152,7 +186,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
   const handleTestSeriesChange = (testSeriesId: string) => {
     if (!testSeriesId) {
       setSelectedSeries(null);
-      setFormData((fd) => ({ ...fd, test_series_id: '', amount_paid: 0, expiry_days: 0 }));
+      setFormData((fd) => ({ ...fd, test_series_id: '', amount_paid: 0, expiry_days: 365 }));
       return;
     }
     const ts = testSeries.find((ts) => ts.id.toString() === testSeriesId) || selectedSeries;
@@ -165,9 +199,35 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
     }));
   };
 
-  // Always include the currently-selected option in the list, even if it's not
-  // part of the latest search results — otherwise the input would lose its label
-  // when the user types something that doesn't match the selected entry.
+  const handleCategoryChange = (uuid: string) => {
+    if (!uuid) {
+      setSelectedCategory(null);
+      setFormData((fd) => ({ ...fd, pdf_category_uuid: '', amount_paid: 0, expiry_days: 365 }));
+      return;
+    }
+    const cat = pdfCategories.find((c) => c.uuid === uuid) || selectedCategory;
+    if (cat) setSelectedCategory(cat);
+    setFormData((fd) => ({
+      ...fd,
+      pdf_category_uuid: uuid,
+      amount_paid: cat ? Number(cat.price) : fd.amount_paid,
+      expiry_days: 365,
+    }));
+  };
+
+  const handleTypeSwitch = (type: SubscriptionType) => {
+    setSubscriptionType(type);
+    setSelectedSeries(null);
+    setSelectedCategory(null);
+    setFormData((fd) => ({
+      ...fd,
+      test_series_id: '',
+      pdf_category_uuid: '',
+      amount_paid: 0,
+      expiry_days: 365,
+    }));
+  };
+
   const userOptions = useMemo(() => {
     const opts = users.map((u) => ({ value: u.uuid, label: u.username, sublabel: u.email }));
     if (selectedUser && !opts.find((o) => o.value === selectedUser.uuid)) {
@@ -183,6 +243,27 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
     }
     return opts;
   }, [testSeries, selectedSeries]);
+
+  const pdfCategoryOptions = useMemo(() => {
+    const opts = pdfCategories.map((c) => ({
+      value: c.uuid,
+      label: c.name,
+      sublabel: `₹${Number(c.price).toFixed(2)}`,
+    }));
+    if (selectedCategory && !opts.find((o) => o.value === selectedCategory.uuid)) {
+      opts.unshift({
+        value: selectedCategory.uuid,
+        label: selectedCategory.name,
+        sublabel: `₹${Number(selectedCategory.price).toFixed(2)}`,
+      });
+    }
+    return opts;
+  }, [pdfCategories, selectedCategory]);
+
+  const itemSelected = subscriptionType === 'test_series' ? !!formData.test_series_id : !!formData.pdf_category_uuid;
+  const itemLabel   = subscriptionType === 'test_series'
+    ? (selectedSeries?.title || testSeries.find((ts) => ts.id.toString() === formData.test_series_id)?.title || '')
+    : (selectedCategory?.name || pdfCategories.find((c) => c.uuid === formData.pdf_category_uuid)?.name || '');
 
   if (!isOpen) return null;
 
@@ -204,7 +285,36 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
         <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 180px)' }}>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* User Selection — server-side search so admin can find any user, not just the first 100 */}
+            {/* Subscription Type Toggle */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Subscription Type</label>
+              <div className="flex rounded-md border border-gray-300 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => handleTypeSwitch('test_series')}
+                  className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                    subscriptionType === 'test_series'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Test Series
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleTypeSwitch('pdf_category')}
+                  className={`flex-1 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
+                    subscriptionType === 'pdf_category'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  PDF Category
+                </button>
+              </div>
+            </div>
+
+            {/* User Selection */}
             <SearchableSelect
               label="Select User"
               required
@@ -217,25 +327,36 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
               emptyText="No users match your search"
             />
 
-            {/* Test Series Selection — also server-side search */}
-            <SearchableSelect
-              label="Test Series"
-              required
-              options={testSeriesOptions}
-              value={formData.test_series_id}
-              onChange={handleTestSeriesChange}
-              onSearch={fetchTestSeries}
-              loading={seriesLoading}
-              placeholder="Search test series by title…"
-              emptyText="No test series match your search"
-            />
+            {/* Test Series or PDF Category */}
+            {subscriptionType === 'test_series' ? (
+              <SearchableSelect
+                label="Test Series"
+                required
+                options={testSeriesOptions}
+                value={formData.test_series_id}
+                onChange={handleTestSeriesChange}
+                onSearch={fetchTestSeries}
+                loading={seriesLoading}
+                placeholder="Search test series by title…"
+                emptyText="No test series match your search"
+              />
+            ) : (
+              <SearchableSelect
+                label="PDF Category"
+                required
+                options={pdfCategoryOptions}
+                value={formData.pdf_category_uuid}
+                onChange={handleCategoryChange}
+                loading={catLoading}
+                placeholder="Select a paid PDF category…"
+                emptyText="No paid PDF categories found"
+              />
+            )}
 
             {/* Subscription Details */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Amount
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
                 <input
                   type="number"
                   value={formData.amount_paid}
@@ -248,22 +369,17 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Duration (Months)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
                 <input
-                  value={`${formData.expiry_days} Days`}
+                  value={formData.expiry_days === 0 ? 'Lifetime' : `${formData.expiry_days} Days`}
                   disabled
-                  // onChange={(e) => setFormData({ ...formData, expiry_days: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Grant Type
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Grant Type</label>
               <select
                 value={formData.payment_method}
                 onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
@@ -277,15 +393,20 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
             </div>
 
             {/* Summary */}
-            {formData.user_id && formData.test_series_id && (
+            {formData.user_id && itemSelected && (
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-medium text-blue-900 mb-2">Subscription Summary</h3>
                 <div className="text-sm text-blue-800 space-y-1">
-                  <p><span className="font-medium">User:</span> {users.find(u => u.uuid === formData.user_id)?.username}</p>
-                  <p><span className="font-medium">Test Series:</span> {testSeries.find(ts => ts.id.toString() === formData.test_series_id)?.title}</p>
+                  <p><span className="font-medium">User:</span> {selectedUser?.username}</p>
+                  <p>
+                    <span className="font-medium">
+                      {subscriptionType === 'test_series' ? 'Test Series' : 'PDF Category'}:
+                    </span>{' '}
+                    {itemLabel}
+                  </p>
                   <p><span className="font-medium">Amount:</span> ₹{formData.amount_paid} {formData.amount_paid === 0 ? '(Free)' : ''}</p>
                   <p><span className="font-medium">Duration:</span> {formData.expiry_days === 0 ? 'Lifetime' : `${formData.expiry_days} Days`}</p>
-                  <p><span className="font-medium">Type:</span> {formData.payment_method.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                  <p><span className="font-medium">Type:</span> {formData.payment_method.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
                 </div>
               </div>
             )}
@@ -305,7 +426,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
             <button
               onClick={handleSubmit}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              disabled={loading || !formData.user_id || !formData.test_series_id}
+              disabled={loading || !formData.user_id || !itemSelected}
             >
               {loading ? 'Granting...' : 'Grant Subscription'}
             </button>
