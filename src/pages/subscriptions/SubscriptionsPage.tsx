@@ -27,7 +27,7 @@ interface TestSeries {
 interface Subscription {
   id: string;
   user_id: string;
-  test_series_id: string;
+  test_series_id: string | null;
   transaction_id: string;
   payment_method: string;
   amount_paid: number;
@@ -36,7 +36,8 @@ interface Subscription {
   purchase_date: string;
   expiry_date: string | null;
   user: User;
-  testSeries: TestSeries;
+  testSeries: TestSeries | null;
+  metadata?: { plan_type?: string; pdf_category_uuid?: string; [key: string]: any } | null;
   is_active?: boolean;
   days_remaining?: number | null;
 }
@@ -99,7 +100,13 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
         
         <div className="mb-4 p-3 bg-gray-50 rounded">
           <p className="text-sm text-gray-600">User: <span className="font-medium">{subscription.user.email}</span></p>
-          <p className="text-sm text-gray-600">Test Series: <span className="font-medium">{subscription.testSeries.name}</span></p>
+          {subscription.testSeries ? (
+            <p className="text-sm text-gray-600">Test Series: <span className="font-medium">{subscription.testSeries.name}</span></p>
+          ) : subscription.metadata?.plan_type === 'pdf_category' ? (
+            <p className="text-sm text-gray-600">Type: <span className="font-medium">PDF Category</span></p>
+          ) : (
+            <p className="text-sm text-gray-600">Type: <span className="font-medium">—</span></p>
+          )}
           <p className="text-sm text-gray-600">Transaction ID: <span className="font-medium">{subscription.transaction_id}</span></p>
         </div>
 
@@ -494,8 +501,10 @@ export default function SubscriptionsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{subscription?.testSeries?.title}</div>
-                        <div className="text-sm text-gray-500">ID: {subscription?.test_series_id}</div>
+                        <div className="text-sm text-gray-900">
+                          {subscription.testSeries?.name || (subscription.metadata?.plan_type === 'pdf_category' ? 'PDF Category' : '—')}
+                        </div>
+                        <div className="text-sm text-gray-500">ID: {subscription.test_series_id || '—'}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{subscription.transaction_id}</div>
