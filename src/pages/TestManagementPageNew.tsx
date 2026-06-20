@@ -97,7 +97,7 @@ const testSeriesApi = {
   reorderTestSeries: async (items: { uuid: string; display_order: number }[]) => {
     const token = sessionStorage.getItem('admin_token');
     const response = await fetch(`${apiBaseUrl}/test-management/reorder`, {
-      method: 'PATCH',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`

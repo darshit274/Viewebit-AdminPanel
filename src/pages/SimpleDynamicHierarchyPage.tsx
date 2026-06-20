@@ -392,7 +392,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
   const saveCategories = async (reordered: Category[]) => {
     try {
       const response = await fetch(`${API_BASE}/categories/reorder`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: apiHeaders,
         body: JSON.stringify({ items: reordered.map(c => ({ uuid: c.uuid, display_order: c.display_order })) })
       });
@@ -409,7 +409,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
   const saveQuestions = async (reordered: Question[]) => {
     try {
       const response = await fetch(`${API_BASE}/questions/reorder`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: apiHeaders,
         body: JSON.stringify({ items: reordered.map(q => ({ uuid: q.uuid, display_order: q.display_order })) })
       });
