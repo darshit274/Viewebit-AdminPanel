@@ -425,8 +425,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
   const applyReorderHelper = <T extends { uuid: string; display_order: number }>(
     list: T[], oldIdx: number, newIdx: number
   ): T[] => {
-    const slots = [...list].map(i => i.display_order).sort((a, b) => a - b);
-    return arrayMove(list, oldIdx, newIdx).map((item, i) => ({ ...item, display_order: slots[i] ?? i + 1 }));
+    return arrayMove(list, oldIdx, newIdx).map((item, i) => ({ ...item, display_order: i + 1 }));
   };
 
   const handleCategoryDragEnd = (event: DragEndEvent) => {
