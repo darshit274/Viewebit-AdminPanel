@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Search, Upload, Download, Eye, Edit, Trash2, FileText, X } from 'lucide-react';
 import { useApi } from '../../hooks/useApi';
 import { CardSkeleton } from '../../components/common/LoadingSpinner';
@@ -313,8 +313,8 @@ export const PDFsPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="card p-6">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100">
-                <FileText className="h-6 w-6 text-blue-600" />
+              <div className="p-3 rounded-full bg-primary-100">
+                <FileText className="h-6 w-6 text-primary-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total PDFs</p>
@@ -510,7 +510,7 @@ export const PDFsPage: React.FC = () => {
                     </button>
                     <button 
                       onClick={() => handleEditPdf(pdf)}
-                      className="text-blue-600 hover:text-blue-900 p-2"
+                      className="text-primary-600 hover:text-primary-900 p-2"
                       title="Edit PDF"
                     >
                       <Edit className="h-4 w-4" />

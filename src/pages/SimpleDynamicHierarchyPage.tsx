@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeftIcon,
@@ -171,10 +171,10 @@ function SortableCategoryCard({ category, index, total, selected, onSelect, onNa
           type="checkbox"
           checked={selected}
           onChange={(e) => { e.stopPropagation(); onSelect(e.target.checked); }}
-          className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
         />
         <div className="flex items-center cursor-pointer" onClick={onNavigate}>
-          <FolderIcon className="w-5 h-5 text-blue-500 mr-3" />
+          <FolderIcon className="w-5 h-5 text-primary-500 mr-3" />
           <div>
             <h3 className="font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: category.name }} />
             {category.description && (
@@ -188,7 +188,7 @@ function SortableCategoryCard({ category, index, total, selected, onSelect, onNa
         </div>
       </div>
       <div className="flex items-center space-x-2">
-        <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="p-1 text-gray-400 hover:text-blue-600">
+        <button onClick={(e) => { e.stopPropagation(); onEdit(); }} className="p-1 text-gray-400 hover:text-primary-600">
           <PencilIcon className="w-4 h-4" />
         </button>
         <button onClick={(e) => { e.stopPropagation(); onDelete(); }} className="p-1 text-gray-400 hover:text-red-600">
@@ -237,13 +237,13 @@ function SortableQuestionCard({ question, index, total, selected, onSelect, onEd
             type="checkbox"
             checked={selected}
             onChange={(e) => onSelect(e.target.checked)}
-            className="mt-1 rounded border-gray-300 text-blue-600 focus:ring-blue-500 flex-shrink-0"
+            className="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500 flex-shrink-0"
           />
           <div className="flex-1 min-w-0">
             <div className="flex items-center space-x-2 mb-2">
               <h3 className="font-medium text-gray-900" dangerouslySetInnerHTML={{ __html: `Q${index + 1}. ${question.question_text || question.question_text_gujarati || 'No question text'}` }} />
               <span className={`px-2 py-1 text-xs font-medium rounded-full flex-shrink-0 ${question.question_text && question.question_text_gujarati ? 'bg-purple-100 text-purple-800' :
-                question.question_text ? 'bg-blue-100 text-blue-800' :
+                question.question_text ? 'bg-primary-100 text-primary-800' :
                   question.question_text_gujarati ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800'
                 }`}>
                 {question.question_text && question.question_text_gujarati ? 'Both' :
@@ -258,7 +258,7 @@ function SortableQuestionCard({ question, index, total, selected, onSelect, onEd
               <div className={`p-2 rounded ${question.correct_answer === 'D' ? 'bg-green-100' : 'bg-gray-100'}`}>D. {question.option_d || question.option_d_gujarati || 'No option D'}</div>
             </div>
             {(question.explanation || question.explanation_gujarati) && (
-              <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+              <div className="mt-2 p-2 bg-primary-50 rounded text-sm">
                 <strong>Explanation:</strong> {question.explanation || question.explanation_gujarati}
               </div>
             )}
@@ -266,7 +266,7 @@ function SortableQuestionCard({ question, index, total, selected, onSelect, onEd
           </div>
         </div>
         <div className="flex items-center space-x-2 ml-4 flex-shrink-0">
-          <button onClick={onEdit} className="p-1 text-gray-400 hover:text-blue-600">
+          <button onClick={onEdit} className="p-1 text-gray-400 hover:text-primary-600">
             <PencilIcon className="w-4 h-4" />
           </button>
           <button onClick={onDelete} className="p-1 text-gray-400 hover:text-red-600">
@@ -1076,7 +1076,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
       </div>
     );
   }
@@ -1088,7 +1088,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
           <div className="text-red-600 mb-4">Error: {error}</div>
           <button
             onClick={fetchData}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 mr-2"
+            className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 mr-2"
           >
             Try Again
           </button>
@@ -1137,7 +1137,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
           <span key={`e${i}`} className="px-2 py-1 text-sm text-gray-400">…</span>
         ) : (
           <button key={p} onClick={() => onPageChange(p as number)}
-            className={`px-3 py-1 text-sm border rounded ${p === currentPg ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'}`}>{p}</button>
+            className={`px-3 py-1 text-sm border rounded ${p === currentPg ? 'bg-primary-600 text-white border-primary-600' : 'hover:bg-gray-50'}`}>{p}</button>
         ))}
         <button onClick={() => onPageChange(Math.min(totalPages, currentPg + 1))} disabled={currentPg >= totalPages}
           className="px-3 py-1 text-sm border rounded disabled:opacity-40 hover:bg-gray-50">Next</button>
@@ -1182,7 +1182,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   onClick={() => setShowCategoryModal(true)}
                   disabled={!data?.buttons_state.can_add_category}
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${data?.buttons_state.can_add_category
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-primary-600 text-white hover:bg-primary-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                 >
@@ -1218,7 +1218,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   }}
                   disabled={!data?.buttons_state.can_add_question || isRootLevel}
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors ${data?.buttons_state.can_add_question && !isRootLevel
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-primary-600 text-white hover:bg-primary-700'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                 >
@@ -1232,7 +1232,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
             <div className="flex items-center space-x-2 text-sm text-gray-500">
               <button
                 onClick={() => navigate('/test-management')}
-                className="text-blue-600 hover:text-blue-800 transition-colors"
+                className="text-primary-600 hover:text-primary-800 transition-colors"
               >
                 Course Management
               </button>
@@ -1246,7 +1246,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 <>
                   <button
                     onClick={() => navigate(`/simple-hierarchy/${testSeriesUuid}`)}
-                    className="text-blue-600 hover:text-blue-800 transition-colors"
+                    className="text-primary-600 hover:text-primary-800 transition-colors"
                   >
                     {data?.test_series?.name || 'Course'}
                   </button>
@@ -1261,7 +1261,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                           const targetCategory = categoryPath[categoryPath.length - 1];
                           navigate(`/simple-hierarchy/${testSeriesUuid}/categories/${targetCategory.uuid}`);
                         }}
-                        className="text-blue-600 hover:text-blue-800 transition-colors"
+                        className="text-primary-600 hover:text-primary-800 transition-colors"
                       >
                         {category.name}
                       </button>
@@ -1305,12 +1305,12 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     placeholder="Search categories..."
                     value={search}
                     onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 w-48"
                   />
                   <select
                     value={pageSize}
                     onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value={10}>10 / page</option>
                     <option value={20}>20 / page</option>
@@ -1322,7 +1322,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="checkbox"
                       checked={selectedCategories.length === localCategories.length && localCategories.length > 0}
                       onChange={(e) => selectAllCategories(e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     <span className="text-sm text-gray-600">Select All</span>
                     {selectedCategories.length > 0 && (
@@ -1379,12 +1379,12 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     placeholder="Search questions..."
                     value={search}
                     onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
-                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-56"
+                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 w-56"
                   />
                   <select
                     value={pageSize}
                     onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   >
                     <option value={10}>10 / page</option>
                     <option value={20}>20 / page</option>
@@ -1396,7 +1396,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="checkbox"
                       checked={selectedQuestions.length === localQuestions.length && localQuestions.length > 0}
                       onChange={(e) => selectAllQuestions(e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                     <span className="text-sm text-gray-600">Select All</span>
                     {selectedQuestions.length > 0 && (
@@ -1444,9 +1444,9 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
 
           {/* Enhanced Statistics */}
           {data?.statistics && (
-            <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+            <div className="mt-8 p-6 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-lg border border-primary-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <svg className="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-5 h-5 mr-2 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
                   <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
                 </svg>
@@ -1461,7 +1461,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     {data.statistics.root_categories_count !== undefined && (
                       <div className="flex justify-between">
                         <span className="text-gray-600">Categories:</span>
-                        <span className="font-semibold text-blue-600">{data.statistics.root_categories_count}</span>
+                        <span className="font-semibold text-primary-600">{data.statistics.root_categories_count}</span>
                       </div>
                     )}
                     {data.statistics.root_questions_count !== undefined && (
@@ -1495,7 +1495,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         {data.statistics.hierarchy_level !== undefined && (
                           <div className="flex justify-between">
                             <span className="text-gray-600">Current Level:</span>
-                            <span className="font-semibold text-blue-600">{data.statistics.hierarchy_level}</span>
+                            <span className="font-semibold text-primary-600">{data.statistics.hierarchy_level}</span>
                           </div>
                         )}
                         {data.statistics.is_leaf_category !== undefined && (
@@ -1509,7 +1509,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         {data.statistics.total_descendants !== undefined && (
                           <div className="flex justify-between">
                             <span className="text-gray-600">Descendants:</span>
-                            <span className="font-semibold text-indigo-600">{data.statistics.total_descendants}</span>
+                            <span className="font-semibold text-secondary-600">{data.statistics.total_descendants}</span>
                           </div>
                         )}
                         {data.statistics.total_descendant_questions !== undefined && (
@@ -1532,13 +1532,13 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         {data.statistics.total_hierarchy_levels !== undefined && (
                           <div className="flex justify-between">
                             <span className="text-gray-600">Max Levels:</span>
-                            <span className="font-semibold text-indigo-600">{data.statistics.total_hierarchy_levels}</span>
+                            <span className="font-semibold text-secondary-600">{data.statistics.total_hierarchy_levels}</span>
                           </div>
                         )}
                         {data.statistics.total_nested_categories !== undefined && (
                           <div className="flex justify-between">
                             <span className="text-gray-600">Nested Categories:</span>
-                            <span className="font-semibold text-blue-600">{data.statistics.total_nested_categories}</span>
+                            <span className="font-semibold text-primary-600">{data.statistics.total_nested_categories}</span>
                           </div>
                         )}
                         {data.statistics.total_questions_all_levels !== undefined && (
@@ -1586,7 +1586,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       {data.statistics.content_distribution.nested_categories !== undefined && (
                         <div className="flex justify-between">
                           <span className="text-gray-600">Child Categories:</span>
-                          <span className="font-semibold text-blue-600">{data.statistics.content_distribution.nested_categories}</span>
+                          <span className="font-semibold text-primary-600">{data.statistics.content_distribution.nested_categories}</span>
                         </div>
                       )}
                     </div>
@@ -1683,7 +1683,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 type="text"
                 value={categoryForm.name}
                 onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Enter category name"
               />
             </div>
@@ -1695,7 +1695,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
               {/* <textarea
                   value={categoryForm.description}
                   onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter description (optional)"
                   rows={3}
                 /> */}
@@ -1718,7 +1718,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     type="text"
                     value={categoryForm.name_gujarati}
                     onChange={(e) => setCategoryForm({ ...categoryForm, name_gujarati: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="કેટેગરી નામ દાખલ કરો"
                   />
                 </div>
@@ -1730,7 +1730,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   {/* <textarea
                       value={categoryForm.description_gujarati}
                       onChange={(e) => setCategoryForm({ ...categoryForm, description_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વર્ણન દાખલ કરો (વૈકલ્પિક)"
                       rows={3}
                     /> */}
@@ -1754,7 +1754,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         id="negative_marking_enabled"
                         checked={categoryForm.negative_marking_enabled}
                         onChange={(e) => setCategoryForm({ ...categoryForm, negative_marking_enabled: e.target.checked })}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
                       />
                       <div className="ml-3">
                         <label htmlFor="negative_marking_enabled" className="block text-sm font-medium text-gray-700">
@@ -1779,7 +1779,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                             max="1"
                             value={categoryForm.negative_marks_per_wrong}
                             onChange={(e) => setCategoryForm({ ...categoryForm, negative_marks_per_wrong: parseFloat(e.target.value) || 0.25 })}
-                            className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                             required={categoryForm.negative_marking_enabled}
                           />
                           <span className="text-sm text-gray-600">marks</span>
@@ -1793,15 +1793,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 )}
 
                 {!shouldShowNegativeMarking() && (
-                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                  <div className="bg-primary-50 p-3 rounded-md border border-primary-200">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-5 w-5 text-primary-400" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm text-blue-700">
+                        <p className="text-sm text-primary-700">
                           <strong>Negative marking is not available for this category.</strong><br />
                           Negative marking only applies to categories that directly contain questions.
                           This category contains subcategories or is empty, so negative marking is not applicable.
@@ -1830,7 +1830,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         step="1"
                         value={categoryForm.test_duration_minutes}
                         onChange={(e) => setCategoryForm({ ...categoryForm, test_duration_minutes: parseInt(e.target.value) || 60 })}
-                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                         required
                       />
                       <span className="text-sm text-gray-600">minutes</span>
@@ -1842,15 +1842,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 )}
 
                 {!shouldShowTestTiming() && (
-                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                  <div className="bg-primary-50 p-3 rounded-md border border-primary-200">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-5 w-5 text-primary-400" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm text-blue-700">
+                        <p className="text-sm text-primary-700">
                           <strong>Test timing is not available for this category.</strong><br />
                           Test timing only applies to categories that directly contain questions.
                           This category contains subcategories or is empty, so test timing is not applicable.
@@ -1873,7 +1873,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       id="is_free_in_paid_series"
                       checked={categoryForm.is_free_in_paid_series}
                       onChange={(e) => setCategoryForm({ ...categoryForm, is_free_in_paid_series: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
                     />
                     <div className="ml-3">
                       <label htmlFor="is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
@@ -1888,15 +1888,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 )}
 
                 {!shouldShowNegativeMarking() && (
-                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                  <div className="bg-primary-50 p-3 rounded-md border border-primary-200">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-5 w-5 text-primary-400" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm text-blue-700">
+                        <p className="text-sm text-primary-700">
                           <strong>Free access option is not available for this category.</strong><br />
                           This setting only applies to categories that directly contain questions.
                           This category contains subcategories or is empty, so this option is not applicable.
@@ -1919,7 +1919,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       id="is_active"
                       checked={categoryForm.is_active}
                       onChange={(e) => setCategoryForm({ ...categoryForm, is_active: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
                     />
                     <div className="ml-3">
                       <label htmlFor="is_active" className="block text-sm font-medium text-gray-700">
@@ -1942,7 +1942,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
             <button
               onClick={createCategory}
               disabled={categoryLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {categoryLoading && (
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1987,7 +1987,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   type="text"
                   value={questionForm.option_a}
                   onChange={(e) => setQuestionForm({ ...questionForm, option_a: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Option A"
                 />
               </div>
@@ -1999,7 +1999,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   type="text"
                   value={questionForm.option_b}
                   onChange={(e) => setQuestionForm({ ...questionForm, option_b: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Option B"
                 />
               </div>
@@ -2011,7 +2011,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   type="text"
                   value={questionForm.option_c}
                   onChange={(e) => setQuestionForm({ ...questionForm, option_c: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Option C"
                 />
               </div>
@@ -2023,7 +2023,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   type="text"
                   value={questionForm.option_d}
                   onChange={(e) => setQuestionForm({ ...questionForm, option_d: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Option D"
                 />
               </div>
@@ -2037,7 +2037,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 <select
                   value={questionForm.correct_answer}
                   onChange={(e) => setQuestionForm({ ...questionForm, correct_answer: e.target.value as 'A' | 'B' | 'C' | 'D' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="A">Option A</option>
                   <option value="B">Option B</option>
@@ -2054,7 +2054,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   min="1"
                   value={questionForm.marks}
                   onChange={(e) => setQuestionForm({ ...questionForm, marks: parseInt(e.target.value) || 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="1"
                 />
               </div>
@@ -2098,7 +2098,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="text"
                       value={questionForm.option_a_gujarati}
                       onChange={(e) => setQuestionForm({ ...questionForm, option_a_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વિકલ્પ A"
                     />
                   </div>
@@ -2110,7 +2110,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="text"
                       value={questionForm.option_b_gujarati}
                       onChange={(e) => setQuestionForm({ ...questionForm, option_b_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વિકલ્પ B"
                     />
                   </div>
@@ -2122,7 +2122,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="text"
                       value={questionForm.option_c_gujarati}
                       onChange={(e) => setQuestionForm({ ...questionForm, option_c_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વિકલ્પ C"
                     />
                   </div>
@@ -2134,7 +2134,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="text"
                       value={questionForm.option_d_gujarati}
                       onChange={(e) => setQuestionForm({ ...questionForm, option_d_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વિકલ્પ D"
                     />
                   </div>
@@ -2197,7 +2197,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 type="text"
                 value={categoryForm.name}
                 onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Enter category name"
               />
             </div>
@@ -2209,7 +2209,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
               {/* <textarea
                   value={categoryForm.description}
                   onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter description"
                   rows={3}
                 /> */}
@@ -2232,7 +2232,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                     type="text"
                     value={categoryForm.name_gujarati}
                     onChange={(e) => setCategoryForm({ ...categoryForm, name_gujarati: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="કેટેગરી નામ દાખલ કરો"
                   />
                 </div>
@@ -2244,7 +2244,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   {/* <textarea
                       value={categoryForm.description_gujarati}
                       onChange={(e) => setCategoryForm({ ...categoryForm, description_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વર્ણન દાખલ કરો"
                       rows={3}
                     /> */}
@@ -2268,7 +2268,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         id="edit_negative_marking_enabled"
                         checked={categoryForm.negative_marking_enabled}
                         onChange={(e) => setCategoryForm({ ...categoryForm, negative_marking_enabled: e.target.checked })}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
                       />
                       <div className="ml-3">
                         <label htmlFor="edit_negative_marking_enabled" className="block text-sm font-medium text-gray-700">
@@ -2293,7 +2293,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                             max="1"
                             value={categoryForm.negative_marks_per_wrong}
                             onChange={(e) => setCategoryForm({ ...categoryForm, negative_marks_per_wrong: parseFloat(e.target.value) || 0.25 })}
-                            className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                             required={categoryForm.negative_marking_enabled}
                           />
                           <span className="text-sm text-gray-600">marks</span>
@@ -2307,15 +2307,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 )}
 
                 {!shouldShowNegativeMarking() && (
-                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                  <div className="bg-primary-50 p-3 rounded-md border border-primary-200">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-5 w-5 text-primary-400" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm text-blue-700">
+                        <p className="text-sm text-primary-700">
                           <strong>Negative marking is not available for this category.</strong><br />
                           Negative marking only applies to categories that directly contain questions.
                           This category contains subcategories or is empty, so negative marking is not applicable.
@@ -2344,7 +2344,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                         step="1"
                         value={categoryForm.test_duration_minutes}
                         onChange={(e) => setCategoryForm({ ...categoryForm, test_duration_minutes: parseInt(e.target.value) || 60 })}
-                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                         required
                       />
                       <span className="text-sm text-gray-600">minutes</span>
@@ -2356,15 +2356,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 )}
 
                 {!shouldShowTestTiming() && (
-                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                  <div className="bg-primary-50 p-3 rounded-md border border-primary-200">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-5 w-5 text-primary-400" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm text-blue-700">
+                        <p className="text-sm text-primary-700">
                           <strong>Test timing is not available for this category.</strong><br />
                           Test timing only applies to categories that directly contain questions.
                           This category contains subcategories or is empty, so test timing is not applicable.
@@ -2387,7 +2387,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       id="edit_is_free_in_paid_series"
                       checked={categoryForm.is_free_in_paid_series}
                       onChange={(e) => setCategoryForm({ ...categoryForm, is_free_in_paid_series: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
                     />
                     <div className="ml-3">
                       <label htmlFor="edit_is_free_in_paid_series" className="block text-sm font-medium text-gray-700">
@@ -2402,15 +2402,15 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 )}
 
                 {!shouldShowNegativeMarking() && (
-                  <div className="bg-blue-50 p-3 rounded-md border border-blue-200">
+                  <div className="bg-primary-50 p-3 rounded-md border border-primary-200">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-5 w-5 text-primary-400" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm text-blue-700">
+                        <p className="text-sm text-primary-700">
                           <strong>Free access option is not available for this category.</strong><br />
                           This setting only applies to categories that directly contain questions.
                           This category contains subcategories or is empty, so this option is not applicable.
@@ -2433,7 +2433,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       id="is_active"
                       checked={categoryForm.is_active}
                       onChange={(e) => setCategoryForm({ ...categoryForm, is_active: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded mt-1"
                     />
                     <div className="ml-3">
                       <label htmlFor="is_active" className="block text-sm font-medium text-gray-700">
@@ -2470,7 +2470,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
             <button
               onClick={updateCategory}
               disabled={editCategoryLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {editCategoryLoading && (
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -2515,7 +2515,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   type="text"
                   value={questionForm.option_a}
                   onChange={(e) => setQuestionForm({ ...questionForm, option_a: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter option A"
                 />
               </div>
@@ -2528,7 +2528,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   type="text"
                   value={questionForm.option_b}
                   onChange={(e) => setQuestionForm({ ...questionForm, option_b: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter option B"
                 />
               </div>
@@ -2541,7 +2541,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   type="text"
                   value={questionForm.option_c}
                   onChange={(e) => setQuestionForm({ ...questionForm, option_c: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter option C"
                 />
               </div>
@@ -2554,7 +2554,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   type="text"
                   value={questionForm.option_d}
                   onChange={(e) => setQuestionForm({ ...questionForm, option_d: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter option D"
                 />
               </div>
@@ -2568,7 +2568,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                 <select
                   value={questionForm.correct_answer}
                   onChange={(e) => setQuestionForm({ ...questionForm, correct_answer: e.target.value as 'A' | 'B' | 'C' | 'D' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="A">A</option>
                   <option value="B">B</option>
@@ -2586,7 +2586,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                   min="1"
                   value={questionForm.marks}
                   onChange={(e) => setQuestionForm({ ...questionForm, marks: parseInt(e.target.value) || 1 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   placeholder="Enter marks"
                 />
               </div>
@@ -2630,7 +2630,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="text"
                       value={questionForm.option_a_gujarati}
                       onChange={(e) => setQuestionForm({ ...questionForm, option_a_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વિકલ્પ A"
                     />
                   </div>
@@ -2642,7 +2642,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="text"
                       value={questionForm.option_b_gujarati}
                       onChange={(e) => setQuestionForm({ ...questionForm, option_b_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વિકલ્પ B"
                     />
                   </div>
@@ -2654,7 +2654,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="text"
                       value={questionForm.option_c_gujarati}
                       onChange={(e) => setQuestionForm({ ...questionForm, option_c_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વિકલ્પ C"
                     />
                   </div>
@@ -2666,7 +2666,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
                       type="text"
                       value={questionForm.option_d_gujarati}
                       onChange={(e) => setQuestionForm({ ...questionForm, option_d_gujarati: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                       placeholder="વિકલ્પ D"
                     />
                   </div>
@@ -2710,7 +2710,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
             <button
               onClick={updateQuestion}
               disabled={editQuestionLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {editQuestionLoading && (
                 <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -2743,7 +2743,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
               <select
                 value={bulkAction}
                 onChange={(e) => setBulkAction(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="">Choose action...</option>
                 <option value="delete">Delete Categories</option>
@@ -2793,7 +2793,7 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
               <select
                 value={bulkAction}
                 onChange={(e) => setBulkAction(e.target.value as any)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               >
                 <option value="">Choose action...</option>
                 <option value="delete">Delete Questions</option>

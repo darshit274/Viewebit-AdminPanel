@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { X, Save, Loader, Layers } from 'lucide-react';
 import { SubjectHierarchy, Subject } from '../../services/subjectService';
 import subjectService from '../../services/subjectService';
@@ -310,9 +310,9 @@ export const HierarchyModal: React.FC<HierarchyModalProps> = ({
           </div>
 
           {parent && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <p className="text-sm font-medium text-blue-900 mb-1">Parent Context</p>
-              <p className="text-sm text-blue-700">
+            <div className="bg-primary-50 border border-primary-200 rounded-lg p-4">
+              <p className="text-sm font-medium text-primary-900 mb-1">Parent Context</p>
+              <p className="text-sm text-primary-700">
                 This will be created under: <strong>{parent.level_name}</strong> ({parent.level_type})
               </p>
             </div>

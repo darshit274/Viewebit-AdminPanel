@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { PlusIcon, EyeIcon, PencilIcon, TrashIcon, ChartBarIcon } from '@heroicons/react/24/outline';
@@ -584,7 +584,7 @@ const TestManagementPageNew: React.FC = () => {
         <div className="text-red-600 mb-4">Error loading test series</div>
         <button
           onClick={() => queryClient.invalidateQueries({ queryKey: ['testSeries'] })}
-          className="text-blue-600 hover:text-blue-800"
+          className="text-primary-600 hover:text-primary-800"
         >
           Try again
         </button>
@@ -602,7 +602,7 @@ const TestManagementPageNew: React.FC = () => {
         </div>
         <button
           onClick={handleCreate}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+          className="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 flex items-center gap-2"
         >
           <PlusIcon className="h-5 w-5" />
           Add Course
@@ -614,8 +614,8 @@ const TestManagementPageNew: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <ChartBarIcon className="h-6 w-6 text-blue-600" />
+              <div className="p-2 bg-primary-100 rounded-lg">
+                <ChartBarIcon className="h-6 w-6 text-primary-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Series</p>
@@ -670,13 +670,13 @@ const TestManagementPageNew: React.FC = () => {
                 placeholder="Search test series..."
                 value={filters.search}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <select
               value={filters.status}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
@@ -685,7 +685,7 @@ const TestManagementPageNew: React.FC = () => {
             <select
               value={pricingTypeFilter}
               onChange={(e) => setPricingTypeFilter(e.target.value as any)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Types</option>
               <option value="free">Free</option>
@@ -695,7 +695,7 @@ const TestManagementPageNew: React.FC = () => {
             <select
               value={filters.limit}
               onChange={(e) => handleLimitChange(Number(e.target.value))}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value={10}>10 / page</option>
               <option value={20}>20 / page</option>
@@ -707,8 +707,8 @@ const TestManagementPageNew: React.FC = () => {
 
         {/* Bulk Actions Bar */}
         {selectedCount > 0 && (
-          <div className="px-4 py-3 bg-blue-50 border-b flex items-center justify-between">
-            <div className="text-sm text-blue-700">
+          <div className="px-4 py-3 bg-primary-50 border-b flex items-center justify-between">
+            <div className="text-sm text-primary-700">
               {selectedCount} item{selectedCount > 1 ? 's' : ''} selected
             </div>
             <div className="flex gap-2">
@@ -751,7 +751,7 @@ const TestManagementPageNew: React.FC = () => {
                         type="checkbox"
                         checked={isAllSelected}
                         onChange={toggleSelectAll}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                       />
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -802,7 +802,7 @@ const TestManagementPageNew: React.FC = () => {
                             type="checkbox"
                             checked={isSelected(item.uuid)}
                             onChange={() => toggleSelection(item.uuid)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -819,7 +819,7 @@ const TestManagementPageNew: React.FC = () => {
                               ? 'bg-yellow-100 text-yellow-800'
                               : item.pricing_type === 'previous_years_question_papers'
                                 ? 'bg-purple-100 text-purple-800'
-                                : 'bg-blue-100 text-blue-800'
+                                : 'bg-primary-100 text-primary-800'
                               }`}>
                               {item.pricing_type === 'paid'
                                 ? 'Paid'
@@ -856,7 +856,7 @@ const TestManagementPageNew: React.FC = () => {
                           <div className="flex gap-2">
                             <button
                               onClick={() => navigate(`/test-series/${item.uuid}`)}
-                              className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg"
+                              className="p-2 text-primary-600 hover:text-primary-800 hover:bg-primary-50 rounded-lg"
                               title="View Categories"
                             >
                               <EyeIcon className="h-4 w-4" />
@@ -903,7 +903,7 @@ const TestManagementPageNew: React.FC = () => {
                 >
                   Previous
                 </button>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded">
+                <span className="px-3 py-1 bg-primary-100 text-primary-800 rounded">
                   {data.pagination.page} of {data.pagination.totalPages}
                 </span>
                 <button
@@ -936,7 +936,7 @@ const TestManagementPageNew: React.FC = () => {
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
               </div>
@@ -949,7 +949,7 @@ const TestManagementPageNew: React.FC = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 /> */}
                 <RichTextEditor
                   value={formData.description}
@@ -971,7 +971,7 @@ const TestManagementPageNew: React.FC = () => {
                     type="text"
                     value={formData.title_gujarati}
                     onChange={(e) => setFormData({ ...formData, title_gujarati: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="ગુજરાતીમાં શીર્ષક"
                   />
                 </div>
@@ -984,7 +984,7 @@ const TestManagementPageNew: React.FC = () => {
                     value={formData.description_gujarati}
                     onChange={(e) => setFormData({ ...formData, description_gujarati: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     placeholder="ગુજરાતીમાં વર્ણન"
                   /> */}
                   <RichTextEditor
@@ -1019,7 +1019,7 @@ const TestManagementPageNew: React.FC = () => {
                           is_course_closed: isNonPaid ? false : formData.is_course_closed
                         });
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                     >
                       <option value="free">Free - Open access for all students</option>
                       <option value="paid">Paid - Requires subscription to access</option>
@@ -1036,7 +1036,7 @@ const TestManagementPageNew: React.FC = () => {
                         <select
                           value={formData.currency}
                           onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                          className="px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                          className="px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-gray-50"
                         >
                           <option value="INR">₹</option>
                           <option value="USD">$</option>
@@ -1047,7 +1047,7 @@ const TestManagementPageNew: React.FC = () => {
                           min="0"
                           value={formData.price}
                           onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                          className="flex-1 px-3 py-2 border-l-0 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 px-3 py-2 border-l-0 border border-gray-300 rounded-r-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                           required
                         />
                       </div>
@@ -1069,7 +1069,7 @@ const TestManagementPageNew: React.FC = () => {
                         max="100"
                         value={formData.discount_percentage}
                         onChange={(e) => setFormData({ ...formData, discount_percentage: parseFloat(e.target.value) || 0 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="0.00"
                       />
                     </div>
@@ -1084,7 +1084,7 @@ const TestManagementPageNew: React.FC = () => {
                         min="1"
                         value={formData.validity_days || 365}
                         onChange={(e) => setFormData({ ...formData, validity_days: parseInt(e.target.value) || 365 })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                         placeholder="365"
                       />
                     </div>
@@ -1099,7 +1099,7 @@ const TestManagementPageNew: React.FC = () => {
                         id="is_featured"
                         checked={formData.is_featured}
                         onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                       />
                       <label htmlFor="is_featured" className="ml-2 block text-sm text-gray-700">
                         Featured Series ⭐
@@ -1125,7 +1125,7 @@ const TestManagementPageNew: React.FC = () => {
                     id="is_active"
                     checked={formData.is_active}
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                   />
                   <label htmlFor="is_active" className="ml-2 block text-sm text-gray-700">
                     Active (test series is available for use)
@@ -1141,7 +1141,7 @@ const TestManagementPageNew: React.FC = () => {
                       id="is_course_closed"
                       checked={formData.is_course_closed}
                       onChange={(e) => setFormData({ ...formData, is_course_closed: e.target.checked })}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                     />
                     <label htmlFor="is_course_closed" className="ml-2 block text-sm text-gray-700">
                       Course Closed (prevents new enrollments)
@@ -1165,7 +1165,7 @@ const TestManagementPageNew: React.FC = () => {
                 <button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
                 >
                   {createMutation.isPending || updateMutation.isPending ? 'Saving...' : 'Save'}
                 </button>

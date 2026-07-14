@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -109,7 +109,7 @@ export function PositionInput({ currentPosition, total, onMove }: PositionInputP
       onChange={e => setValue(e.target.value)}
       onBlur={commit}
       onKeyDown={e => { if (e.key === 'Enter') commit(); }}
-      className="w-14 text-center text-xs border border-gray-300 rounded px-1 py-0.5 focus:outline-none focus:border-blue-400"
+      className="w-14 text-center text-xs border border-gray-300 rounded px-1 py-0.5 focus:outline-none focus:border-primary-400"
       title={`Position (1–${total}). Type a number and press Enter or click away.`}
     />
   );

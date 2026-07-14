@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { X, Activity, CheckCircle, Clock, Mail, Phone, Calendar, Trophy, Layers, Target } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { testAttemptsService, StudentHistoryResponse, AttemptStatus } from '../../services/testAttempts';
@@ -6,7 +6,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner';
 import { formatDate } from '../../lib/utils';
 
 const STATUS_BADGE: Record<AttemptStatus, { label: string; className: string }> = {
-  active:    { label: 'In Progress', className: 'bg-blue-100 text-blue-800 border border-blue-200' },
+  active:    { label: 'In Progress', className: 'bg-primary-100 text-primary-800 border border-primary-200' },
   paused:    { label: 'Paused',      className: 'bg-yellow-100 text-yellow-800 border border-yellow-200' },
   completed: { label: 'Completed',   className: 'bg-green-100 text-green-800 border border-green-200' },
   expired:   { label: 'Expired',     className: 'bg-gray-100 text-gray-700 border border-gray-200' },
@@ -88,16 +88,16 @@ export const StudentTestHistoryModal: React.FC<Props> = ({ isOpen, studentUuid, 
           ) : !data ? null : (
             <div className="p-6 space-y-6">
               {/* Student info card */}
-              <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-lg border border-primary-100 p-5">
+              <div className="bg-gradient-to-r from-primary-50 to-primary-50 rounded-lg border border-primary-100 p-5">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h3 className="text-xl font-bold text-gray-900">{data.student.name}</h3>
                     <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-700">
-                      <a href={`mailto:${data.student.email}`} className="flex items-center gap-1 hover:text-blue-600">
+                      <a href={`mailto:${data.student.email}`} className="flex items-center gap-1 hover:text-primary-600">
                         <Mail className="h-4 w-4" /> {data.student.email}
                       </a>
                       {data.student.phone && (
-                        <a href={`tel:${data.student.phone}`} className="flex items-center gap-1 hover:text-blue-600">
+                        <a href={`tel:${data.student.phone}`} className="flex items-center gap-1 hover:text-primary-600">
                           <Phone className="h-4 w-4" /> {data.student.phone}
                         </a>
                       )}
@@ -119,7 +119,7 @@ export const StudentTestHistoryModal: React.FC<Props> = ({ isOpen, studentUuid, 
                       </span>
                     )}
                     {data.student.isActive ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 border border-primary-200">
                         Active
                       </span>
                     ) : (
@@ -133,7 +133,7 @@ export const StudentTestHistoryModal: React.FC<Props> = ({ isOpen, studentUuid, 
 
               {/* Summary stats */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <SummaryStat icon={<Activity className="h-5 w-5 text-blue-600" />} label="Total Attempts" value={data.summary.totalAttempts} />
+                <SummaryStat icon={<Activity className="h-5 w-5 text-primary-600" />} label="Total Attempts" value={data.summary.totalAttempts} />
                 <SummaryStat icon={<CheckCircle className="h-5 w-5 text-green-600" />} label="Completed" value={data.summary.completedAttempts} />
                 <SummaryStat icon={<Clock className="h-5 w-5 text-yellow-600" />} label="In Progress" value={data.summary.inProgressAttempts} />
                 <SummaryStat icon={<Target className="h-5 w-5 text-purple-600" />} label="Unique Tests" value={data.summary.uniqueTests} />

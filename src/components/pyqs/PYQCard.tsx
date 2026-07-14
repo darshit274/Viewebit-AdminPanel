@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { 
   Calendar, 
   Clock, 
@@ -47,7 +47,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
 
   const getPaperTypeColor = (type: string) => {
     switch (type) {
-      case 'prelims': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'prelims': return 'bg-primary-100 text-primary-800 border-primary-200';
       case 'mains': return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'full': return 'bg-green-100 text-green-800 border-green-200';
       case 'sectional': return 'bg-orange-100 text-orange-800 border-orange-200';
@@ -89,7 +89,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-indigo-700 transition-colors">
+              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-secondary-700 transition-colors">
                 {pyq.title}
               </h3>
               {pyq.is_featured && (
@@ -128,7 +128,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
                 </span>
               )}
               {pyq.supports_multilanguage && (
-                <Globe className="h-4 w-4 text-blue-500" title="Multi-language support" />
+                <Globe className="h-4 w-4 text-primary-500" title="Multi-language support" />
               )}
             </div>
           </div>
@@ -229,7 +229,7 @@ export const PYQCard: React.FC<PYQCardProps> = ({
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-indigo-600" />
+              <FileText className="h-4 w-4 text-secondary-600" />
               <div>
                 <p className="text-xs text-gray-600">Questions</p>
                 <p className="text-sm font-semibold text-gray-900">{pyq.total_questions}</p>

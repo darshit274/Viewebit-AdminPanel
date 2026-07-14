@@ -1,10 +1,10 @@
-import { zodResolver } from '@hookform/resolvers/zod';
+﻿import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { z } from 'zod';
-import logo from '../../assets/MockTale.jpg'; // Adjust the path as necessary
+import logo from '../../assets/Viewebit.jpg'; // Adjust the path as necessary
 import { authService } from '../../services/auth';
 import { OTPVerificationForm } from './OTPVerificationForm';
 
@@ -78,10 +78,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         <div>
           <div className="mx-auto h-20 w-20 flex items-center justify-center rounded-full bg-primary-100">
             {/* <Shield className="h-8 w-8 text-primary-600" /> */}
-            <img src={logo} alt="MockTale Logo" style={{borderRadius:"50%"}} />
+            <img src={logo} alt="Viewebit Logo" style={{borderRadius:"50%"}} />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            MockTale Admin
+            Viewebit Admin
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in to your admin dashboard
@@ -102,7 +102,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
                   {...register('email')}
                   type="email"
                   className={`block w-full pl-10 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors ${errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : 'border-gray-300'}`}
-                  placeholder="admin@mocktale.com"
+                  placeholder="admin@viewebit.com"
                 />
               </div>
               {errors.email && (
@@ -146,7 +146,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary-600 to-secondary-500 hover:from-primary-700 hover:to-secondary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
             >
               {isLoading ? (
                 <div className="flex items-center">

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -13,9 +13,9 @@ interface StatsCardProps {
 
 const colorClasses = {
   blue: {
-    bg: 'bg-blue-50',
-    icon: 'text-blue-600',
-    text: 'text-blue-600',
+    bg: 'bg-primary-50',
+    icon: 'text-primary-600',
+    text: 'text-primary-600',
   },
   green: {
     bg: 'bg-green-50',

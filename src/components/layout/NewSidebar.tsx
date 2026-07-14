@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -136,10 +136,10 @@ export const NewSidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     } lg:translate-x-0 lg:static lg:inset-0`}>
       
       {/* Header */}
-      <div className="flex items-center justify-center h-16 px-4 bg-primary-600 text-white">
+      <div className="flex items-center justify-center h-16 px-4 bg-gradient-to-r from-primary-700 to-secondary-500 text-white">
         <div className="flex items-center space-x-2">
           <GraduationCap className="h-8 w-8" />
-          <span className="text-xl font-bold">Mocktail Admin</span>
+          <span className="text-xl font-bold">Viewebit Admin</span>
         </div>
       </div>
 

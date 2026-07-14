@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   Search, Plus, Edit, Trash2, CreditCard, Calendar, 
   DollarSign, Users, CheckCircle, XCircle, Clock,
@@ -119,7 +119,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               >
                 <option value="pending">Pending</option>
@@ -137,7 +137,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
                 type="date"
                 value={formData.expiry_date}
                 onChange={(e) => setFormData({ ...formData, expiry_date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <p className="text-xs text-gray-500 mt-1">Leave empty for lifetime access</p>
             </div>
@@ -154,7 +154,7 @@ const EditSubscriptionModal: React.FC<EditSubscriptionModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
               disabled={loading}
             >
               {loading ? 'Updating...' : 'Update'}
@@ -311,7 +311,7 @@ export default function SubscriptionsPage() {
                   <p className="text-sm text-gray-600">Total Subscriptions</p>
                   <p className="text-2xl font-semibold">{stats.total_subscriptions}</p>
                 </div>
-                <CreditCard className="h-8 w-8 text-blue-500" />
+                <CreditCard className="h-8 w-8 text-primary-500" />
               </div>
             </div>
 
@@ -368,7 +368,7 @@ export default function SubscriptionsPage() {
                   placeholder="Search by user email or username..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </form>
@@ -379,7 +379,7 @@ export default function SubscriptionsPage() {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Status</option>
               <option value="completed">Completed</option>
@@ -391,7 +391,7 @@ export default function SubscriptionsPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="purchase_date">Purchase Date</option>
               <option value="amount_paid">Amount</option>
@@ -540,7 +540,7 @@ export default function SubscriptionsPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => setEditModal({ isOpen: true, subscription })}
-                          className="text-indigo-600 hover:text-indigo-900 mr-3"
+                          className="text-secondary-600 hover:text-secondary-900 mr-3"
                         >
                           <Edit className="h-4 w-4" />
                         </button>

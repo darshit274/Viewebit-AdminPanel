@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, RotateCw, List, Grid3X3, ChevronRight } from 'lucide-react';
 import newHierarchyService, { TestSeries, HierarchyCategory, NewTest } from '../../services/newHierarchyService';
@@ -451,7 +451,7 @@ const NewHierarchyPage: React.FC = () => {
         <div className="flex items-center space-x-4">
           <button
             onClick={handleCreateClick}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+            className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center space-x-2"
           >
             <Plus />
             <span>{getCreateButtonLabel()}</span>

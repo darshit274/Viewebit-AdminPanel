@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { X, CreditCard } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -272,7 +272,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
       <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b">
           <div className="flex items-center">
-            <CreditCard className="h-6 w-6 text-blue-600 mr-3" />
+            <CreditCard className="h-6 w-6 text-primary-600 mr-3" />
             <div>
               <h2 className="text-xl font-semibold">Grant Subscription</h2>
               <p className="text-sm text-gray-600">Give a subscription to any user</p>
@@ -294,7 +294,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                   onClick={() => handleTypeSwitch('test_series')}
                   className={`flex-1 py-2 text-sm font-medium transition-colors ${
                     subscriptionType === 'test_series'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -305,7 +305,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                   onClick={() => handleTypeSwitch('pdf_category')}
                   className={`flex-1 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
                     subscriptionType === 'pdf_category'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-primary-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -361,7 +361,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
                   type="number"
                   value={formData.amount_paid}
                   onChange={(e) => setFormData({ ...formData, amount_paid: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                   min="0"
                   step="0.01"
                 />
@@ -383,7 +383,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
               <select
                 value={formData.payment_method}
                 onChange={(e) => setFormData({ ...formData, payment_method: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="admin_grant">Admin Grant (Free)</option>
                 <option value="manual_payment">Manual Payment</option>
@@ -394,9 +394,9 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
 
             {/* Summary */}
             {formData.user_id && itemSelected && (
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-medium text-blue-900 mb-2">Subscription Summary</h3>
-                <div className="text-sm text-blue-800 space-y-1">
+              <div className="bg-primary-50 p-4 rounded-lg">
+                <h3 className="font-medium text-primary-900 mb-2">Subscription Summary</h3>
+                <div className="text-sm text-primary-800 space-y-1">
                   <p><span className="font-medium">User:</span> {selectedUser?.username}</p>
                   <p>
                     <span className="font-medium">
@@ -425,7 +425,7 @@ export const GrantSubscriptionModal: React.FC<GrantSubscriptionModalProps> = ({
             </button>
             <button
               onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 disabled:opacity-50"
               disabled={loading || !formData.user_id || !itemSelected}
             >
               {loading ? 'Granting...' : 'Grant Subscription'}

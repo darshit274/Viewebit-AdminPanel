@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Search, ChevronDown, X, Check, Loader2 } from 'lucide-react';
 
 export interface SearchableOption {
@@ -183,7 +183,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
       )}
 
       <div
-        className={`relative flex items-center border rounded-md focus-within:ring-2 focus-within:ring-blue-500 ${
+        className={`relative flex items-center border rounded-md focus-within:ring-2 focus-within:ring-primary-500 ${
           disabled ? 'bg-gray-100 cursor-not-allowed border-gray-200' : 'bg-white border-gray-300'
         }`}
       >
@@ -270,8 +270,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                       commitSelection(opt);
                     }}
                     className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer ${
-                      isHighlighted ? 'bg-blue-50' : ''
-                    } ${isSelected ? 'text-blue-700 font-medium' : 'text-gray-700'}`}
+                      isHighlighted ? 'bg-primary-50' : ''
+                    } ${isSelected ? 'text-primary-700 font-medium' : 'text-gray-700'}`}
                   >
                     <div className="min-w-0 flex-1">
                       <div className="truncate">{opt.label}</div>
@@ -279,7 +279,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                         <div className="text-xs text-gray-500 truncate">{opt.sublabel}</div>
                       )}
                     </div>
-                    {isSelected && <Check className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />}
+                    {isSelected && <Check className="h-4 w-4 text-primary-600 flex-shrink-0 ml-2" />}
                   </li>
                 );
               })}

@@ -1,4 +1,4 @@
-// Environment configuration
+﻿// Environment configuration
 export const ENV = {
   API_URL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
   NODE_ENV: import.meta.env.MODE,
@@ -8,10 +8,10 @@ export const ENV = {
 
 // Application constants
 export const APP_CONFIG = {
-  NAME: 'MockTale Admin',
+  NAME: 'Viewebit Admin',
   VERSION: '1.0.0',
-  DESCRIPTION: 'Admin Panel for MockTale Education Platform',
-  COMPANY: 'MockTale Academy',
+  DESCRIPTION: 'Admin Panel for Viewebit Education Platform',
+  COMPANY: 'Viewebit Academy',
 } as const;
 
 // API endpoints

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PDF Hierarchy admin page — mirrors SimpleDynamicHierarchyPage's UX but for
  * PDFs. Routes:
  *   /pdf-hierarchy                              → list root pdf categories
@@ -444,13 +444,13 @@ const PdfHierarchyPage: React.FC = () => {
           </h1>
           {/* Breadcrumb */}
           <nav className="text-sm text-gray-600 mt-1 flex flex-wrap items-center gap-1">
-            <Link to="/pdf-hierarchy" className="hover:text-blue-600">Root</Link>
+            <Link to="/pdf-hierarchy" className="hover:text-primary-600">Root</Link>
             {currentCategory?.parent_category && (
               <>
                 <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
                 <Link
                   to={`/pdf-hierarchy/categories/${currentCategory.parent_category.uuid}`}
-                  className="hover:text-blue-600"
+                  className="hover:text-primary-600"
                 >
                   {currentCategory.parent_category.name}
                 </Link>
@@ -598,7 +598,7 @@ const PdfHierarchyPage: React.FC = () => {
                 disabled={safePage <= 1}
                 className="px-3 py-1 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
               >Prev</button>
-              <span className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded">
+              <span className="px-3 py-1 text-sm bg-primary-100 text-primary-800 rounded">
                 {safePage} / {totalPages}
               </span>
               <button
@@ -811,7 +811,7 @@ const PdfHierarchyPage: React.FC = () => {
               </div>
 
               {/* Access is inherited from the main category — no per-PDF choice */}
-              <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-800">
+              <div className="px-3 py-2 bg-primary-50 border border-primary-200 rounded-md text-xs text-primary-800">
                 Free / paid access is set on the main category, so this PDF will
                 automatically use the main category's access settings.
               </div>
@@ -888,7 +888,7 @@ const PdfHierarchyPage: React.FC = () => {
                   className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
-              <div className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-800">
+              <div className="px-3 py-2 bg-primary-50 border border-primary-200 rounded-md text-xs text-primary-800">
                 Free / paid access is set on the main category, so this PDF
                 automatically uses the main category's access settings.
               </div>
@@ -979,7 +979,7 @@ const SortableCategoryRow: React.FC<SortableCategoryRowProps> = ({
       <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-100 rounded">
         #{index + 1} / {total}
       </span>
-      <button onClick={onEdit} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded" title="Edit">
+      <button onClick={onEdit} className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded" title="Edit">
         <Pencil className="h-4 w-4" />
       </button>
       <button onClick={onDelete} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded" title="Delete">
@@ -1020,7 +1020,7 @@ const SortablePdfRow: React.FC<SortablePdfRowProps> = ({ pdf, onEdit, onDelete }
       }`}>
         {pdf.is_free ? 'Free' : 'Premium'}
       </span>
-      <button onClick={onEdit} className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded" title="Edit metadata">
+      <button onClick={onEdit} className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 rounded" title="Edit metadata">
         <Pencil className="h-4 w-4" />
       </button>
       <button onClick={onDelete} className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded" title="Delete PDF">
