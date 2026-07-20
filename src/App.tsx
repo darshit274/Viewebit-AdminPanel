@@ -28,6 +28,12 @@ import SimpleDynamicHierarchyPage from './pages/SimpleDynamicHierarchyPage';
 import { ReportsDashboard } from './pages/reports/ReportsDashboard';
 import { QuestionReportDetails } from './pages/reports/QuestionReportDetails';
 import QueriesPage from './pages/QueriesPage';
+import { BranchesPage } from './pages/branches/BranchesPage';
+import { BranchDetailPage } from './pages/branches/BranchDetailPage';
+import RevenuePage from './pages/revenue/RevenuePage';
+import { RolesPermissionsPage } from './pages/roles/RolesPermissionsPage';
+import { AdmissionsPage } from './pages/admissions/AdmissionsPage';
+import { EducatorsPage } from './pages/educators/EducatorsPage';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -180,6 +186,36 @@ const navigate = useNavigate();
         <Route path="settings" element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="branches" element={
+          <ProtectedRoute>
+            <BranchesPage />
+          </ProtectedRoute>
+        } />
+        <Route path="branches/:branchUuid" element={
+          <ProtectedRoute>
+            <BranchDetailPage />
+          </ProtectedRoute>
+        } />
+        <Route path="roles" element={
+          <ProtectedRoute>
+            <RolesPermissionsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="admissions" element={
+          <ProtectedRoute>
+            <AdmissionsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="educators" element={
+          <ProtectedRoute>
+            <EducatorsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="revenue" element={
+          <ProtectedRoute>
+            <RevenuePage />
           </ProtectedRoute>
         } />
       </Route>

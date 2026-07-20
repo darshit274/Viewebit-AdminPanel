@@ -2,6 +2,7 @@
 import {
   Activity,
   BookOpen,
+  Building2,
   CreditCard,
   FileText,
   Flag,
@@ -9,7 +10,11 @@ import {
   LogOut,
   MessageSquare,
   Settings,
-  Users
+  ShieldCheck,
+  UserCheck,
+  Users,
+  GraduationCap,
+  TrendingUp
 } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -20,10 +25,15 @@ import { reportsService } from '../../services/reports';
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Students', href: '/students', icon: Users },
+  { name: 'Admissions', href: '/admissions', icon: UserCheck },
   { name: 'Test Attempts', href: '/test-attempts', icon: Activity },
   { name: 'Subscriptions', href: '/subscriptions', icon: CreditCard },
+  { name: 'Revenue & Payments', href: '/revenue', icon: TrendingUp },
   { name: 'Course Management', href: '/test-management', icon: BookOpen },
   { name: 'PDFs', href: '/pdf-hierarchy', icon: FileText },
+  { name: 'Branches & Departments', href: '/branches', icon: Building2 },
+  { name: 'Educators', href: '/educators', icon: GraduationCap },
+  { name: 'Roles & Permissions', href: '/roles', icon: ShieldCheck },
   { name: 'User Queries', href: '/queries', icon: MessageSquare },
   { name: 'Reports', href: '/reports', icon: Flag },
   { name: 'Settings', href: '/settings', icon: Settings },
