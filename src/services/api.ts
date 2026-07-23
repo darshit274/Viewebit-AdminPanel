@@ -36,11 +36,15 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
+      // Only force a redirect if we actually had a session to expire — a failed
+      // login attempt never had a token, and should just show its own inline error.
+      const hadToken = !!sessionStorage.getItem("admin_token");
+
       sessionStorage.removeItem("admin_token");
       sessionStorage.removeItem("admin_user");
-      if (!window.location.href.includes("login")) {
-        window.location.href = "/login";
+
+      if (hadToken) {
+        window.location.href = import.meta.env.VITE_BASE_PATH || "/";
       }
     }
     return Promise.reject(error);
