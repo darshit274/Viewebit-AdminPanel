@@ -31,6 +31,7 @@ const navigation = [
   { name: 'Revenue & Payments', href: '/revenue', icon: TrendingUp },
   { name: 'Course Management', href: '/test-management', icon: BookOpen },
   { name: 'PDFs', href: '/pdf-hierarchy', icon: FileText },
+  { name: 'Institutions', href: '/institutions', icon: Building2 },
   { name: 'Branches & Departments', href: '/branches', icon: Building2 },
   { name: 'Educators', href: '/educators', icon: GraduationCap },
   { name: 'Roles & Permissions', href: '/roles', icon: ShieldCheck },

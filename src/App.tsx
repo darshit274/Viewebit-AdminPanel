@@ -28,6 +28,7 @@ import SimpleDynamicHierarchyPage from './pages/SimpleDynamicHierarchyPage';
 import { ReportsDashboard } from './pages/reports/ReportsDashboard';
 import { QuestionReportDetails } from './pages/reports/QuestionReportDetails';
 import QueriesPage from './pages/QueriesPage';
+import { InstitutionsPage } from './pages/institutions/InstitutionsPage';
 import { BranchesPage } from './pages/branches/BranchesPage';
 import { BranchDetailPage } from './pages/branches/BranchDetailPage';
 import RevenuePage from './pages/revenue/RevenuePage';
@@ -186,6 +187,11 @@ const navigate = useNavigate();
         <Route path="settings" element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="institutions" element={
+          <ProtectedRoute>
+            <InstitutionsPage />
           </ProtectedRoute>
         } />
         <Route path="branches" element={

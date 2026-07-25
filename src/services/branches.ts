@@ -8,6 +8,7 @@ export interface Institution {
   logo_url?: string | null;
   contact_email?: string | null;
   is_active: boolean;
+  pricing_mode: 'school' | 'private_educator' | 'coaching_center';
 }
 
 export interface Department {
@@ -38,6 +39,42 @@ export interface Branch {
 export const institutionsService = {
   getInstitutionsForDropdown: async (): Promise<{ success: boolean; data: Institution[] }> => {
     const response = await api.get('/admin/institutions/dropdown');
+    return response.data;
+  },
+
+  getInstitutions: async (params?: { search?: string; page?: number; limit?: number }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.search) queryParams.append('search', params.search);
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const response = await api.get(`/admin/institutions?${queryParams}`);
+    return response.data;
+  },
+
+  getInstitutionById: async (id: number) => {
+    const response = await api.get(`/admin/institutions/${id}`);
+    return response.data;
+  },
+
+  createInstitution: async (data: {
+    name: string;
+    slug: string;
+    logo_url?: string;
+    contact_email?: string;
+    pricing_mode: 'school' | 'private_educator' | 'coaching_center';
+  }) => {
+    const response = await api.post('/admin/institutions', data);
+    return response.data;
+  },
+
+  updateInstitution: async (id: number, data: Partial<Institution>) => {
+    const response = await api.put(`/admin/institutions/${id}`, data);
+    return response.data;
+  },
+
+  deleteInstitution: async (id: number) => {
+    const response = await api.delete(`/admin/institutions/${id}`);
     return response.data;
   },
 };
