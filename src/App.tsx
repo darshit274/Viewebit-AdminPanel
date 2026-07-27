@@ -35,6 +35,7 @@ import RevenuePage from './pages/revenue/RevenuePage';
 import { RolesPermissionsPage } from './pages/roles/RolesPermissionsPage';
 import { AdmissionsPage } from './pages/admissions/AdmissionsPage';
 import { EducatorsPage } from './pages/educators/EducatorsPage';
+import AdminCoursesPage from './pages/courses/AdminCoursesPage';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -85,6 +86,11 @@ const navigate = useNavigate();
         <Route path="test-management" element={
           <ProtectedRoute>
             <TestManagementPageNew />
+          </ProtectedRoute>
+        } />
+        <Route path="courses" element={
+          <ProtectedRoute>
+            <AdminCoursesPage />
           </ProtectedRoute>
         } />
         <Route path="test-series/:testSeriesUuid" element={
