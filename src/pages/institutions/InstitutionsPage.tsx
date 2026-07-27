@@ -264,7 +264,7 @@ export const InstitutionsPage: React.FC = () => {
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${institution.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                           {institution.is_active ? 'Active' : 'Inactive'}
                         </span>
-                        <span className="text-sm text-gray-500">{PRICING_MODE_LABELS[institution.pricing_mode]}</span>
+                        <span className="text-sm text-gray-500">{PRICING_MODE_LABELS[institution.pricing_mode || 'coaching_center']}</span>
                       </div>
                     </div>
                   </div>

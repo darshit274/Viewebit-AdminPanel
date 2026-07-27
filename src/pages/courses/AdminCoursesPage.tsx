@@ -10,6 +10,12 @@ const STATUS_BADGE: Record<AdminCourseListItem['status'], string> = {
   archived: 'bg-red-100 text-red-800',
 };
 
+const PRICING_MODE_LABELS: Record<'school' | 'private_educator' | 'coaching_center', string> = {
+  school: 'School (always free)',
+  private_educator: 'Private Educator (educator sets price)',
+  coaching_center: 'Coaching Center (admin sets price)',
+};
+
 interface SetPriceModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -138,6 +144,9 @@ const AdminCoursesPage: React.FC = () => {
                         <div className="flex items-center space-x-4 mt-1">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${STATUS_BADGE[course.status]}`}>
                             {course.status}
+                          </span>
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {PRICING_MODE_LABELS[pricingMode as keyof typeof PRICING_MODE_LABELS]}
                           </span>
                           <span className="text-sm text-gray-500">
                             {course.testSeries
