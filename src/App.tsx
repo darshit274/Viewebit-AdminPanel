@@ -36,6 +36,7 @@ import { RolesPermissionsPage } from './pages/roles/RolesPermissionsPage';
 import { AdmissionsPage } from './pages/admissions/AdmissionsPage';
 import { EducatorsPage } from './pages/educators/EducatorsPage';
 import AdminCoursesPage from './pages/courses/AdminCoursesPage';
+import DataSubjectRequestsPage from './pages/privacy/DataSubjectRequestsPage';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -228,6 +229,11 @@ const navigate = useNavigate();
         <Route path="revenue" element={
           <ProtectedRoute>
             <RevenuePage />
+          </ProtectedRoute>
+        } />
+        <Route path="privacy-requests" element={
+          <ProtectedRoute>
+            <DataSubjectRequestsPage />
           </ProtectedRoute>
         } />
       </Route>

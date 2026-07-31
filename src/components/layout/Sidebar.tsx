@@ -7,6 +7,7 @@ import {
   FileText,
   Flag,
   Home,
+  Lock,
   LogOut,
   MessageSquare,
   Settings,
@@ -38,6 +39,7 @@ const navigation = [
   { name: 'Roles & Permissions', href: '/roles', icon: ShieldCheck },
   { name: 'User Queries', href: '/queries', icon: MessageSquare },
   { name: 'Reports', href: '/reports', icon: Flag },
+  { name: 'Privacy & Data Requests', href: '/privacy-requests', icon: Lock },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
