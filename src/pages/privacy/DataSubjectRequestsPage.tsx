@@ -79,6 +79,7 @@ const DataSubjectRequestsPage: React.FC = () => {
   const [searching, setSearching] = useState(false);
   const [result, setResult] = useState<GdprSubjectSummary | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const [requests, setRequests] = useState<DataSubjectRequestRecord[]>([]);
   const [page, setPage] = useState(1);
@@ -92,8 +93,8 @@ const DataSubjectRequestsPage: React.FC = () => {
       setRequests(response.data || []);
       setTotalPages(response.pagination?.totalPages || 1);
       setPage(targetPage);
-    } catch (error) {
-      toast.error('Failed to load recent requests');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to load recent requests');
     } finally {
       setRequestsLoading(false);
     }
@@ -120,6 +121,7 @@ const DataSubjectRequestsPage: React.FC = () => {
 
   const handleExport = async () => {
     if (!result) return;
+    setExporting(true);
     try {
       const blob = await gdprService.exportSubject(result.subjectType, result.uuid);
       const url = window.URL.createObjectURL(blob);
@@ -134,6 +136,8 @@ const DataSubjectRequestsPage: React.FC = () => {
       loadRequests(1);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to export data');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -185,9 +189,10 @@ const DataSubjectRequestsPage: React.FC = () => {
             <div className="flex gap-2">
               <button
                 onClick={handleExport}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary-600 border border-primary-200 rounded-md hover:bg-primary-50"
+                disabled={exporting}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-primary-600 border border-primary-200 rounded-md hover:bg-primary-50 disabled:opacity-50"
               >
-                <Download className="h-4 w-4" /> Export Data
+                <Download className="h-4 w-4" /> {exporting ? 'Exporting...' : 'Export Data'}
               </button>
               <button
                 onClick={() => setModalOpen(true)}
@@ -215,7 +220,7 @@ const DataSubjectRequestsPage: React.FC = () => {
               <div key={r.id} className="p-4 flex items-center justify-between text-sm">
                 <div>
                   <span className="font-medium text-gray-900">{r.request_type === 'export' ? 'Export' : 'Anonymize'}</span>
-                  <span className="text-gray-500"> · {r.subject_type} · {r.subject_uuid.slice(0, 8)}</span>
+                  <span className="text-gray-500"> · {r.subject_type} · {r.subject_uuid.slice(0, 8)} · by {r.performed_by_admin_id.slice(0, 8)}</span>
                   {r.reason && <p className="text-gray-500 mt-1">{r.reason}</p>}
                 </div>
                 <span className="text-gray-400">{new Date(r.created_at).toLocaleString()}</span>
@@ -245,8 +250,15 @@ const DataSubjectRequestsPage: React.FC = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         subject={result}
-        onSuccess={() => {
-          if (result) setResult({ ...result, is_anonymized: true });
+        onSuccess={async () => {
+          if (result) {
+            try {
+              const response = await gdprService.search(result.uuid, result.subjectType);
+              setResult(response.data);
+            } catch (error: any) {
+              toast.error(error.response?.data?.message || 'Failed to refresh record after anonymization');
+            }
+          }
           loadRequests(1);
         }}
       />
