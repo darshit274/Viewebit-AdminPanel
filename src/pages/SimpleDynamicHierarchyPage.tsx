@@ -462,28 +462,28 @@ const SimpleDynamicHierarchyPage: React.FC = () => {
     saveQuestions(reordered);
   };
 
-  // Build breadcrumb trail
+  // Build breadcrumb trail by walking up the parent chain to the root
   const buildBreadcrumb = async (currentCategoryUuid: string): Promise<Category[]> => {
     const breadcrumbTrail: Category[] = [];
+    let nextUuid: string | null = currentCategoryUuid;
 
     try {
-      // For now, we'll build a simple breadcrumb based on the current category
-      // In a full implementation, you'd need to fetch parent categories
-      const response = await fetch(`${API_BASE}/categories/${currentCategoryUuid}`, { headers: apiHeaders });
-      const result = await response.json();
+      while (nextUuid) {
+        const response = await fetch(`${API_BASE}/categories/${nextUuid}`, { headers: apiHeaders });
+        const result = await response.json();
 
-      if (result.success && result.data.category) {
-        const category = result.data.category;
+        if (!result.success || !result.data?.category) break;
 
-        // If the category has a parent, we could recursively build the full path
-        // For now, we'll just add the current category's parent info if available
-        if (category.parent_category_id) {
-          // This is a simplified approach - in a full implementation you'd recursively fetch parents
-          breadcrumbTrail.push({
-            uuid: category.parent_category_id,
-            name: 'Parent Category', // In real implementation, fetch the actual parent name
-            hierarchy_level: category.hierarchy_level - 1
+        const parent = result.data.category.parent_category;
+        if (parent) {
+          breadcrumbTrail.unshift({
+            uuid: parent.uuid,
+            name: parent.name,
+            hierarchy_level: parent.hierarchy_level
           } as Category);
+          nextUuid = parent.uuid;
+        } else {
+          nextUuid = null;
         }
       }
     } catch (error) {
