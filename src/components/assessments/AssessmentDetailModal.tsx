@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 import { assessmentService, type AssessmentLead, type UpdateLeadStatusData } from '../../services/assessments';
 
 interface AssessmentDetailModalProps {
@@ -20,6 +22,7 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({ leadId, o
   const [status, setStatus] = useState<UpdateLeadStatusData['status']>('new');
   const [notes, setNotes] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [showRawAnswers, setShowRawAnswers] = useState(false);
 
   useEffect(() => {
@@ -37,6 +40,22 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({ leadId, o
       onUpdated();
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to permanently delete this assessment submission? This cannot be undone.')) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      await assessmentService.deleteLead(leadId);
+      toast.success('Assessment lead deleted successfully');
+      onUpdated();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete assessment lead');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -127,14 +146,26 @@ const AssessmentDetailModal: React.FC<AssessmentDetailModalProps> = ({ leadId, o
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="w-full py-2 rounded-lg bg-indigo-600 text-white font-semibold disabled:opacity-60"
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving || deleting}
+                  className="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-semibold disabled:opacity-60"
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={saving || deleting}
+                  title="Permanently delete this submission (GDPR erasure)"
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 text-red-700 border border-red-200 font-medium hover:bg-red-100 disabled:opacity-60"
+                >
+                  <TrashIcon className="w-5 h-5" />
+                  {deleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </div>
           </>
         )}

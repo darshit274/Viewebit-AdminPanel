@@ -114,5 +114,9 @@ export const assessmentService = {
   getStats: async (): Promise<AssessmentStatsResponse> => {
     const response = await api.get('/assessment/admin/leads/stats');
     return response.data;
+  },
+
+  deleteLead: async (id: number): Promise<void> => {
+    await api.delete(`/assessment/admin/leads/${id}`);
   }
 };

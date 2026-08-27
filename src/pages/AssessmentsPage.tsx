@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { TrashIcon } from '@heroicons/react/24/outline';
+import { toast } from 'react-hot-toast';
 import { assessmentService, type AssessmentLead } from '../services/assessments';
 import AssessmentDetailModal from '../components/assessments/AssessmentDetailModal';
 
@@ -27,6 +29,8 @@ const AssessmentsPage: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -35,6 +39,7 @@ const AssessmentsPage: React.FC = () => {
       setLeads(res.data.leads);
       setStats(res.data.stats);
       setTotalPages(res.data.pagination.totalPages);
+      setSelectedIds(new Set());
     } finally {
       setLoading(false);
     }
@@ -49,6 +54,61 @@ const AssessmentsPage: React.FC = () => {
     e.preventDefault();
     setPage(1);
     load();
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === leads.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(leads.map((lead) => lead.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleDeleteOne = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    if (!window.confirm('Are you sure you want to permanently delete this assessment submission? This cannot be undone.')) {
+      return;
+    }
+    try {
+      await assessmentService.deleteLead(id);
+      toast.success('Assessment lead deleted successfully');
+      load();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete assessment lead');
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    const count = selectedIds.size;
+    if (count === 0) return;
+    if (!window.confirm(`Are you sure you want to permanently delete ${count} assessment submission${count === 1 ? '' : 's'}? This cannot be undone.`)) {
+      return;
+    }
+    setBulkDeleting(true);
+    try {
+      const results = await Promise.allSettled(Array.from(selectedIds).map((id) => assessmentService.deleteLead(id)));
+      const failed = results.filter((r) => r.status === 'rejected').length;
+      if (failed > 0) {
+        toast.error(`${failed} of ${count} submissions could not be deleted`);
+      } else {
+        toast.success(`${count} assessment submission${count === 1 ? '' : 's'} deleted successfully`);
+      }
+      load();
+    } finally {
+      setBulkDeleting(false);
+    }
   };
 
   return (
@@ -98,23 +158,47 @@ const AssessmentsPage: React.FC = () => {
         </select>
       </div>
 
+      {selectedIds.size > 0 && (
+        <div className="flex items-center justify-between bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-4">
+          <span className="text-sm font-medium text-red-800">{selectedIds.size} selected</span>
+          <button
+            type="button"
+            onClick={handleDeleteSelected}
+            disabled={bulkDeleting}
+            className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-red-600 text-white text-sm font-medium hover:bg-red-700 disabled:opacity-60"
+          >
+            <TrashIcon className="w-4 h-4" />
+            {bulkDeleting ? 'Deleting...' : `Delete Selected (${selectedIds.size})`}
+          </button>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500 text-left">
             <tr>
+              <th className="px-4 py-3 w-10">
+                <input
+                  type="checkbox"
+                  checked={leads.length > 0 && selectedIds.size === leads.length}
+                  onChange={toggleSelectAll}
+                  aria-label="Select all"
+                />
+              </th>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Agency</th>
               <th className="px-4 py-3">Score</th>
               <th className="px-4 py-3">Maturity</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Submitted</th>
+              <th className="px-4 py-3 w-10"></th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-center text-gray-400">Loading...</td></tr>
             ) : leads.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-400">No assessment leads yet.</td></tr>
+              <tr><td colSpan={8} className="px-4 py-6 text-center text-gray-400">No assessment leads yet.</td></tr>
             ) : (
               leads.map((lead) => (
                 <tr
@@ -122,6 +206,14 @@ const AssessmentsPage: React.FC = () => {
                   className="border-t border-gray-100 hover:bg-gray-50 cursor-pointer"
                   onClick={() => setSelectedId(lead.id)}
                 >
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(lead.id)}
+                      onChange={() => toggleSelectOne(lead.id)}
+                      aria-label={`Select ${lead.first_name} ${lead.last_name}`}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-medium text-gray-900">{lead.first_name} {lead.last_name}</td>
                   <td className="px-4 py-3">{lead.agency_name}</td>
                   <td className="px-4 py-3">{lead.overall_score}</td>
@@ -132,6 +224,16 @@ const AssessmentsPage: React.FC = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-gray-500">{new Date(lead.created_at).toLocaleDateString('en-GB')}</td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={(e) => handleDeleteOne(e, lead.id)}
+                      title="Delete this submission"
+                      className="text-gray-400 hover:text-red-600"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
               ))
             )}
