@@ -118,5 +118,15 @@ export const assessmentService = {
 
   deleteLead: async (id: number): Promise<void> => {
     await api.delete(`/assessment/admin/leads/${id}`);
+  },
+
+  getConfig: async (): Promise<{ intro_video_url: string }> => {
+    const response = await api.get('/assessment/admin/config');
+    return response.data.data;
+  },
+
+  updateConfig: async (intro_video_url: string): Promise<{ intro_video_url: string }> => {
+    const response = await api.put('/assessment/admin/config', { intro_video_url });
+    return response.data.data;
   }
 };

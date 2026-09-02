@@ -3,6 +3,7 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import { assessmentService, type AssessmentLead } from '../services/assessments';
 import AssessmentDetailModal from '../components/assessments/AssessmentDetailModal';
+import AssessmentSettingsCard from '../components/assessments/AssessmentSettingsCard';
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'New',
@@ -114,6 +115,8 @@ const AssessmentsPage: React.FC = () => {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Assessment Leads</h1>
+
+      <AssessmentSettingsCard />
 
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
